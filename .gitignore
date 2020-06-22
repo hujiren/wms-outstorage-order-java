@@ -1,0 +1,8 @@
+# Created by .ignore support plugin (hsz.mobi)
+.idea/
+**/*.iml
+**/.DS_Store
+target/
+**/*..mv.db
+.txlcn/
+./cconfig/bootstrap.yml
