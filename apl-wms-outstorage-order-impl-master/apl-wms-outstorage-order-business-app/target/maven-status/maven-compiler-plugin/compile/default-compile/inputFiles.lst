@@ -1,0 +1,5 @@
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-business-app/src/main/java/com/apl/wms/outstorage/order/business/config/SyncOrderSaveMqConfig.java
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-business-app/src/main/java/com/apl/wms/outstorage/order/business/aop/DatasourceAop.java
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-business-app/src/main/java/com/apl/wms/outstorage/order/business/WmsOrderOutstorageBusinessApplication.java
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-business-app/src/main/java/com/apl/wms/outstorage/order/business/controller/OutOrderController.java
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-business-app/src/main/java/com/apl/wms/outstorage/order/business/controller/SyncOutOrderController.java

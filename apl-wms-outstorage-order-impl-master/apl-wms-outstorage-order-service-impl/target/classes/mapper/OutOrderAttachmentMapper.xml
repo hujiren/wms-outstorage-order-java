@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.apl.wms.outstorage.order.mapper.OutOrderAttachmentMapper">
+
+
+
+    <!-- 查找详情 2020-01-07-->
+    <select id="getById" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderDestVo">
+        SELECT
+          order_id, 
+          is_Insure, 
+          Insure_amount, 
+          to_desc_logistics, 
+          to_desc_carrier, 
+          is_carrier_sn, 
+          carrier_sn, 
+          dest_contact, 
+          dest_tel, 
+          dest_phone, 
+          dest_email, 
+          dest_country_code,
+          dest_zip_code, 
+          dest_city, 
+          dest_company_name, 
+          dest_street, 
+          dest_address1, 
+          dest_address2, 
+          dest_address3, 
+          inner_org_id,
+          dest_state
+        FROM
+          out_order_attachment
+        where
+          order_id = #{id}
+    </select>
+
+
+    <select id="findOrderDetails" resultType="com.apl.wms.outstorage.order.pojo.po.OutOrderDestPo">
+        select
+         order_id,
+           is_Insure,
+           Insure_amount,
+           to_desc_logistics,
+           to_desc_carrier,
+           is_carrier_sn,
+           carrier_sn,
+           dest_contact,
+           dest_tel,
+           dest_phone,
+           dest_email,
+           dest_country_code,
+           dest_zip_code,
+           dest_city,
+           dest_company_name,
+           dest_street,
+           dest_address1,
+           dest_address2,
+           dest_address3
+        from out_order_attachment ooa
+            left join out_order oo
+            on ooa.order_id = oo.id
+        where ooa.order_id = #{orderId} and oo.customer_id = #{customerId}
+    </select>
+
+    <delete id="delOutOrderItem">
+        delete from out_order_attachment ooa left join out_order oo on ooa.order_id = oo.id where ooa.order_id = #{id} and oo.customer_id = #{customerId}
+    </delete>
+
+
+    <!-- 检查记录是否存在 -->
+    <select id="exists" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderDestVo">
+        SELECT
+           order_id
+        FROM
+           out_order_attachment
+        WHERE
+           order_id = #{orderId}
+    </select>
+
+</mapper>

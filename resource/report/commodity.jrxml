@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.11.0.final using JasperReports Library version 6.11.0-0c4056ccaa4d25a5a8c45672d2f764ea3498bebb  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="系统标签" language="groovy" pageWidth="250" pageHeight="150" whenNoDataType="NoPages" columnWidth="250" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="4495f383-3a9f-4162-9cbe-670120cd1bd8">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.unit." value="cm"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="cm"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="cm"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="cm"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="cm"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="cm"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="cm"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="cm"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="cm"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<style name="zh_CN" isDefault="true" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H"/>
+	<field name="customerName" class="java.lang.String"/>
+	<field name="customerNameEn" class="java.lang.String"/>
+	<field name="commodityName" class="java.lang.String"/>
+	<field name="commodityNameEn" class="java.lang.String"/>
+	<field name="categoryNameEn" class="java.lang.String"/>
+	<field name="categoryName" class="java.lang.String"/>
+	<field name="brandName" class="java.lang.String"/>
+	<field name="brandNameEn" class="java.lang.String"/>
+	<field name="commodityNo" class="java.lang.String"/>
+	<field name="remark" class="java.lang.String"/>
+	<background>
+		<band height="16" splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="144" splitType="Stretch">
+			<textField>
+				<reportElement x="64" y="10" width="76" height="20" uuid="7de7bc0a-0749-4f81-9931-106b030fc085"/>
+				<textFieldExpression><![CDATA[$F{customerNameEn}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="5" y="10" width="49" height="20" uuid="342c78bd-0949-4978-9e75-f03b8d81a3da"/>
+				<text><![CDATA[customer:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="170" y="10" width="60" height="20" uuid="d98b1c50-490d-4b48-95c1-81900c540599"/>
+				<textFieldExpression><![CDATA[$F{customerName}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="64" y="30" width="76" height="20" uuid="914e4faf-d9be-4f58-b600-abf9c66875fd"/>
+				<textFieldExpression><![CDATA[$F{commodityNameEn}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="5" y="30" width="59" height="20" uuid="d812fd3c-5f9c-437f-907a-58247ab33586"/>
+				<text><![CDATA[commodity:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="64" y="70" width="76" height="20" uuid="78215108-ea8a-41cf-acfc-38c0445b7708"/>
+				<textFieldExpression><![CDATA[$F{brandNameEn}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="64" y="50" width="76" height="20" uuid="d926d17d-28ac-471d-8d90-c1a2752457b6"/>
+				<textFieldExpression><![CDATA[$F{categoryNameEn}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="5" y="50" width="49" height="20" uuid="08da1c50-65af-4eae-a659-dc21f5d93a95"/>
+				<text><![CDATA[category:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4" y="70" width="50" height="20" uuid="01025f45-11c0-48fb-bfe6-c6fde6b245a3"/>
+				<text><![CDATA[brand:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="5" y="110" width="125" height="30" uuid="d8847795-8a93-4828-9920-c975b8219aab"/>
+				<textFieldExpression><![CDATA[$F{remark}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="5" y="90" width="49" height="20" uuid="6580ccec-ddd1-4db6-bc66-87c59d84cc1f"/>
+				<text><![CDATA[remark:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="170" y="30" width="60" height="20" uuid="48f55890-592b-449a-b35d-6cf62028afd9"/>
+				<textFieldExpression><![CDATA[$F{commodityName}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="170" y="50" width="60" height="20" uuid="5afc10b9-7389-4d2a-b9fe-eef4b2285fdc"/>
+				<textFieldExpression><![CDATA[$F{categoryName}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="170" y="70" width="60" height="20" uuid="9c5335d0-4929-4a08-9b22-2b6cb7c47534"/>
+				<textFieldExpression><![CDATA[$F{brandName}]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement x="130" y="90" width="100" height="30" uuid="b18bb1e0-37a9-42ac-905b-20831a2cb675"/>
+				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="Code128" drawText="true" checksumRequired="false" barHeight="113">
+					<jr:codeExpression><![CDATA[$F{commodityNo}]]></jr:codeExpression>
+				</jr:barbecue>
+			</componentElement>
+			<staticText>
+				<reportElement x="150" y="10" width="10" height="20" uuid="1f42ad60-3a67-45b2-82b9-b7635e1ccecd"/>
+				<text><![CDATA[/]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="150" y="30" width="10" height="20" uuid="302289bb-99d0-4fa3-9763-b3d477da5c7f"/>
+				<text><![CDATA[/]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="150" y="50" width="10" height="20" uuid="d20b4b3c-9e7b-4c97-afee-619b1c3296af"/>
+				<text><![CDATA[/]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="150" y="70" width="10" height="20" uuid="051e9de0-bde9-4e70-9310-b03a89a7f0e8"/>
+				<text><![CDATA[/]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="130" y="120" width="100" height="20" uuid="38e7174e-a34f-4cb3-9f6a-2f83851135f5"/>
+				<textFieldExpression><![CDATA[$F{commodityNo}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

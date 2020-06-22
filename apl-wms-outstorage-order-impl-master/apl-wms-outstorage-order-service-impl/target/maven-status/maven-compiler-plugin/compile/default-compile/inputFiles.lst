@@ -1,0 +1,15 @@
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-service-impl/src/main/java/com/apl/wms/outstorage/order/service/impl/SyncOutOrderServiceImpl.java
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-service-impl/src/main/java/com/apl/wms/outstorage/order/service/impl/OutOrderServiceImpl.java
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-service-impl/src/main/java/com/apl/wms/outstorage/order/service/OutOrderCommodityItemService.java
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-service-impl/src/main/java/com/apl/wms/outstorage/order/service/SyncOutOrderService.java
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-service-impl/src/main/java/com/apl/wms/outstorage/order/mapper/SyncOrderMapper.java
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-service-impl/src/main/java/com/apl/wms/outstorage/order/mapper/OutOrderAttachmentMapper.java
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-service-impl/src/main/java/com/apl/wms/outstorage/order/mq/SyncOrderSaveMqListener.java
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-service-impl/src/main/java/com/apl/wms/outstorage/order/service/impl/OutOrderCommodityItemServiceImpl.java
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-service-impl/src/main/java/com/apl/wms/outstorage/order/queue/StockHistoryMqConfig.java
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-service-impl/src/main/java/com/apl/wms/outstorage/order/service/OutOrderDestService.java
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-service-impl/src/main/java/com/apl/wms/outstorage/order/mapper/OutOrderCommodityItemMapper.java
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-service-impl/src/main/java/com/apl/wms/outstorage/order/utils/OutstorageOrderSnGenUtils.java
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-service-impl/src/main/java/com/apl/wms/outstorage/order/service/OutOrderService.java
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-service-impl/src/main/java/com/apl/wms/outstorage/order/mapper/OutOrderMapper.java
+/Volumes/data/java/apl-wms/apl-wms-outstorage-order-java/apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-service-impl/src/main/java/com/apl/wms/outstorage/order/service/impl/OutOrderDestServiceImpl.java

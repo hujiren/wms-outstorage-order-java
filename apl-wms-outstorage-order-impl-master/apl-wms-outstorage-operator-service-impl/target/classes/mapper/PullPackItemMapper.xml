@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.apl.wms.outstorage.operator.mapper.PullPackItemMapper">
+
+
+    <!-- 查找详情 2020-06-13-->
+    <select id="getById" resultType="com.apl.wms.outstorage.operator.pojo.vo.PullPackItemInfoVo">
+        SELECT
+          id, 
+          out_order_id, 
+          sub_sn, 
+          gw, 
+          size_length, 
+          size_width, 
+          size_height, 
+          volume
+        FROM
+          pull_pack_item
+        where
+          id = #{id}
+    </select>
+
+    <!-- 查找列表 2020-06-13-->
+    <select id="getList" resultType="com.apl.wms.outstorage.operator.pojo.vo.PullPackItemListVo">
+        SELECT
+           id, 
+           out_order_id, 
+           sub_sn, 
+           gw, 
+           size_length, 
+           size_width, 
+           size_height, 
+           volume
+        FROM
+           pull_pack_item
+        where
+        1 = 1
+        order by id desc
+    </select>
+
+
+</mapper>

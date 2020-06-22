@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="apl-wms-outstorage-operator-app" />
+        <module name="apl-wms-outstorage-order-business-app" />
+        <module name="apl-wms-outstorage-order-service-impl" />
+        <module name="apl-wms-outstorage-operator-service-impl" />
+        <module name="apl-wms-outstorage-order-lib" />
+        <module name="apl-wms-outstorage-operator-pojo" />
+        <module name="apl-wms-outstorage-order-pojo" />
+        <module name="apl-wms-outstorage-order-buyer-app" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="apl-wms-outstorage-operator-app" target="8" />
+      <module name="apl-wms-outstorage-operator-pojo" target="8" />
+      <module name="apl-wms-outstorage-operator-service-impl" target="8" />
+      <module name="apl-wms-outstorage-order-business-app" target="8" />
+      <module name="apl-wms-outstorage-order-buyer-app" target="8" />
+      <module name="apl-wms-outstorage-order-impl-master" target="8" />
+      <module name="apl-wms-outstorage-order-java" target="1.5" />
+      <module name="apl-wms-outstorage-order-lib" target="8" />
+      <module name="apl-wms-outstorage-order-lib-master" target="1.5" />
+      <module name="apl-wms-outstorage-order-pojo" target="8" />
+      <module name="apl-wms-outstorage-order-pojo-master" target="1.5" />
+      <module name="apl-wms-outstorage-order-service-impl" target="8" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="apl-wms-outstorage-operator-app" options="-parameters" />
+      <module name="apl-wms-outstorage-order-business-app" options="-parameters" />
+      <module name="apl-wms-outstorage-order-buyer-app" options="-parameters" />
+      <module name="apl-wms-outstorage-order-service-impl" options="-parameters" />
+    </option>
+  </component>
+</project>

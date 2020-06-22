@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.apl.wms.outstorage.order.mapper.OutOrderMapper">
+
+
+
+    <!-- 查找详情 2020-01-07-->
+    <select id="getById" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderInfoVo">
+        SELECT
+          oo.id,
+          oo.customer_id,
+          oo.order_sn,
+          oo.order_status,
+          oo.order_from,
+          oo.ec_platform_code,
+          oo.reference_sn,
+          oo.store_id,
+          oo.wh_id,
+          oo.pull_operator_id,
+          oo.pack_operator_id,
+          oo.out_gw,
+          oo.out_volume,
+          oo.remark,
+          oo.cr_time,
+          ooa.is_insure,
+          ooa.insure_amount
+        FROM
+          out_order oo left join out_order_attachment ooa on oo.id = ooa.order_id
+        where
+          oo.id = #{id}
+    </select>
+
+    <!-- 查找详情 2020-01-07-->
+    <select id="getPackOrderMsg" resultType="com.apl.wms.outstorage.order.pojo.vo.OrderItemListVo">
+        SELECT
+        oo.id,
+        oo.order_sn,
+        oo.reference_sn,
+        ooa.to_desc_logistics
+        FROM
+        out_order oo
+        left join out_order_attachment ooa on oo.id = ooa.order_id
+        where
+        oo.id = #{orderId}
+    </select>
+
+    <select id="selectOrderByIds" resultType="com.apl.wms.outstorage.order.pojo.vo.OrderItemListVo">
+        SELECT
+          oo.id,
+          oo.order_sn
+        FROM
+          out_order oo
+        where
+        order_status = #{orderStatus}
+        <foreach open=" and id in (" collection="ids" item="id" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+
+    <select id="listWrongOrder" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderListVo">
+        SELECT
+            oo.id,
+            oo.customer_id,
+            oo.order_sn,
+            oo.order_status,
+            oo.pull_status,
+            oo.order_from,
+            oo.ec_platform_code,
+            oo.reference_sn,
+            oo.store_id,
+            oo.wh_id,
+            oo.pull_operator_id,
+            oo.pack_operator_id,
+            oo.out_gw,
+            oo.out_volume,
+            oo.remark,
+            oo.is_wrong,
+            oo.cr_time,
+            oo.inner_org_id
+        FROM
+            out_order as oo
+        LEFT JOIN out_order_commodity_item ooci ON oo.id = ooci.order_id
+        <where>
+            oo.is_wrong = #{isWrong}
+            <if test="kd.startStamp != null and kd.endStamp != null">
+                and oo.cr_time between #{kd.startStamp} and #{kd.endStamp}
+            </if>
+            <if test="kd.pullStatus != null">
+                oo.pull_status = #{kd.pullStatus}
+            </if>
+            <if test="kd.whId != null">
+                and oo.wh_id = #{kd.whId}
+            </if>
+            <if test="kd.customerId != null">
+                and oo.customer_id = #{kd.customerId}
+            </if>
+            <if test="kd.pullOperatorId != null">
+                and oo.pull_operator_id = #{kd.pullOperatorId}
+            </if>
+            <if test="kd.orderSn != null and kd.orderSn != ''">
+                and locate(#{kd.orderSn} , oo.order_sn) > 0
+            </if>
+            <if test="kd.commoditySku != null and kd.commoditySku != ''">
+                and locate(#{kd.commoditySku} , ooci.commodity_sku) > 0
+            </if>
+            <if test="kd.commodityName != null and kd.commodityName != ''">
+                and locate(#{kd.commodityName} , ooci.commodity_name) > 0
+            </if>
+        </where>
+        order by oo.id desc
+    </select>
+
+    <select id="pageOrderPull" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderInfoVo">
+        SELECT
+            DISTINCT
+            oo.id,
+            oo.customer_id,
+            oo.order_sn,
+            oo.order_status,
+            oo.pull_status,
+            oo.order_from,
+            oo.ec_platform_code,
+            oo.reference_sn,
+            oo.store_id,
+            oo.wh_id,
+            oo.pull_operator_id,
+            oo.pack_operator_id,
+            oo.out_gw,
+            oo.out_volume,
+            oo.remark,
+            oo.is_wrong,
+            oo.cr_time,
+            oo.inner_org_id
+        FROM
+            out_order as oo
+        LEFT JOIN out_order_commodity_item ooci ON oo.id = ooci.order_id
+        <where>
+            <!--<if test="kd.startStamp != null and kd.endStamp != null">
+                and oo.cr_time between #{kd.startStamp} and #{kd.endStamp}
+            </if>-->
+            oo.order_status = 3
+            <if test="kd.pullStatus != null and kd.pullStatus != 0">
+                and oo.pull_status = #{kd.pullStatus}
+            </if>
+            <if test="kd.whId != null">
+                and oo.wh_id = #{kd.whId}
+            </if>
+            <if test="kd.customerId != null">
+                and oo.customer_id = #{kd.customerId}
+            </if>
+            <if test="kd.pullOperatorId != null">
+                and oo.pull_operator_id = #{kd.pullOperatorId}
+            </if>
+            <if test="kd.orderSn != null and kd.orderSn != ''">
+                and locate(#{kd.orderSn} , oo.order_sn) > 0
+            </if>
+            <if test="kd.commoditySku != null and kd.commoditySku != ''">
+                and locate(#{kd.commoditySku} , ooci.commodity_sku) > 0
+            </if>
+            <if test="kd.commodityName != null and kd.commodityName != ''">
+                and locate(#{kd.commodityName} , ooci.commodity_name) > 0
+            </if>
+        </where>
+        order by oo.id desc
+    </select>
+    <select id="listOrderByOrderStatusPullStatusAndPullId" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderInfoVo">
+        SELECT
+            oo.id,
+            oo.customer_id,
+            oo.order_sn,
+            oo.order_status,
+            oo.pull_status,
+            oo.order_from,
+            oo.ec_platform_code,
+            oo.reference_sn,
+            oo.store_id,
+            oo.wh_id,
+            oo.pull_operator_id,
+            oo.pack_operator_id,
+            oo.out_gw,
+            oo.out_volume,
+            oo.remark,
+            oo.is_wrong,
+            oo.cr_time,
+            oo.inner_org_id
+        FROM
+            out_order as oo
+        where
+            is_wrong = 1
+            and order_status = #{orderStatus}
+            and pull_status = #{pullStatus}
+            and pull_operator_id = #{memberId}
+
+    </select>
+
+    <!-- 分页查找订单列表, 适合查询条件 sku和商品名称为空的情况 -->
+    <select id="getList" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderListVo">
+        SELECT
+            o.id,
+            o.customer_id,
+            o.order_sn,
+            o.order_status,
+            o.order_from,
+            o.ec_platform_code,
+            o.reference_sn,
+            o.store_id,
+            o.wh_id,
+            o.remark,
+            o.cr_time,
+            ooa.dest_contact,
+            ooa.dest_country_code
+            FROM
+            out_order as o left join out_order_attachment ooa on o.id = ooa.order_id
+        where
+        <include refid="getListWhere" />
+        order by o.id desc
+    </select>
+
+
+    <!-- 分页查找订单, sql where语句-->
+    <sql id="getListWhere">
+        1 = 1
+        <if test="kd.startStamp != null and kd.endStamp != null">
+            and o.cr_time between #{kd.startStamp} and #{kd.endStamp}
+        </if>
+        <if test="kd.customerId != null and kd.customerId>0">
+            and o.customer_id = #{kd.customerId}
+        </if>
+        <if test="kd.whId != null and kd.whId>0">
+            and o.wh_id = #{kd.whId}
+        </if>
+        <if test="kd.orderStatus != null and kd.orderStatus>0">
+            and o.order_status = #{kd.orderStatus}
+        </if>
+        <if test="kd.orderSn != null">
+            and locate(#{kd.orderSn}, o.order_sn)>0
+        </if>
+    </sql>
+
+
+    <!-- 按sku或商品名称查找，因为是按商品项目子表查找, 需要进行去重distinct, 查询字段越少, 去重比对速度越快
+         故要分2步, 第1步:先只查找订单id，  第2步:根据id列表查找订单信息 -->
+    <!-- 分页查找 第1步, 查找订单ids-->
+    <select id="getOrderIds" resultType="long">
+        SELECT distinct
+        o.id
+        FROM
+        out_order as o
+        left join out_order_commodity_item oc on o.id = oc.order_id
+        where
+        <include refid="getListWhere" />
+        <if test="kd.commodityName != null">
+            and (locate(#{kd.commodityName}, oc.sku)>0
+            or locate(#{kd.commodityName}, oc.commodity_name)>0
+            or locate(#{kd.commodityName}, oc.commodity_name_en)>0
+            or locate(#{kd.commodityName}, oc.commodity_spec)>0)
+        </if>
+        order by o.id desc
+    </select>
+
+    <!-- 分页查找 第2步, 根据ids查找订单列表-->
+    <select id="getListByIds" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderListVo">
+        SELECT
+            id,
+            customer_id,
+            order_sn,
+            order_status,
+            pull_status,
+            order_from,
+            ec_platform_code,
+            reference_sn,
+            store_id,
+            wh_id,
+            remark,
+            cr_time
+        FROM
+            out_order as o
+        where
+        1=1
+        <if test="minId>0 and minId==maxId">
+            AND o.id=${ids}
+        </if>
+        <if test="minId!= null and maxId != null">
+            AND o.id BETWEEN ${minId} AND ${maxId}
+        </if>
+        AND o.id in (${ids})
+        order by o.id desc
+    </select>
+
+
+    <!-- 更新状态 2019-12-25-->
+    <update id="updOrderStatus">
+        update  out_order  set order_status=#{status}
+        where id=#{id}
+        <if test="customerId != null and customerId>0">
+            AND customer_id =  #{customerId}
+        </if>
+    </update>
+
+
+    <update id="batchUpdateOrderPullStatus">
+        update  out_order  set pull_status=#{status}
+        where
+        <foreach collection="orderIds" item="orderId" open="id in (" close=")" separator=",">
+            #{orderId}
+        </foreach>
+        <if test="customerId != null and customerId>0">
+            AND customer_id =  #{customerId}
+        </if>
+    </update>
+
+    <select id="exists" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderInfoVo">
+        select
+            id
+        from
+            out_order
+        where
+            id = #{orderId}
+            <if test="customerId!=null and customerId != 0">
+                and customer_id = #{customerId}
+            </if>
+    </select>
+
+
+    <!-- String referenceSn, @Param("customerId") Long customerId, @Param("startTime") Timestamp startTime -->
+    <select id="existsByRefSn" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderInfoVo">
+        select
+        id
+        from
+        out_order
+        where
+        cr_time>=#{startTime} and order_status!=11  <!-- order_status=11  取消 -->
+        <if test="customerId!=null and customerId>0">
+            and customer_id = #{customerId}
+        </if>
+        and reference_sn = #{referenceSn}
+    </select>
+
+</mapper>

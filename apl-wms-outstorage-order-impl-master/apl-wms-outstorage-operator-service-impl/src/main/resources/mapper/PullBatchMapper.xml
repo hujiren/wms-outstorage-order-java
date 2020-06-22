@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.apl.wms.outstorage.operator.mapper.PullBatchMapper">
+
+
+    <!-- 查找详情 2020-06-08-->
+    <select id="getById" resultType="com.apl.wms.outstorage.operator.pojo.vo.PullBatchInfoVo">
+        SELECT
+          id, 
+          batch_sn, 
+          pull_operator_id, 
+          pull_finish_time, 
+          sorting_operator_id,
+          sorting_finish_time, 
+          pull_status, 
+          cr_time
+        FROM
+          pull_batch
+        where
+          id = #{id}
+    </select>
+
+    <!-- 查找列表 2020-06-08-->
+    <select id="getList" resultType="com.apl.wms.outstorage.operator.pojo.vo.PullBatchListVo">
+        SELECT
+           id, 
+           batch_sn, 
+           pull_operator_id, 
+           pull_finish_time, 
+           sorting_operator_id,
+           sorting_finish_time, 
+           pull_status, 
+           cr_time
+        FROM
+           pull_batch
+        where
+        1 = 1
+        order by id desc
+    </select>
+    <select id="listOperatorBatchByStatus" resultType="com.apl.wms.outstorage.operator.pojo.vo.PullBatchInfoVo">
+        SELECT DISTINCT
+            pb.id id,
+            pb.batch_sn,
+            pb.cr_time
+        FROM
+            pull_batch pb
+            LEFT JOIN pull_item pi ON pb.id = pi.batch_id
+            LEFT JOIN out_order oo ON pi.out_order_id = oo.id
+            <if test="keyword != null and keyword != ''">
+                AND locate(#{keyword}, oo.order_sn)>0
+            </if>
+        WHERE
+            pb.pull_operator_id = #{operatorId}
+            AND pb.pull_status = #{status}
+            AND pb.cr_time > #{batchTime}
+            AND oo.order_sn IS NOT NULL
+    </select>
+
+    <select id="getPullBatchMsg" resultType="com.apl.wms.outstorage.operator.pojo.vo.PackOrderItemListVo">
+        SELECT
+            distinct
+            pb.id batchId,
+            pb.batch_sn batchSn
+        FROM
+            pull_item pi
+            LEFT JOIN pull_batch pb ON pi.batch_id = pb.id
+        WHERE
+            pi.out_order_id = #{orderId} and pb.pull_status = #{pullStatus}
+    </select>
+    <select id="getBatchOrderListByOrderId" resultType="long">
+        SELECT
+            pi1.out_order_id orderId
+        FROM
+            pull_item pi1,
+            pull_item pi2
+        WHERE
+            pi1.out_order_id = #{orderId}
+            AND pi1.batch_id = pi2.batch_id
+    </select>
+
+
+    <select id="getBatchOrderList" resultType="long">
+        SELECT
+            pi.out_order_id orderId
+        FROM
+            pull_batch pb
+            LEFT JOIN pull_item pi on pb.id = pi.batch_id
+        WHERE
+            pb.id = #{batchId}
+    </select>
+
+
+</mapper>

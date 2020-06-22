@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: apl-wms-outstorage-operator-app
+
+  profiles:
+    include:
+      common, apl-wms-outstorage-operator-app
+  cloud:
+    consul:
+      config:
+        fail-fast: false
+

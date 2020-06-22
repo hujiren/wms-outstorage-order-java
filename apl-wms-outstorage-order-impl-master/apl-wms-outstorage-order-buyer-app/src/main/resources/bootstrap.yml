@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: apl-wms-outstorage-order-buyer-app
+
+  profiles:
+    include:
+      common, apl-wms-outstorage-order-buyer-app

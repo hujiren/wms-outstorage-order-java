@@ -1,0 +1,6 @@
+com/apl/wms/outstorage/operator/controller/SortController.class
+com/apl/wms/outstorage/operator/aop/DatasourceAop.class
+com/apl/wms/outstorage/operator/controller/BatchController.class
+com/apl/wms/outstorage/operator/controller/PackController.class
+com/apl/wms/outstorage/operator/WmsOutStorageOperatorApplication.class
+com/apl/wms/outstorage/operator/controller/PickController.class
