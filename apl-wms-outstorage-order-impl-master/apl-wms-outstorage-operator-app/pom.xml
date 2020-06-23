@@ -49,7 +49,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.apl.wms.order.instorage.operator.WmsOutStorageOperatorApplication</mainClass>
+                    <mainClass>com.apl.wms.outstorage.operator.WmsOutStorageOperatorApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>
