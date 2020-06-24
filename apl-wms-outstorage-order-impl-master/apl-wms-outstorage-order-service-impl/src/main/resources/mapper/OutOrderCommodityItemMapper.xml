@@ -38,7 +38,7 @@
     </select>
 
 
-    <select id="getPullBatchOrderItem" resultType="com.apl.wms.outstorage.order.lib.pojo.bo.PullBatchOrderItemBo">
+    <select id="getPullBatchOrderItem" resultType="com.apl.wms.warehouse.lib.pojo.bo.PullBatchOrderItemBo">
         SELECT
         ooci.order_id,
         ooci.commodity_id,

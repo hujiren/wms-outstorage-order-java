@@ -16,6 +16,8 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 public class WmsOutStorageOperatorApplication {
     public static void main(String[] args) {
 
+        //com.apl.lib.datasource.DataSourceConfig
+
         SpringApplication.run(WmsOutStorageOperatorApplication.class , args);
     }
 }

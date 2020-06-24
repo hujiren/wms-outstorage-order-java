@@ -18,6 +18,8 @@ public class WmsOrderOutstorageBusinessApplication {
 
     public static void main(String[] args) {
 
+        //com.apl.lib.datasource.DataSourceConfig
+
         SpringApplication.run(WmsOrderOutstorageBusinessApplication.class , args);
     }
 }
