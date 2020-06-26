@@ -25,7 +25,7 @@ public class DatasourceAop {
     @Autowired
     RedisTemplate redisTemplate;
 
-    @Pointcut("execution(public * com.apl.wms.outstorage.order.operator.controller.*.* (..))")
+    @Pointcut("execution(public * com.apl.wms.outstorage.operator.controller.*.* (..))")
     public void datasourceAop() {
     }
 
