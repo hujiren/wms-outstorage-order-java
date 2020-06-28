@@ -27,6 +27,4 @@ spring:
 
 
 apl:
-  client-address: 192.168.1.102
-  #client-address: 192.168.1.221
-  #client-address: ${spring.cloud.client.ip-address}
+  client-address: 192.168.1.116
