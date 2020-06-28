@@ -10,7 +10,7 @@
 
 提交描述
 
-  git commit -m "描述"
+  git commit -m 
 
 
 从git库拉取代码

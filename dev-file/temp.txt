@@ -1,0 +1,3 @@
+
+
+file:apl-wms-outstorage-order-impl-master/apl-wms-outstorage-operator-service-impl/src/main/resources/mapper/*.xml, file:apl-wms-outstorage-order-impl-master/apl-wms-outstorage-order-service-impl/src/main/resources/mapper/*.xml

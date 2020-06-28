@@ -1,8 +1,18 @@
 spring:
   cloud:
-    consul:
+    nacos:
+      discovery:
+        server-addr: 192.168.1.185:8828
+        ip: ${apl.client-address}
+      config:
+        server-addr: 192.168.1.185:8828
+        file-extension: yml
+        #prefix: nacos-provider
+        shared-dataids: common.yml  # 共享公共配置信息
+
+    consul-bak:
       host: 192.168.1.185
-      port: 9034
+      port: 9032
       config:
         enabled: true #false禁用Consul配置，默认true
         format: YAML    # 表示consul上面文件的格式 有四种 YAML PROPERTIES KEY-VALUE FILES
@@ -11,7 +21,12 @@ spring:
         defaultContext: common   #设置所有应用程序使用的文件夹名称
         #profileSeparator  #设置用于使用配置文件在属性源中分隔配置文件名称的分隔符的值
 
+    #service-registry:
+    #  auto-registration:
+    #    enabled：false    # 不要自动注册
+
+
 apl:
-  client-address: 192.168.1.116
+  client-address: 192.168.1.102
   #client-address: 192.168.1.221
   #client-address: ${spring.cloud.client.ip-address}

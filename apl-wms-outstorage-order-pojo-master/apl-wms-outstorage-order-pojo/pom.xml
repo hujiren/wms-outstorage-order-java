@@ -11,7 +11,7 @@
 
         <dependency>
             <groupId>com.apl</groupId>
-            <artifactId>apl-pojo-pom-parent</artifactId>
+            <artifactId>apl-pojo-dependency-parent</artifactId>
             <version>1.0.0</version>
         </dependency>
 
