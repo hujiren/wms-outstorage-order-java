@@ -93,6 +93,7 @@ public class OutOrderCommodityItemServiceImpl extends ServiceImpl<OutOrderCommod
                     //商品不存在
                     throw new AplException(CommonStatusCode.SAVE_FAIL);
                 }
+                //商品持久化对象
                 entity.setCommoditySpec(commodityItemDto.getCommoditySpec());
                 entity.setCommodityId(commodityCacheBo.getId());
                 entity.setCommoditySku(commodityCacheBo.getSku());
@@ -101,7 +102,7 @@ public class OutOrderCommodityItemServiceImpl extends ServiceImpl<OutOrderCommod
                 entity.setOrderQty(commodityItemDto.getOrderQty());
                 entity.setOrderId(orderId);
                 entity.setId(SnowflakeIdWorker.generateId());
-                save(entity);
+                save(entity);// 封装了baseMapper.insert();
 
                 buildOrderItemStock(platformOutOrderStockBo, commodityItemDto.getCommodityId(), commodityItemDto.getOrderQty());
 

@@ -134,9 +134,9 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         // com.apl.wms.outstorage.order.lib.enumwms
 
 
-        //库存锁定状态
+        //库存锁定状态  锁定库存
         outOrderMainDto.setPullStatus(PullStatusType.STOCK_LOCK.getStatus());
-
+        //更新主订单
         Long orderId = updateMainOrder(outOrderMainDto, outOrderMainDto.getOrderId());
 
         //保存商品 ,返回 需要锁定的库存数量
@@ -176,7 +176,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
             return ResultUtils.APPRESULT(OutOrderServiceCode.OUT_ORDER_NOT_EXIST.code, OutOrderServiceCode.OUT_ORDER_NOT_EXIST.msg, null);
         }
 
-        if (orderFrom == 2) {
+        if (orderFrom == 2) {//手动添加
             OutOrderPo entity = new OutOrderPo();
             entity.setId(destDto.getOrderId());
             entity.setEcPlatformCode(destDto.getEcPlatformCode());//平台
@@ -186,7 +186,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
             baseMapper.updateById(entity);
         }
 
-        OutOrderDestPo outOrderDestPo = new OutOrderDestPo();
+        OutOrderDestPo outOrderDestPo = new OutOrderDestPo();//出库订单目的地对象
         BeanUtils.copyProperties(destDto, outOrderDestPo);
         Long id = outOrderDestService.saveDest(outOrderDestPo);
 
@@ -778,7 +778,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
     @Override
     public ResultUtils<Boolean> cancelOrder(Long orderId) {
 
-        OutOrderInfoVo exists = baseMapper.exists(orderId, null);
+        OutOrderInfoVo exists = baseMapper.exists(orderId, null);//又把订单id取出来了
         if (exists == null) {
             throw new AplException(OutOrderServiceCode.OUT_ORDER_NOT_EXIST.code, OutOrderServiceCode.OUT_ORDER_NOT_EXIST.msg);
         }
@@ -889,8 +889,8 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
         //生成订单号
         String sn = orderSnGenUtils.createOutOrderSn(outOrderMainDto.getCustomerId(), outOrderMainDto.getCustomerNo(), outOrderMainDto.getInnerOrgId(), 1);
-        outOrderPo.setOrderSn(sn);
-        outOrderPo.setId(SnowflakeIdWorker.generateId());
+        outOrderPo.setOrderSn(sn);//出库订单号
+        outOrderPo.setId(SnowflakeIdWorker.generateId());//订单号, 雪花算法
         outOrderPo.setIsWrong(1);
 
         outOrderPo.insert();

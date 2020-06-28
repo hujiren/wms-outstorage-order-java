@@ -44,7 +44,7 @@ public class OutOrderPo extends Model<OutOrderPo> {
     //拣货状态  1库存未锁定 2库存已锁定  3未分配拣货员  4已分配拣货员 5已分配批次    6拣货中  7已拣货    8分拣中   9已分拣
     private Integer pullStatus;
 
-    //订单来自那  1电商   2手动下单
+    //订单来源  1电商   2手动下单
     private Integer orderFrom;
 
     //电商平台

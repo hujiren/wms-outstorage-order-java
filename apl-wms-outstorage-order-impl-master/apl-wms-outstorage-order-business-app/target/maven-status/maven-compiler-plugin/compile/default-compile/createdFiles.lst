@@ -1,5 +1,0 @@
-com/apl/wms/outstorage/order/business/WmsOrderOutstorageBusinessApplication.class
-com/apl/wms/outstorage/order/business/controller/SyncOutOrderController.class
-com/apl/wms/outstorage/order/business/aop/DatasourceAop.class
-com/apl/wms/outstorage/order/business/controller/OutOrderController.class
-com/apl/wms/outstorage/order/business/config/SyncOrderSaveMqConfig.class

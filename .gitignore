@@ -5,4 +5,4 @@
 target/
 **/*..mv.db
 .txlcn/
-./cconfig/bootstrap.yml
+./config/bootstrap.yml
