@@ -117,9 +117,14 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
     @Override
     public ResultUtils<List<PullBatchInfoVo>> listPullBatch(Integer pullStatus , String keyword , Long batchTime) {
 
+        //缓存中操作对象
         OperatorCacheBo operator = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
 
-        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, baseMapper.listOperatorBatchByStatus(operator.getMemberId(), pullStatus ,keyword , new Timestamp(batchTime)));
+        List<PullBatchInfoVo> pullBatchInfoVos = baseMapper.listOperatorBatchByStatus(operator.getMemberId(), pullStatus, keyword, new Timestamp(batchTime));
+
+        ResultUtils result = ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, pullBatchInfoVos);
+
+        return result;
     }
 
 

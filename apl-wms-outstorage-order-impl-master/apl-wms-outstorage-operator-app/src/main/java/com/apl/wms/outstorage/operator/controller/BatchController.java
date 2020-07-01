@@ -30,7 +30,7 @@ public class BatchController {
 
 
     @PostMapping(value = "/list-pull-batch")
-    @ApiOperation(value =  "获取批次列表" , notes = "获取拣货信息列表 状态 5开始拣货  6已拣货    7分拣中   8已分拣")
+    @ApiOperation(value =  "获取批次列表" , notes = "获取拣货信息列表 状态 5开始拣货 6已拣货 7分拣中 8已分拣")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "pullStatus",value = "拣货状态 状态 5开始拣货  6已拣货    7分拣中   8已分拣",required = true  , paramType = "query"),
             @ApiImplicitParam(name = "keyword",value = "订单编号 关键字" ,  paramType = "query"),
@@ -41,7 +41,8 @@ public class BatchController {
                                                             String keyword,
                                                             @NotNull(message = "pullStatus 不能为空") Long batchTime){
 
-        return pullBatchService.listPullBatch(pullStatus , keyword , batchTime);
+        ResultUtils resultUtils = pullBatchService.listPullBatch(pullStatus, keyword, batchTime);
+        return resultUtils;
     }
 
 
