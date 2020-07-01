@@ -92,7 +92,7 @@ public class PickController {
 
     @PostMapping("/list-operator-order")
     @ApiOperation(value =  "获取拣货员对应的订单列表" , notes = "获取分配给某个拣货员的订单列表")
-    public ResultUtils<List<OutOrderInfoVo>> listOperatorOrders(){
+    public ResultUtils<List<OutOrderInfoVo>> listOperatorOrders() throws Exception {
 
         return outOrderService.listOperatorOrders();
     }

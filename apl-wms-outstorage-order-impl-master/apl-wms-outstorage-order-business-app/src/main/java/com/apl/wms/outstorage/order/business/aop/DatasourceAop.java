@@ -27,28 +27,18 @@ public class DatasourceAop {
 
     @Pointcut("execution(public * com.apl.wms.outstorage.order.business.controller.*.* (..))")
     public void datasourceAop() {
+
     }
 
     @Around("datasourceAop()")
     public Object doInvoke(ProceedingJoinPoint pjp) throws Throwable {
 
-        HttpServletRequest request = CommonContextHolder.getRequest();
-        System.out.println("api url is ============" + request.getRequestURI());
-
         Object proceed = null;
         try {
             String token = CommonContextHolder.getHeader(CommonAplConstants.TOKEN_FLAG);
             SecurityUser securityUser = CommonContextHolder.getSecurityUser(redisTemplate, token);
-            //if(securityUser==null || securityUser.getInnerOrgId()>10) {
-                //String uri = CommonContextHolder.getURI().toLowerCase();
-                //if (!uri.contains("/not-dev/") && !uri.contains("/share/")) {
-                //    throw new AplException(CommonStatusCode.NOT_AUTHORIZED);
-                //}
-            //}
             CommonContextHolder.securityUserContextHolder.set(securityUser);
 
-            //redisTemplate.expire(AplConstants.LOGIN_MSG + token, 30, TimeUnit.MINUTES); //登陆用户展期
-            //DataSourceContextHolder.set(token);  //pgs_pgs_1_xxxxxx
             DataSourceContextHolder.set(securityUser.getTenantGroup(), securityUser.getInnerOrgCode(), securityUser.getInnerOrgId());
 
             Object[] args = pjp.getArgs();

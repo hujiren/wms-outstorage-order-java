@@ -1,0 +1,16 @@
+商家出库订单
+
+1.取消订单
+接收订单Id, 根据id更新主订单表中的订单状态为取消状态, 返回boolean
+
+2.删除订单
+接收订单Id, 校验是否存在, 根据订单Id删除订单商品表中的订单商品; 根据订单id删除订单附加信息表中的订单物流信息, 最后根据订单Id删除订单表中的主订单,返回boolean
+
+3.删除商品
+接收订单商品id(非订单id), 通过id直接删除订单商品
+
+4.获取订单详细
+接收订单id, 根据订单id查询主订单信息, JoinStore通过门店id拼接cache key从缓存获取门店名称, 通过JoinCustomer CustomerId拼接cache key获取客户名称,
+通过JoinWareHouse WhId拼接cache key获取仓库名称;  根据订单Id查询out_order_commodity_item表中订单商品信息,
+
+5.分页查找订单详情

@@ -130,8 +130,7 @@
             oo.out_volume,
             oo.remark,
             oo.is_wrong,
-            oo.cr_time,
-            oo.inner_org_id
+            oo.cr_time
         FROM
             out_order as oo
         LEFT JOIN out_order_commodity_item ooci ON oo.id = ooci.order_id
@@ -164,6 +163,8 @@
         </where>
         order by oo.id desc
     </select>
+
+    <!-- 获取拣货员对应的订单 -->
     <select id="listOrderByOrderStatusPullStatusAndPullId" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderInfoVo">
         SELECT
             oo.id,
@@ -182,8 +183,7 @@
             oo.out_volume,
             oo.remark,
             oo.is_wrong,
-            oo.cr_time,
-            oo.inner_org_id
+            oo.cr_time
         FROM
             out_order as oo
         where
@@ -249,7 +249,7 @@
         out_order as o
         left join out_order_commodity_item oc on o.id = oc.order_id
         where
-        <include refid="getListWhere" />
+        <include refid="getListWhere"/>
         <if test="kd.commodityName != null">
             and (locate(#{kd.commodityName}, oc.sku)>0
             or locate(#{kd.commodityName}, oc.commodity_name)>0

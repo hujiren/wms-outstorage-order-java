@@ -92,13 +92,13 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
     OutstorageOrderSnGenUtils orderSnGenUtils;
 
     @Autowired
-    OutOrderCommodityItemService outOrderCommodityItemService;
+    OutOrderCommodityItemService outOrderCommodityItemService;//出库订单商品 out_order_commodity_item
 
     @Autowired
-    OutOrderDestService outOrderDestService;
+    OutOrderDestService outOrderDestService;//出库订单附加信息 out_order_attachment
 
     @Autowired
-    SyncOutOrderService syncOutOrderService;
+    SyncOutOrderService syncOutOrderService;//同步出库订单
 
     @Autowired
     RabbitSender rabbitSender;
@@ -126,7 +126,6 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         //校验客户是否存在
         CheckCacheUtils.checkCustomer(innerFeign , redisTemplate , outOrderMainDto.getCustomerId());
 
-        // lock-stocks-111111
         String lockKey = "lock-stocks-" + outOrderMainDto.getCustomerId();
         LockTool.lock(redisTemplate , lockKey , 2);
 
@@ -308,7 +307,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
             throw new AplException(CommonStatusCode.DEL_FAIL);
         }
 
-        //删除订单附加信息表
+        //删除订单附加信息表(物流信息)
         Boolean flag2 = outOrderDestService.delById(orderId, customerId);
         if (!flag2) {
             throw new AplException(CommonStatusCode.DEL_FAIL);
@@ -324,7 +323,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
     }
 
 
-    //获取详细信息
+    //获取订单详细信息
     @Override
     public ResultUtils<Map> selectById(Long orderId, Long customerId) throws Exception {
 
@@ -332,7 +331,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
             customerId = CommonContextHolder.getSecurityUser(redisTemplate).getOuterOrgId();
         }
 
-        //订单主要信息
+        //主订单信息
         OutOrderInfoVo orderVo = baseMapper.getById(orderId, customerId);
         if (null == orderVo) {
             throw new AplException(OutOrderServiceCode.OUT_ORDER_NOT_EXIST.code, OutOrderServiceCode.OUT_ORDER_NOT_EXIST.msg, null);
@@ -371,7 +370,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         if (null != joinCommodityFieldInfo) {
             joinCommodity.setJoinFieldInfo(joinCommodityFieldInfo);
         } else {
-            joinCommodity.addField("commodityId", Long.class, "imgUrl", String.class);
+            joinCommodity.addField("commodityId", Long.class, "imgUrl", String.class);//添加缓存字段
             joinCommodity.addField("isCorrespondence", Integer.class);
             joinCommodityFieldInfo = joinCommodity.getJoinFieldInfo();
         }
@@ -447,7 +446,13 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS , orderItemListVos);
     }
 
-    //查询
+
+
+    /**
+     * 分页查询订单详情
+     * @param pageDto 分页对象
+     * @param keyDto   关键字对象
+     */
     @Override
     public ResultUtils<OutOrderListResultVo> getList(PageDto pageDto, OutOrderKeyDto keyDto) throws Exception {
 
@@ -468,7 +473,6 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
             故要分2步, 第1步:先只查找订单id，  第2步:根据id列表查找订单信息
              */
             //查找第一步，获取订单id列表
-
             List<Long> listIds = baseMapper.getOrderIds(page, keyDto);// , tspStart, tspEnd
             if (CollectionUtils.isEmpty(listIds)) {
                 //没有找到订单, 返回空信息
@@ -484,7 +488,8 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
             list = baseMapper.getList(page, keyDto);
             if (CollectionUtils.isEmpty(list)) {
                 //没有找到订单, 返回空信息
-                return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, outOrderListResultVo);
+                ResultUtils result = ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, outOrderListResultVo);
+                return result;
             }
 
             joinKeyValues = JoinUtils.getKeys(list, "id", Long.class);
@@ -657,10 +662,31 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
 
     @Override
-    public ResultUtils<List<OutOrderInfoVo>> listOperatorOrders() {
+    public ResultUtils<List<OutOrderInfoVo>> listOperatorOrders()  throws Exception  {
 
         OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
-        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS , baseMapper.listOrderByOrderStatusPullStatusAndPullId(OutStorageOrderStatusEnum.CREATE.getStatus() , PullStatusType.ALREADY_ALLOCATION.getStatus() , operatorCacheBo.getMemberId()));
+
+        List<OutOrderInfoVo> outOrderInfoVos = baseMapper.listOrderByOrderStatusPullStatusAndPullId(
+                OutStorageOrderStatusEnum.CREATE.getStatus(),
+                PullStatusType.ALREADY_ALLOCATION.getStatus(),
+                operatorCacheBo.getMemberId());
+
+
+        ArrayList joinTabs = new ArrayList<>();
+        //关联客户表字段信息
+        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, redisTemplate);
+        if (null != joinCustomerFieldInfo) {
+            joinCustomer.setJoinFieldInfo(joinCustomerFieldInfo);
+        } else {
+            joinCustomer.addField("customerId", Long.class, "customerName", String.class);
+            joinCustomerFieldInfo = joinCustomer.getJoinFieldInfo();
+        }
+        joinTabs.add(joinCustomer);
+
+        //执行跨项目跨库关联
+        JoinUtils.join(outOrderInfoVos, joinTabs);
+
+        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS , outOrderInfoVos);
 
     }
 
@@ -683,7 +709,10 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         fullOutOrderMsg(outOrderInfo);
 
         page.setRecords(outOrderInfo);
-        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, page);
+
+        ResultUtils result = ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, page);
+        System.out.println("result.getCode:" + result.getCode() + "result.getMsg:" + result.getMsg());
+        return result;
     }
 
 
@@ -765,7 +794,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
             OutOrderPo outOrderPo = new OutOrderPo();
             outOrderPo.setPullOperatorId(0L);
             outOrderPo.setId(findOutOrder.getId());
-            outOrderPo.setPullStatus(PullStatusType.UN_ALLOCATION.getStatus());
+            outOrderPo.setPullStatus(PullStatusType.STOCK_LOCK.getStatus());
             orderList.add(outOrderPo);
         }
         // 更新订单拣货状态
@@ -778,7 +807,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
     @Override
     public ResultUtils<Boolean> cancelOrder(Long orderId) {
 
-        OutOrderInfoVo exists = baseMapper.exists(orderId, null);//又把订单id取出来了
+        OutOrderInfoVo exists = baseMapper.exists(orderId, null);//根据传过来的订单id查询, 判断订单id是否存在
         if (exists == null) {
             throw new AplException(OutOrderServiceCode.OUT_ORDER_NOT_EXIST.code, OutOrderServiceCode.OUT_ORDER_NOT_EXIST.msg);
         }
@@ -906,7 +935,8 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         ResultUtils<Boolean> checkResult = warehouseFeign.checkStockCount(platformOutOrderStockBo);
 
         //服务调用失败
-        if(!checkResult.getCode().equals(CommonStatusCode.SERVER_INVOKE_SUCCESS.getCode())){
+        // SERVER_INVOKE_SUCCESS
+        if(!checkResult.getCode().equals(CommonStatusCode.GET_SUCCESS.getCode())){
             throw new AplException(checkResult.getCode() , checkResult.getMsg());
         }
     }

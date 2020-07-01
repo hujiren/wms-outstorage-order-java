@@ -25,11 +25,9 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -52,25 +50,27 @@ public class OutOrderController {
     public OutOrderService outOrderService;
 
     @Autowired
-    public OutOrderCommodityItemService outOrderCommodityItemService;
+    public OutOrderCommodityItemService outOrderCommodityItemService;//订单商品业务层 out_order_commodity_item
 
 
     @PostMapping(value = "/save-commodity")
     @ApiOperation(value =  "保存商品", notes ="保存商品 ， 锁定商品库存")
+    @ResponseBody
     public ResultUtils<String> saveCommodity(OutOrderMainDto outOrderMainDto , @RequestBody  List<OutOrderCommodityItemUpdDto> outOrderCommodityItemUpdDtos) throws Exception {
         ApiParamValidate.validate(outOrderCommodityItemUpdDtos);
 
         SecurityUser securityUser = CommonContextHolder.getSecurityUser();
         outOrderMainDto.setInnerOrgId(securityUser.getInnerOrgId()); //内部组织id, 生成订单时用到
-        outOrderMainDto.setOrderFrom(2); //手动下单
-        return outOrderService.saveCommodity(outOrderMainDto , outOrderCommodityItemUpdDtos, 0);
+        outOrderMainDto.setOrderFrom(2); //订单来源:手动下单
+        ResultUtils<String> result = outOrderService.saveCommodity(outOrderMainDto , outOrderCommodityItemUpdDtos, 0);
 
-
+        //System.out.println("saveCommodity code:"+result.getCode()+"  msg:"+result.getMsg());
+        return result;
     }
-
 
     @PostMapping(value = "/save-dest")
     @ApiOperation(value =  "保存目的地信息", notes ="")
+    @ResponseBody
     public ResultUtils<Boolean> saveDestInfo(OutOrderDestUpdDto dto) {
 
         ApiParamValidate.validate(dto);
@@ -78,6 +78,7 @@ public class OutOrderController {
         return outOrderService.saveDestInfo(dto, 0l, 2);
     }
 
+    @ResponseBody
     @PostMapping(value = "/upd-status")
     @ApiOperation(value =  "更新订单状态",  notes ="更新订单状态")
     @ApiImplicitParams({
@@ -91,7 +92,7 @@ public class OutOrderController {
         return outOrderService.updStatus(id, status, 0l);
     }
 
-
+    @ResponseBody
     @PostMapping(value = "/del")
     @ApiOperation(value =  "删除订单" , notes = "")
     @ApiImplicitParam(name = "orderId",value = " 订单id",required = true  , paramType = "query")
@@ -100,7 +101,7 @@ public class OutOrderController {
         return outOrderService.delById(orderId , 0l);
     }
 
-
+    @ResponseBody
     @PostMapping(value = "/del-commodity")
     @ApiOperation(value =  "删除商品" , notes = "")
     @ApiImplicitParam(name = "id",value = " id",required = true  , paramType = "query")
@@ -109,7 +110,7 @@ public class OutOrderController {
         return outOrderCommodityItemService.delById(id);
     }
 
-
+    @ResponseBody
     @PostMapping(value = "/get")
     @ApiOperation(value =  "获取订单详细" , notes = "")
     @ApiImplicitParam(name = "id",value = "id",required = true  , paramType = "query")
@@ -118,7 +119,7 @@ public class OutOrderController {
         return outOrderService.selectById(id, 0l);
     }
 
-
+    @ResponseBody
     @PostMapping(value = "/get-multi-order")
     @ApiOperation(value =  "获取多个订单信息信息" , notes = "获取多个订单信息信息")
     @ApiImplicitParam(name = "ids",value = "订单列表",required = true  , paramType = "query")
@@ -127,7 +128,7 @@ public class OutOrderController {
         return outOrderService.getMultiOrderMsg(StringUtil.stringToLongList(ids) , OrderStatusEnum.CREATE.getStatus());
     }
 
-
+    @ResponseBody
     @PostMapping("/get-list")
     @ApiOperation(value =  "分页查找订单详情" , notes = "分页查找订单详情")
     public ResultUtils<OutOrderListResultVo> getList(PageDto pageDto, @Validated OutOrderKeyDto keyDto) throws Exception{
@@ -136,7 +137,7 @@ public class OutOrderController {
     }
 
 
-
+    @ResponseBody
     @PostMapping("/list-wrong-order")
     @ApiOperation(value =  "获取问题订单" , notes = "获取问题订单")
     public ResultUtils<OutOrderListResultVo> listWrongOrder(PageDto pageDto, @Validated OutOrderKeyDto keyDto) throws Exception{
@@ -145,7 +146,7 @@ public class OutOrderController {
     }
 
 
-
+    @ResponseBody
     @PostMapping("/statistics-order")
     @ApiOperation(value =  "订单统计" , notes = "订单统计")
     public ResultUtils<List<StatisticsOrderVo>> statisticsOrder(@Validated PullOrderKeyDto keyDto) throws Exception{
@@ -154,7 +155,7 @@ public class OutOrderController {
     }
 
 
-
+    @ResponseBody
     @PostMapping("/cancel")
     @ApiOperation(value =  "取消订单" , notes = "取消订单")
     @ApiImplicitParam(name = "orderId",value = "订单id",required = true  , paramType = "query")

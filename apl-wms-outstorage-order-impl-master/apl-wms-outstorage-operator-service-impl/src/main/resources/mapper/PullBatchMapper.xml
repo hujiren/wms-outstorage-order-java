@@ -60,12 +60,13 @@
         SELECT
             distinct
             pb.id batchId,
+            pb.pull_status,
             pb.batch_sn batchSn
         FROM
             pull_item pi
             LEFT JOIN pull_batch pb ON pi.batch_id = pb.id
         WHERE
-            pi.out_order_id = #{orderId} and pb.pull_status = #{pullStatus}
+            pi.out_order_id = #{orderId}
     </select>
     <select id="getBatchOrderListByOrderId" resultType="long">
         SELECT

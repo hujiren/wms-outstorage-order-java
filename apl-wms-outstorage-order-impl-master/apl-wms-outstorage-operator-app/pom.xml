@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.apl</groupId>
-    <artifactId>apl-wms-outstorage-operator-app</artifactId>
+    <artifactId>apl-wms-outstorage-operator-app3</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
@@ -20,6 +20,12 @@
         <dependency>
             <groupId>com.apl</groupId>
             <artifactId>apl-web-dependency-parent</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.apl</groupId>
+            <artifactId>apl-wms-outstorage-order-service-impl</artifactId>
             <version>1.0.0</version>
         </dependency>
 

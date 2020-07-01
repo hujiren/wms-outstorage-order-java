@@ -51,7 +51,7 @@ public interface PullBatchMapper extends BaseMapper<PullBatchPo> {
      * @Author: CY
      * @Date: 2020/6/12 15:25
      */
-    PackOrderItemListVo getPullBatchMsg(@Param("orderId") Long orderId, @Param("pullStatus") Integer pullStatus);
+    PackOrderItemListVo getPullBatchMsg(@Param("orderId") Long orderId);
 
     /**
      * @Desc:

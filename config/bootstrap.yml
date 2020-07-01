@@ -1,18 +1,18 @@
 spring:
   cloud:
-    nacos:
+    nacos-bak:
       discovery:
-        server-addr: 192.168.1.185:8828
+        server-addr: 192.168.1.185:8848
         ip: ${apl.client-address}
       config:
-        server-addr: 192.168.1.185:8828
+        server-addr: 192.168.1.185:8848
         file-extension: yml
         #prefix: nacos-provider
         shared-dataids: common.yml  # 共享公共配置信息
 
-    consul-bak:
+    consul:
       host: 192.168.1.185
-      port: 9032
+      port: 9034
       config:
         enabled: true #false禁用Consul配置，默认true
         format: YAML    # 表示consul上面文件的格式 有四种 YAML PROPERTIES KEY-VALUE FILES
@@ -24,7 +24,6 @@ spring:
     #service-registry:
     #  auto-registration:
     #    enabled：false    # 不要自动注册
-
 
 apl:
   client-address: 192.168.1.116

@@ -68,7 +68,7 @@ public interface OutOrderService extends IService<OutOrderPo> {
 
 
         /**
-         * @Desc: 获取详细
+         * @Desc: 获取订单详细信息
          * @author arran
          * @since 2020-01-07
          */
@@ -108,7 +108,7 @@ public interface OutOrderService extends IService<OutOrderPo> {
          * @Author: CY
          * @Date: 2020/6/8 10:10
          */
-        ResultUtils<List<OutOrderInfoVo>> listOperatorOrders();
+        ResultUtils<List<OutOrderInfoVo>> listOperatorOrders() throws Exception;
 
         /**
          * @Desc: 分页获取订单捡货信息
@@ -145,7 +145,5 @@ public interface OutOrderService extends IService<OutOrderPo> {
          * @Date: 2020/5/30 10:15
          */
         ResultUtils<Boolean> cancelOrder(Long orderId);
-
-
 
 }

@@ -1,6 +1,7 @@
 package com.apl.wms.outstorage.order.pojo.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.List;
@@ -11,17 +12,19 @@ public class OrderItemListVo {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
 
-    //订单编号
+    @ApiModelProperty("订单编号")
     private String orderSn;
-    //物流单号
+
+    @ApiModelProperty("物流单号")
     private String referenceSn;
 
-    //物流方式  1快递  2空运  3海运
+    @ApiModelProperty("物流方式  1 快递  2 空运  3 海运")
     private Integer toDescLogistics;
 
-    //拣货状态
+    @ApiModelProperty("拣货状态")
     private Integer pullStatus;
 
+    @ApiModelProperty("订单商品条目")
     private List<OutOrderCommodityItemInfoVo> orderItemInfos;
 
 }

@@ -92,11 +92,12 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
     RabbitSender rabbitSender;
 
 
+    // 根据订单id 获取打包信息
     @Override
     public ResultUtils<PackOrderItemListVo> getSortMsg(Long orderId) throws Exception {
 
         //获取批次信息
-        PackOrderItemListVo packOrderItemListVo = baseMapper.getPullBatchMsg(orderId, PullStatusType.PULL_DONE.getStatus());
+        PackOrderItemListVo packOrderItemListVo = baseMapper.getPullBatchMsg(orderId);
 
         if (packOrderItemListVo != null) {
 
@@ -343,7 +344,6 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         //拣货完成，填充 完成时间
         if (PullStatusType.PULL_DONE.getStatus().equals(status)) {
             pullBatchPo.setPullFinishTime(new Timestamp(System.currentTimeMillis()));
-
         }
         //分拣完成，填充完成时间，且填充分拣员id
         else if (PullStatusType.SORT_DONE.getStatus().equals(status)) {
