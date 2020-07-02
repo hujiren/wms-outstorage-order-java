@@ -118,7 +118,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
     static JoinFieldInfo joinWarehouseInfo = null; //跨项目跨库关联 仓库表 反射字段缓存
     static JoinFieldInfo joinStoreInfo = null; //跨项目跨库关联 店铺表 反射字段缓存
 
-    //保存商品
+    //保存出库订单商品
     @Override
     @Transactional
     public ResultUtils<String> saveCommodity(OutOrderMainDto outOrderMainDto, List<OutOrderCommodityItemUpdDto> outOrderCommodityItemUpdDtos, Integer isMultipleOrder) throws Exception {
@@ -129,14 +129,11 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         String lockKey = "lock-stocks-" + outOrderMainDto.getCustomerId();
         LockTool.lock(redisTemplate , lockKey , 2);
 
-        //apl-wms-outstorage-order-lib
-        // com.apl.wms.outstorage.order.lib.enumwms
-
-
         //库存锁定状态  锁定库存
         outOrderMainDto.setPullStatus(PullStatusType.STOCK_LOCK.getStatus());
         //更新主订单
         Long orderId = updateMainOrder(outOrderMainDto, outOrderMainDto.getOrderId());
+
 
         //保存商品 ,返回 需要锁定的库存数量
         PlatformOutOrderStockBo platformOutOrderStockBo = outOrderCommodityItemService.saveItems(orderId , outOrderMainDto.getWhId() , outOrderCommodityItemUpdDtos);
@@ -436,21 +433,26 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
     public ResultUtils<List<OrderItemListVo>> getMultiOrderMsg(List<Long> orderIds , Integer orderStatus) throws Exception {
 
         //获取订单列表 id SKU
-        List<OrderItemListVo> orderItemListVos = baseMapper.selectOrderByIds(orderIds , orderStatus);
+        List<OrderItemListVo> orderListVos = baseMapper.selectOrderByIds(orderIds , orderStatus);
 
-        for (OrderItemListVo orderItemListVo : orderItemListVos) {
+        JoinKeyValues joinKeyValues = JoinUtils.getLongKeys(orderIds);
+        List<OutOrderCommodityItemInfoVo> orderItems = outOrderCommodityItemService.getOrderItemsByOrderIds(joinKeyValues.toString());
+
+        LinkedHashMap<String, List<OutOrderCommodityItemInfoVo>> outOrderCommodityMaps = JoinUtils.listGrouping(orderItems, "orderId");
+
+        for (OrderItemListVo orderItemListVo : orderListVos) {
 
             //主订单对应的子订单
-            List<OutOrderCommodityItemInfoVo> orderItem = outOrderCommodityItemService.getOrderItemsByOrderId(orderItemListVo.getId());
+            List<OutOrderCommodityItemInfoVo> orderItem = outOrderCommodityMaps.get(orderItemListVo.getId().toString());
+            //orderItem = outOrderCommodityItemService.getOrderItemsByOrderId(orderItemListVo.getId());
 
             //填充商品图片
             fullCommodityImg(orderItem);
 
             orderItemListVo.setOrderItemInfos(orderItem);
-
         }
 
-        ResultUtils result = ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, orderItemListVos);
+        ResultUtils result = ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, orderListVos);
 
         return result;
     }
@@ -734,6 +736,11 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
     }
 
 
+    /**
+     * 订单统计
+     * @param keyDto
+     * @return
+     */
     @Override
     public ResultUtils<List<StatisticsOrderVo>> statisticsOrder(PullOrderKeyDto keyDto) {
 
@@ -741,7 +748,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
         List<OutOrderInfoVo> outOrderInfo;
 
-        keyDto.setPullStatus(null);
+        keyDto.setPullStatus(null);//拣货状态
 
         outOrderInfo = baseMapper.pageOrderPull(null, keyDto);
 
@@ -897,7 +904,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
      * @Desc: 更新主订单
      * @Author: CY
      * @Date: 2020/6/8 18:20
-     */
+     */ //有可能是在现有的订单上增加保存商品, 有可能是新建的订单, 有创建订单操作和更新订单操作
     private Long updateMainOrder(OutOrderMainDto outOrderMainDto, Long orderId) {
         //新建主订单
         if (orderId == 0) {

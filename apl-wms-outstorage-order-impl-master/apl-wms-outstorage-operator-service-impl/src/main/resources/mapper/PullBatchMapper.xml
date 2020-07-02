@@ -82,7 +82,7 @@
 
     <select id="getBatchOrderList" resultType="long">
         SELECT
-            pi.out_order_id orderId
+            distinct pi.out_order_id orderId
         FROM
             pull_batch pb
             LEFT JOIN pull_item pi on pb.id = pi.batch_id

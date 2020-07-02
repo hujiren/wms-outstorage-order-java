@@ -150,6 +150,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         if (CollectionUtils.isEmpty(pullItemInfoVos)) {
             return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, pullItemMsgVos);
         }
+
         //缓存对象
         JoinCommodity joinCommodity = new JoinCommodity(1, warehouseFeign, redisTemplate);
         JoinStorageLocal joinStorageLocal = new JoinStorageLocal(1, warehouseFeign, redisTemplate);

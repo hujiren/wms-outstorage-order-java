@@ -10,8 +10,7 @@
           out_order_id, 
           commodity_id, 
           storage_local_id,
-          pull_qty,
-          inner_org_id
+          pull_qty
         FROM
           pull_item
         where

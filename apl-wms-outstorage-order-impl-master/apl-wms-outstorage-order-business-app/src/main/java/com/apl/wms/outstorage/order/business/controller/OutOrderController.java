@@ -64,7 +64,6 @@ public class OutOrderController {
         outOrderMainDto.setOrderFrom(2); //订单来源:手动下单
         ResultUtils<String> result = outOrderService.saveCommodity(outOrderMainDto , outOrderCommodityItemUpdDtos, 0);
 
-        //System.out.println("saveCommodity code:"+result.getCode()+"  msg:"+result.getMsg());
         return result;
     }
 
