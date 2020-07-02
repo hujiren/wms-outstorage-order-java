@@ -12,7 +12,7 @@ spring:
 
     consul:
       host: 192.168.1.185
-      port: 9034
+      port: 9032
       config:
         enabled: true #false禁用Consul配置，默认true
         format: YAML    # 表示consul上面文件的格式 有四种 YAML PROPERTIES KEY-VALUE FILES
@@ -26,4 +26,4 @@ spring:
     #    enabled：false    # 不要自动注册
 
 apl:
-  client-address: 192.168.1.116
+  client-address: 192.168.1.102
