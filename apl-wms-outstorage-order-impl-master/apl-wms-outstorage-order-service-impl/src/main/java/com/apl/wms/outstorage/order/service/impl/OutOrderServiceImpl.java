@@ -424,10 +424,18 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS , orderItemListVo);
     }
 
+
+    /**
+     * 获取多个订单信息
+     * @param orderIds
+     * @param orderStatus
+     * @return
+     * @throws Exception
+     */
     @Override
     public ResultUtils<List<OrderItemListVo>> getMultiOrderMsg(List<Long> orderIds , Integer orderStatus) throws Exception {
 
-        //获取订单列表
+        //获取订单列表 id SKU
         List<OrderItemListVo> orderItemListVos = baseMapper.selectOrderByIds(orderIds , orderStatus);
 
         for (OrderItemListVo orderItemListVo : orderItemListVos) {
@@ -442,8 +450,9 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
         }
 
+        ResultUtils result = ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, orderItemListVos);
 
-        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS , orderItemListVos);
+        return result;
     }
 
 
@@ -567,6 +576,14 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, outOrderListResultVo);
     }
 
+
+    /**
+     * 获取问题订单
+     * @param pageDto
+     * @param keyDto
+     * @return
+     * @throws Exception
+     */
     @Override
     public ResultUtils<OutOrderListResultVo> listWrongOrder(PageDto pageDto, OutOrderKeyDto keyDto) throws Exception {
 
@@ -580,13 +597,14 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
             page.setSize(pageDto.getPageSize());
         }
 
-        List<OutOrderListVo> list = baseMapper.listWrongOrder(page, keyDto, 1);
+        List<OutOrderListVo> list = baseMapper.listWrongOrder(page, keyDto, 2);
 
         if (CollectionUtils.isEmpty(list)) {
             return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, null);
         }
 
         JoinKeyValues joinKeyValues = JoinUtils.getKeys(list, "id", Long.class);
+
         //查找多个订单商品项目总表
         List<OutOrderCommodityItemInfoVo> commodityItemVos = outOrderCommodityItemService.getOrderItemsByOrderIds(joinKeyValues.getSbKeys().toString());
 

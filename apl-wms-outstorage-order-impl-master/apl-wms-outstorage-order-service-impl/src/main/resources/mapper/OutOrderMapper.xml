@@ -86,8 +86,8 @@
             <if test="kd.startStamp != null and kd.endStamp != null">
                 and oo.cr_time between #{kd.startStamp} and #{kd.endStamp}
             </if>
-            <if test="kd.pullStatus != null">
-                oo.pull_status = #{kd.pullStatus}
+            <if test="kd.orderStatus != null">
+                oo.order_status = #{kd.orderStatus}
             </if>
             <if test="kd.whId != null">
                 and oo.wh_id = #{kd.whId}
@@ -95,14 +95,11 @@
             <if test="kd.customerId != null">
                 and oo.customer_id = #{kd.customerId}
             </if>
-            <if test="kd.pullOperatorId != null">
-                and oo.pull_operator_id = #{kd.pullOperatorId}
-            </if>
             <if test="kd.orderSn != null and kd.orderSn != ''">
                 and locate(#{kd.orderSn} , oo.order_sn) > 0
             </if>
-            <if test="kd.commoditySku != null and kd.commoditySku != ''">
-                and locate(#{kd.commoditySku} , ooci.commodity_sku) > 0
+            <if test="kd.commodityName != null and kd.commodityName != ''">
+                and locate(#{kd.commodityName} , ooci.commodity_sku) > 0
             </if>
             <if test="kd.commodityName != null and kd.commodityName != ''">
                 and locate(#{kd.commodityName} , ooci.commodity_name) > 0

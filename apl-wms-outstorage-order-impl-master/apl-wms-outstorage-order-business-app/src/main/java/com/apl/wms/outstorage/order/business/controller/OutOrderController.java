@@ -121,7 +121,7 @@ public class OutOrderController {
 
     @ResponseBody
     @PostMapping(value = "/get-multi-order")
-    @ApiOperation(value =  "获取多个订单信息信息" , notes = "获取多个订单信息信息")
+    @ApiOperation(value =  "获取多个订单信息" , notes = "获取多个订单信息")
     @ApiImplicitParam(name = "ids",value = "订单列表",required = true  , paramType = "query")
     public ResultUtils<List<OrderItemListVo>> getMultiOrderMsg(@NotNull(message = "ids 不能为空")String ids) throws Exception {
 
@@ -142,7 +142,9 @@ public class OutOrderController {
     @ApiOperation(value =  "获取问题订单" , notes = "获取问题订单")
     public ResultUtils<OutOrderListResultVo> listWrongOrder(PageDto pageDto, @Validated OutOrderKeyDto keyDto) throws Exception{
 
-        return outOrderService.listWrongOrder(pageDto , keyDto);
+        ResultUtils<OutOrderListResultVo> outOrderListResultVoResultUtils = outOrderService.listWrongOrder(pageDto, keyDto);
+
+        return outOrderListResultVoResultUtils;
     }
 
 
