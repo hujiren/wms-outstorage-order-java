@@ -49,9 +49,6 @@ public class OutstorageOrderSnGenUtils {
     @Autowired
     InnerFeign innerFeign;
 
-    //@Autowired
-    //LockTool lockTool;
-
     @Value("${apl.wms.orderSnCacheTime:60}")
     public Integer orderSnCacheTime;
 

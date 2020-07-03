@@ -35,5 +35,5 @@ public interface PullPackItemMapper extends BaseMapper<PullPackItemPo> {
      */
     List<PullPackItemListVo> getList(Page page, @Param("kd") PullPackItemKeyDto keyDto);
 
-
+    void seata1();
 }

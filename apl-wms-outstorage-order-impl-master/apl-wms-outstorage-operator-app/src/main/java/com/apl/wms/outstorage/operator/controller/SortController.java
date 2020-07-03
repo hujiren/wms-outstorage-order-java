@@ -4,14 +4,12 @@ import com.apl.lib.utils.ResultUtils;
 import com.apl.wms.outstorage.operator.service.PullBatchService;
 import com.apl.wms.outstorage.operator.pojo.dto.SortOrderSubmitDto;
 import com.apl.wms.outstorage.operator.pojo.vo.PackOrderItemListVo;
+import com.apl.wms.outstorage.operator.service.PullPackItemService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/order-sort")
@@ -22,9 +20,12 @@ public class SortController {
     @Autowired
     PullBatchService pullBatchService;
 
+    @Autowired
+    PullPackItemService  pullPackItemService;
+
     @PostMapping("/get-sort-msg")
     @ApiOperation(value =  "获取分拣信息" , notes = "根据订单id 获取分拣信息，包含批次信息，订单信息，以及订单子项下单数量")
-    public ResultUtils<PackOrderItemListVo> getSortMsg(Long orderId) throws Exception {
+        public ResultUtils<PackOrderItemListVo> getSortMsg(Long orderId) throws Exception {
 
         return pullBatchService.getSortMsg(orderId);
     }
@@ -35,6 +36,20 @@ public class SortController {
     public ResultUtils submitSortMsg(@RequestBody SortOrderSubmitDto sortOrderSubmitDto) throws Exception {
 
         return pullBatchService.submitSortMsg(sortOrderSubmitDto);
+    }
+
+    @GetMapping("/seata2-commit")
+    @ApiOperation(value =  "seata2-commit")
+    public Integer seata2Commit() {
+
+        return pullPackItemService.seata2Commit();
+    }
+
+    @GetMapping("/seata2-rollback")
+    @ApiOperation(value =  "seata2-rollback")
+    public Integer seata2Rollback() {
+
+        return pullPackItemService.seata2Rollback();
     }
 
 

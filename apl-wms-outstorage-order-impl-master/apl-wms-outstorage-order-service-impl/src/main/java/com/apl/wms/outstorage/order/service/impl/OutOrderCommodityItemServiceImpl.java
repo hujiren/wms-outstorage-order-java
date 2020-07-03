@@ -39,8 +39,10 @@ public class OutOrderCommodityItemServiceImpl extends ServiceImpl<OutOrderCommod
     //状态code枚举
     enum OutOrderCommodityItemServiceCode {
 
-        OUT_ORDER_ITEM_NOT_EXIST("OUT_ORDER_ITEM_NOT_EXIST", "出库商品项目不存在"),
+        COMMODITY_NOT_EXIST("COMMODITY_NOT_EXIST", "商品不存在"),
         UPDATE_OUT_ORDER_ITEM_ERROR("UPDATE_OUT_ORDER_ITEM_ERROR", "更新出库商品项目失败");;
+
+
 
         private String code;
         private String msg;
@@ -75,6 +77,13 @@ public class OutOrderCommodityItemServiceImpl extends ServiceImpl<OutOrderCommod
     }
 
 
+    /**
+     * 保存商品
+     * @param orderId
+     * @param whId
+     * @param commodityItemsDto
+     * @return
+     */
     @Override
     public PlatformOutOrderStockBo saveItems(Long orderId , Long whId , List<OutOrderCommodityItemUpdDto> commodityItemsDto) {
 
@@ -91,7 +100,7 @@ public class OutOrderCommodityItemServiceImpl extends ServiceImpl<OutOrderCommod
                 CommodityCacheBo commodityCacheBo = joinCommodity.getEntity(commodityItemDto.getCommodityId());
                 if (commodityCacheBo == null) {
                     //商品不存在
-                    throw new AplException(CommonStatusCode.SAVE_FAIL);
+                    throw new AplException(OutOrderCommodityItemServiceCode.COMMODITY_NOT_EXIST.code, OutOrderCommodityItemServiceCode.COMMODITY_NOT_EXIST.msg);
                 }
                 //商品持久化对象
                 entity.setCommoditySpec(commodityItemDto.getCommoditySpec());

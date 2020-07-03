@@ -132,7 +132,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
     public ResultUtils<List<OrderItemListVo>> getPickMsgSortByOrder(Long batchId) throws Exception {
 
         List<Long> orderIds = baseMapper.getBatchOrderList(batchId);
-
+        System.out.println(orderIds.toString());
         return outOrderService.getMultiOrderMsg(orderIds, OrderStatusEnum.CREATE.getStatus());
 
     }

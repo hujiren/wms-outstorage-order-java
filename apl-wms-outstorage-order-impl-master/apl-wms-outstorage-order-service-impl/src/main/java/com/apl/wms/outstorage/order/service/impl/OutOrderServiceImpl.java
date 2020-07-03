@@ -154,7 +154,6 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
             rabbitSender.send("outStorageOrderCreateCountLockExchange" ,"outStorageOrderCreateCountLockQueue" , platformOutOrderStockBo);
         }
 
-
         return ResultUtils.APPRESULT(CommonStatusCode.SAVE_SUCCESS , orderId.toString());
 
     }
@@ -435,7 +434,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         List<OrderItemListVo> orderListVos = baseMapper.selectOrderByIds(orderIds , orderStatus);
 
         JoinKeyValues joinKeyValues = JoinUtils.getLongKeys(orderIds);
-        List<OutOrderCommodityItemInfoVo> orderItems = outOrderCommodityItemService.getOrderItemsByOrderIds(joinKeyValues.toString());
+        List<OutOrderCommodityItemInfoVo> orderItems = outOrderCommodityItemService.getOrderItemsByOrderIds(joinKeyValues.getSbKeys().toString());
 
         LinkedHashMap<String, List<OutOrderCommodityItemInfoVo>> outOrderCommodityMaps = JoinUtils.listGrouping(orderItems, "orderId");
 
