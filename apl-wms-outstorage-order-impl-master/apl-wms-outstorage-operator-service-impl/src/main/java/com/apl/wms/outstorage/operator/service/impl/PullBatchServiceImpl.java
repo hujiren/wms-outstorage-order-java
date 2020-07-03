@@ -99,6 +99,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         //获取批次信息
         PackOrderItemListVo packOrderItemListVo = baseMapper.getPullBatchMsg(orderId);
 
+
         if (packOrderItemListVo != null) {
 
             //获取打包 订单信息
@@ -142,6 +143,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
     public ResultUtils<List<PullItemMsgVo>> getPickMsgSortByCommodity(Long batchId) throws Exception {
 
         List<PullItemMsgVo> pullItemMsgVos = new ArrayList<>();
+
         //批次对应的 下架分组信息 key:商品id value:商品对应的库位列表
 
         List<PullItemInfoVo> pullItemInfoVoList = pullItemService.listPullItemByBatchId(batchId);

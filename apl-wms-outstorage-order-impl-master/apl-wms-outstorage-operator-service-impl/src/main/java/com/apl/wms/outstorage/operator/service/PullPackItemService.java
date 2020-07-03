@@ -69,7 +69,4 @@ public interface PullPackItemService extends IService<PullPackItemPo> {
      */
     void batchAddPullPackItem(Long orderId, List<PackOrderSubmitDto.PackMsg> packMsgs);
 
-    Integer seata2Commit();
-
-    Integer seata2Rollback();
 }

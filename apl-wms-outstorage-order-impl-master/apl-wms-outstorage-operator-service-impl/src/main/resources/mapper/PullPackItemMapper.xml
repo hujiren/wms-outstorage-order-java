@@ -38,9 +38,7 @@
         order by id desc
     </select>
 
-    <update id="seata1">
-        update seata01 set name='bbb' where id=1
-    </update>
+
 
 
 </mapper>
