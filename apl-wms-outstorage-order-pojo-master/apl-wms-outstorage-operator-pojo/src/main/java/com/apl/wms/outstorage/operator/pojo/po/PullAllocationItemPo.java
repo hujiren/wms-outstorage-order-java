@@ -24,18 +24,13 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("pull_item")
-@ApiModel(value="商品下架 持久化对象", description="商品下架 持久化对象")
-public class PullItemPo extends Model<PullItemPo> {
+@TableName("pull_allocation_item")
+@ApiModel(value="分配的库位库存  持久化对象", description="分配的库位库存 持久化对象")
+public class PullAllocationItemPo extends Model<PullAllocationItemPo> {
 
 
     @TableId(value = "id", type = IdType.INPUT)
     private Long id;
-
-    @ApiModelProperty(name = "batchId" , value = "拣货批次id" , required = true)
-    @NotNull(message = "拣货批次id不能为空")
-    @Min(value = 0 , message = "拣货批次id不不合法")
-    private Long batchId;
 
     @ApiModelProperty(name = "outOrderId" , value = "出库订单id" , required = true)
     @NotNull(message = "出库订单id不能为空")
@@ -55,8 +50,7 @@ public class PullItemPo extends Model<PullItemPo> {
     @ApiModelProperty(name = "pullQty" , value = "拣货数量" , required = true)
     @NotNull(message = "拣货数量不能为空")
     @Min(value = 0 , message = "拣货数量不合法")
-    private Integer pullQty;
-
+    private Integer allocationQty;
 
 
     private static final long serialVersionUID=1L;

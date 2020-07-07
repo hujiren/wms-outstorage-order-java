@@ -17,7 +17,7 @@ import java.io.Serializable;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="商品下架 查询参数", description="商品下架 查询参数")
-public class PullItemKeyDto implements Serializable {
+public class PullAllocationItemKeyDto implements Serializable {
 
     private static final long serialVersionUID=1L;
 

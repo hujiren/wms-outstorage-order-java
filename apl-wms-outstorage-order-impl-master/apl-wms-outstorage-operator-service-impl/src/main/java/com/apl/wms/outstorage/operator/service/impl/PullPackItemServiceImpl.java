@@ -14,7 +14,6 @@ import com.apl.wms.outstorage.operator.service.PullPackItemService;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.seata.spring.annotation.GlobalTransactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -129,31 +128,6 @@ public class PullPackItemServiceImpl extends ServiceImpl<PullPackItemMapper, Pul
 
             baseMapper.insert(pullPackItemPo);
         }
-
-    }
-
-
-    @GlobalTransactional
-    public Integer seata2Commit(){
-
-        baseMapper.seata1();
-        warehouseFeign.seata2Commit();
-
-        return 1;
-    }
-
-    @GlobalTransactional
-    public Integer seata2Rollback(){
-
-        warehouseFeign.seata2Rollback();
-
-        baseMapper.seata1();
-
-        int a=1;
-
-        a=1/0;
-
-        return 1;
 
     }
 

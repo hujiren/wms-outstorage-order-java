@@ -139,37 +139,37 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
 
     @Override
-    public ResultUtils<List<PullItemMsgVo>> getPickMsgSortByCommodity(Long batchId) throws Exception {
+    public ResultUtils<List<PullAllocationItemMsgVo>> getPickMsgSortByCommodity(Long batchId) throws Exception {
 
-        List<PullItemMsgVo> pullItemMsgVos = new ArrayList<>();
+        List<PullAllocationItemMsgVo> pullAllocationItemMsgVos = new ArrayList<>();
         //批次对应的 下架分组信息 key:商品id value:商品对应的库位列表
 
-        List<PullItemInfoVo> pullItemInfoVoList = pullItemService.listPullItemByBatchId(batchId);
-        Map<String, List<PullItemInfoVo>> pullItemInfoVos = JoinUtils.listGrouping(pullItemInfoVoList, "commodityId");
+        List<PullAllocationItemInfoVo> pullAllocationItemInfoVoList = pullItemService.listPullItemByBatchId(batchId);
+        Map<String, List<PullAllocationItemInfoVo>> pullItemInfoVos = JoinUtils.listGrouping(pullAllocationItemInfoVoList, "commodityId");
 
         if (CollectionUtils.isEmpty(pullItemInfoVos)) {
-            return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, pullItemMsgVos);
+            return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, pullAllocationItemMsgVos);
         }
 
         //缓存对象
         JoinCommodity joinCommodity = new JoinCommodity(1, warehouseFeign, redisTemplate);
         JoinStorageLocal joinStorageLocal = new JoinStorageLocal(1, warehouseFeign, redisTemplate);
 
-        for (Map.Entry<String, List<PullItemInfoVo>> pullItemInfoEntry : pullItemInfoVos.entrySet()) {
+        for (Map.Entry<String, List<PullAllocationItemInfoVo>> pullItemInfoEntry : pullItemInfoVos.entrySet()) {
 
             //构建商品显示信息
-            PullItemMsgVo pullItemMsgVo = buildPullItemMsg(joinCommodity, pullItemInfoEntry.getKey());
+            PullAllocationItemMsgVo pullAllocationItemMsgVo = buildPullItemMsg(joinCommodity, pullItemInfoEntry.getKey());
 
-            pullItemMsgVos.add(pullItemMsgVo);
+            pullAllocationItemMsgVos.add(pullAllocationItemMsgVo);
 
             //构建库位信息
-            List<PullItemMsgVo.StorageLocalMsg> storageLocalMsgList = buildStorageLocalMsg(joinStorageLocal, pullItemInfoEntry);
+            List<PullAllocationItemMsgVo.StorageLocalMsg> storageLocalMsgList = buildStorageLocalMsg(joinStorageLocal, pullItemInfoEntry);
 
-            pullItemMsgVo.setStorageLocalMsgList(storageLocalMsgList);
+            pullAllocationItemMsgVo.setStorageLocalMsgList(storageLocalMsgList);
 
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, pullItemMsgVos);
+        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, pullAllocationItemMsgVos);
     }
 
 
@@ -366,17 +366,17 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
      * @Author: CY
      * @Date: 2020/6/10 14:54
      */
-    private PullItemMsgVo buildPullItemMsg(JoinCommodity joinCommodity, String pullItemId) {
+    private PullAllocationItemMsgVo buildPullItemMsg(JoinCommodity joinCommodity, String pullItemId) {
 
-        PullItemMsgVo pullItemMsgVo = new PullItemMsgVo();
+        PullAllocationItemMsgVo pullAllocationItemMsgVo = new PullAllocationItemMsgVo();
 
         CommodityCacheBo entity = joinCommodity.getEntity(Long.parseLong(pullItemId));
 
-        pullItemMsgVo.setCommodityId(Long.parseLong(pullItemId));
-        pullItemMsgVo.setSku(entity.getSku());
-        pullItemMsgVo.setImg(entity.getImgUrl());
-        pullItemMsgVo.setCommodityName(entity.getCommodityName());
-        return pullItemMsgVo;
+        pullAllocationItemMsgVo.setCommodityId(Long.parseLong(pullItemId));
+        pullAllocationItemMsgVo.setSku(entity.getSku());
+        pullAllocationItemMsgVo.setImg(entity.getImgUrl());
+        pullAllocationItemMsgVo.setCommodityName(entity.getCommodityName());
+        return pullAllocationItemMsgVo;
     }
 
     /**
@@ -384,21 +384,21 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
      * @Author: CY
      * @Date: 2020/6/10 14:55
      */
-    private List<PullItemMsgVo.StorageLocalMsg> buildStorageLocalMsg(JoinStorageLocal joinStorageLocal, Map.Entry<String, List<PullItemInfoVo>> pullItemInfoEntry) {
+    private List<PullAllocationItemMsgVo.StorageLocalMsg> buildStorageLocalMsg(JoinStorageLocal joinStorageLocal, Map.Entry<String, List<PullAllocationItemInfoVo>> pullItemInfoEntry) {
 
-        List<PullItemInfoVo> pullItemInfoVoList = pullItemInfoEntry.getValue();
+        List<PullAllocationItemInfoVo> pullAllocationItemInfoVoList = pullItemInfoEntry.getValue();
 
-        List<PullItemMsgVo.StorageLocalMsg> storageLocalMsgList = new ArrayList<>();
+        List<PullAllocationItemMsgVo.StorageLocalMsg> storageLocalMsgList = new ArrayList<>();
 
-        for (PullItemInfoVo pullItemInfoVo : pullItemInfoVoList) {
+        for (PullAllocationItemInfoVo pullAllocationItemInfoVo : pullAllocationItemInfoVoList) {
 
-            PullItemMsgVo.StorageLocalMsg storageLocalMsg = new PullItemMsgVo.StorageLocalMsg();
-            storageLocalMsg.setStorageLocalId(pullItemInfoVo.getStorageLocalId());
-            StorageLocalCacheBo storageLocalEntity = joinStorageLocal.getEntity(pullItemInfoVo.getStorageLocalId());
+            PullAllocationItemMsgVo.StorageLocalMsg storageLocalMsg = new PullAllocationItemMsgVo.StorageLocalMsg();
+            storageLocalMsg.setStorageLocalId(pullAllocationItemInfoVo.getStorageLocalId());
+            StorageLocalCacheBo storageLocalEntity = joinStorageLocal.getEntity(pullAllocationItemInfoVo.getStorageLocalId());
             if (storageLocalEntity != null) {
                 storageLocalMsg.setStorageName(storageLocalEntity.getStorageLocalName());
             }
-            storageLocalMsg.setCount(pullItemInfoVo.getPullQty());
+            storageLocalMsg.setCount(pullAllocationItemInfoVo.getAllocationQty());
             storageLocalMsgList.add(storageLocalMsg);
 
         }
@@ -423,10 +423,10 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         Set<Long> orderIds = new HashSet<>();
 
         //根据批次 ， 获取批次项目 对应的库位信息，以及商品数量
-        List<PullItemInfoVo> pullItemInfoVoList = pullItemService.listPullItemByBatchId(pullBatchSubmit.getBatchId());
+        List<PullAllocationItemInfoVo> pullAllocationItemInfoVoList = pullItemService.listPullItemByBatchId(pullBatchSubmit.getBatchId());
 
         //比对提交的商品数量 与 批次对应的商品数量是否一致，不一致提示提交的数据错误
-        if (commodityCounts.size() != pullItemInfoVoList.size()) {
+        if (commodityCounts.size() != pullAllocationItemInfoVoList.size()) {
             throw new AplException(PullBatchServiceCode.SUBMIT_DATA_ERROR.code, PullBatchServiceCode.SUBMIT_DATA_ERROR.msg);
         }
 
@@ -434,7 +434,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         for (PullBatchSubmitDto.CommodityCount commodityCount : commodityCounts) {
 
             //校验提交参数
-            validateCommodityCount(orderIds, pullItemInfoVoList, commodityCount);
+            validateCommodityCount(orderIds, pullAllocationItemInfoVoList, commodityCount);
             //构建库存数量 ， 用于减库存
             buildStockCount(stockCounts, commodityCount);
 
@@ -447,18 +447,18 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
      * @Author: CY
      * @Date: 2020/6/11 10:19
      */
-    private void validateCommodityCount(Set<Long> orderIds, List<PullItemInfoVo> pullItemInfoVos, PullBatchSubmitDto.CommodityCount commodityCount) {
+    private void validateCommodityCount(Set<Long> orderIds, List<PullAllocationItemInfoVo> pullAllocationItemInfoVos, PullBatchSubmitDto.CommodityCount commodityCount) {
 
-        PullItemInfoVo pullItemInfo = null;
+        PullAllocationItemInfoVo pullItemInfo = null;
 
-        for (PullItemInfoVo pullItemInfoVo : pullItemInfoVos) {
+        for (PullAllocationItemInfoVo pullAllocationItemInfoVo : pullAllocationItemInfoVos) {
             //判断提交的数据 是否在数据库有保存
-            if (pullItemInfoVo.getCommodityId().equals(commodityCount.getCommodityId())
-                    && pullItemInfoVo.getStorageLocalId().equals(commodityCount.getStorageLocalId())
-                    && pullItemInfoVo.getOutOrderId().equals(commodityCount.getOrderId())) {
+            if (pullAllocationItemInfoVo.getCommodityId().equals(commodityCount.getCommodityId())
+                    && pullAllocationItemInfoVo.getStorageLocalId().equals(commodityCount.getStorageLocalId())
+                    && pullAllocationItemInfoVo.getOutOrderId().equals(commodityCount.getOrderId())) {
 
-                pullItemInfo = pullItemInfoVo;
-                orderIds.add(pullItemInfoVo.getOutOrderId());
+                pullItemInfo = pullAllocationItemInfoVo;
+                orderIds.add(pullAllocationItemInfoVo.getOutOrderId());
                 break;
             }
         }
@@ -469,7 +469,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         }
 
         //提交数量不正确，提示前端
-        if (commodityCount.getSubmitCount() - pullItemInfo.getPullQty() != 0) {
+        if (commodityCount.getSubmitCount() - pullItemInfo.getAllocationQty() != 0) {
             throw new AplException(PullBatchServiceCode.SUBMIT_DATA_ERROR.code, PullBatchServiceCode.SUBMIT_DATA_ERROR.msg);
         }
 

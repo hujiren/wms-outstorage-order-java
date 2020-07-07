@@ -27,9 +27,9 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("pull_item")
+@TableName("pull_allocation_item")
 @ApiModel(value = "商品下架 持久化对象", description = "商品下架 持久化对象")
-public class PullItemInfoVo implements Serializable {
+public class PullAllocationItemInfoVo implements Serializable {
 
 
     @TableId(value = "id", type = IdType.UUID)
@@ -58,7 +58,7 @@ public class PullItemInfoVo implements Serializable {
     @ApiModelProperty(name = "pullQty", value = "拣货数量", required = true)
     @NotNull(message = "拣货数量不能为空")
     @Min(value = 0, message = "拣货数量不合法")
-    private Integer pullQty;
+    private Integer allocationQty;
 
 
 

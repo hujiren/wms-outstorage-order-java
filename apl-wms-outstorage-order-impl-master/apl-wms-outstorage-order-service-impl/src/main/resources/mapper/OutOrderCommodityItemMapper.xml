@@ -21,6 +21,7 @@
     </select>
 
 
+
     <select id="getOrderItemsByOrderIds" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderCommodityItemInfoVo">
         SELECT
             id,
@@ -57,4 +58,37 @@
         delete from out_order_commodity_item where order_id = #{orderId}
     </delete>
 
+
+    <select id="getOrdersByAllocationWarehouse" resultType="com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOrderCommodityBo">
+        SELECT
+            order_id,
+            commodity_id,
+            order_qty
+        FROM
+            out_order_commodity_item
+        WHERE
+            1=1
+        <if test="minId != null and maxId != null">
+            AND order_id BETWEEN ${minId} AND ${maxId}
+        </if>
+            and order_id in (${orderIds})
+            order by order_id desc
+    </select>
+
+
+    <select id="getOutOrderEntityByIds" resultType="com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo">
+        select
+            id as orderId,
+            wh_id
+        from
+            out_order
+        WHERE
+        1=1
+        <if test="minId != null and maxId != null">
+            AND id BETWEEN ${minId} AND ${maxId}
+        </if>
+        and id in (${orderIds})
+        order by id desc
+
+    </select>
 </mapper>

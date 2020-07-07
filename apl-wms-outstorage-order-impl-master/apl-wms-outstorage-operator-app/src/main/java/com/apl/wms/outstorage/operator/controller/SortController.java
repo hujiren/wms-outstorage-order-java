@@ -38,19 +38,5 @@ public class SortController {
         return pullBatchService.submitSortMsg(sortOrderSubmitDto);
     }
 
-    @GetMapping("/seata2-commit")
-    @ApiOperation(value =  "seata2-commit")
-    public Integer seata2Commit() {
-
-        return pullPackItemService.seata2Commit();
-    }
-
-    @GetMapping("/seata2-rollback")
-    @ApiOperation(value =  "seata2-rollback")
-    public Integer seata2Rollback() {
-
-        return pullPackItemService.seata2Rollback();
-    }
-
 
 }

@@ -1,6 +1,7 @@
 package com.apl.wms.outstorage.order.service;
 
 import com.apl.lib.utils.ResultUtils;
+import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
 import com.apl.wms.outstorage.order.lib.pojo.dto.OutOrderCommodityItemUpdDto;
 import com.apl.wms.outstorage.order.pojo.po.OutOrderCommodityItemPo;
 import com.apl.wms.outstorage.order.pojo.vo.OutOrderCommodityItemInfoVo;
@@ -44,6 +45,8 @@ public interface OutOrderCommodityItemService extends IService<OutOrderCommodity
         PlatformOutOrderStockBo saveItems(Long orderId , Long whId , List<OutOrderCommodityItemUpdDto> outOrderCommodityItemUpdDtos) throws Exception;
 
 
+
+
         /**
          * @Desc: 删除行
          * @author arran
@@ -65,5 +68,15 @@ public interface OutOrderCommodityItemService extends IService<OutOrderCommodity
          * @Date: 2020/6/9 10:48
          */
         List<PullBatchOrderItemBo> getPullBatchOrderItem(List<Long> orderIds);
+
+
+        /**
+         * 批量获取商品id和下单数量
+         * @param: 多个订单id
+         * @return
+         */
+        ResultUtils<List<AllocationWarehouseOutOrderBo>> getOrdersByAllocationWarehouse(List<Long> orderIds) throws Exception;
+
+
 
 }

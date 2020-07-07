@@ -44,7 +44,7 @@
             pb.cr_time
         FROM
             pull_batch pb
-            LEFT JOIN pull_item pi ON pb.id = pi.batch_id
+            LEFT JOIN pull_allocation_item pi ON pb.id = pi.batch_id
             LEFT JOIN out_order oo ON pi.out_order_id = oo.id
             <if test="keyword != null and keyword != ''">
                 AND locate(#{keyword}, oo.order_sn)>0
@@ -63,7 +63,7 @@
             pb.pull_status,
             pb.batch_sn batchSn
         FROM
-            pull_item pi
+            pull_allocation_item pi
             LEFT JOIN pull_batch pb ON pi.batch_id = pb.id
         WHERE
             pi.out_order_id = #{orderId}
@@ -72,8 +72,8 @@
         SELECT
             pi1.out_order_id orderId
         FROM
-            pull_item pi1,
-            pull_item pi2
+            pull_allocation_item pi1,
+            pull_allocation_item pi2
         WHERE
             pi1.out_order_id = #{orderId}
             AND pi1.batch_id = pi2.batch_id
@@ -85,7 +85,7 @@
             distinct pi.out_order_id orderId
         FROM
             pull_batch pb
-            LEFT JOIN pull_item pi on pb.id = pi.batch_id
+            LEFT JOIN pull_allocation_item pi on pb.id = pi.batch_id
         WHERE
             pb.id = #{batchId}
     </select>

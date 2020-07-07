@@ -2,6 +2,8 @@ package com.apl.wms.outstorage.operator.controller;
 
 
 import com.apl.lib.utils.ResultUtils;
+import com.apl.wms.outstorage.order.pojo.vo.OutOrderCommodityItemInfoVo;
+import com.apl.wms.outstorage.order.service.OutOrderCommodityItemService;
 import com.apl.wms.outstorage.order.service.OutOrderService;
 import com.apl.wms.outstorage.order.pojo.vo.OrderItemListVo;
 import com.apl.wms.outstorage.operator.pojo.dto.PackOrderSubmitDto;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @RestController
 @RequestMapping("/pack")
@@ -30,6 +33,8 @@ public class PackController {
     @Autowired
     OutOrderService outOrderService;
 
+    @Autowired
+    OutOrderCommodityItemService outOrderCommodityItemService;
 
     @PostMapping(value = "/get-order-pack")
     @ApiOperation(value =  "获取订单打包详细" , notes = "获取订单打包详细")
@@ -38,8 +43,6 @@ public class PackController {
 
         return outOrderService.getOrderPackMsg(orderId);
     }
-
-
 
     @PostMapping("/submit-pack")
     @ApiOperation(value =  "提交打包数据" , notes = "提交打包数据")

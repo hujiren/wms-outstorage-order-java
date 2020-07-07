@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class PullItemMsgVo {
+public class PullAllocationItemMsgVo {
 
 
     private Long commodityId;

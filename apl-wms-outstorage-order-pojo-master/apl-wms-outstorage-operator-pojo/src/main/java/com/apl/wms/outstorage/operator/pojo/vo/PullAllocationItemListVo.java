@@ -24,7 +24,7 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class PullItemListVo implements Serializable {
+public class PullAllocationItemListVo implements Serializable {
 
 
     @TableId(value = "id", type = IdType.UUID)
@@ -53,7 +53,7 @@ public class PullItemListVo implements Serializable {
     @ApiModelProperty(name = "pullQty", value = "拣货数量", required = true)
     @NotNull(message = "拣货数量不能为空")
     @Min(value = 0, message = "拣货数量不合法")
-    private Integer pullQty;
+    private Integer allocationQty;
 
 
     private static final long serialVersionUID = 1L;

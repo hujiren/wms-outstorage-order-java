@@ -9,7 +9,7 @@ import com.apl.wms.outstorage.operator.pojo.dto.SortOrderSubmitDto;
 import com.apl.wms.outstorage.operator.pojo.po.PullBatchPo;
 import com.apl.wms.outstorage.operator.pojo.vo.PackOrderItemListVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PullBatchListVo;
-import com.apl.wms.outstorage.operator.pojo.vo.PullItemMsgVo;
+import com.apl.wms.outstorage.operator.pojo.vo.PullAllocationItemMsgVo;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -53,7 +53,7 @@ public interface PullBatchService extends IService<PullBatchPo> {
          * @Author: CY
          * @Date: 2020/6/10 11:59
          */
-        ResultUtils<List<PullItemMsgVo>> getPickMsgSortByCommodity(Long batchId) throws Exception;
+        ResultUtils<List<PullAllocationItemMsgVo>> getPickMsgSortByCommodity(Long batchId) throws Exception;
 
         /**
          * @Desc: 创建收货批次
