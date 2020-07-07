@@ -5,7 +5,6 @@ import com.apl.wms.outstorage.operator.service.PullBatchService;
 import com.apl.wms.outstorage.operator.pojo.dto.SortOrderSubmitDto;
 import com.apl.wms.outstorage.operator.pojo.vo.PackOrderItemListVo;
 import com.apl.wms.outstorage.operator.service.PullPackItemService;
-import com.apl.wms.outstorage.order.service.OutOrderService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,7 @@ public class SortController {
     PullBatchService pullBatchService;
 
     @Autowired
-    OutOrderService outOrderService;
+    PullPackItemService  pullPackItemService;
 
     @PostMapping("/get-sort-msg")
     @ApiOperation(value =  "获取分拣信息" , notes = "根据订单id 获取分拣信息，包含批次信息，订单信息，以及订单子项下单数量")
@@ -38,8 +37,6 @@ public class SortController {
 
         return pullBatchService.submitSortMsg(sortOrderSubmitDto);
     }
-
-
 
 
 }

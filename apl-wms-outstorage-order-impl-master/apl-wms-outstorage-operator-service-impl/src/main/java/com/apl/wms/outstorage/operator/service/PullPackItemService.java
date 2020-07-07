@@ -68,5 +68,4 @@ public interface PullPackItemService extends IService<PullPackItemPo> {
      * @Date: 2020/6/15 14:58
      */
     void batchAddPullPackItem(Long orderId, List<PackOrderSubmitDto.PackMsg> packMsgs);
-
 }

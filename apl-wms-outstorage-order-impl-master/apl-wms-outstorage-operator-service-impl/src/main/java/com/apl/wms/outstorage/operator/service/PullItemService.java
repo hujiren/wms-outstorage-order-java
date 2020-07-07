@@ -2,10 +2,10 @@ package com.apl.wms.outstorage.operator.service;
 
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.utils.ResultUtils;
-import com.apl.wms.outstorage.operator.pojo.dto.PullItemKeyDto;
-import com.apl.wms.outstorage.operator.pojo.po.PullItemPo;
-import com.apl.wms.outstorage.operator.pojo.vo.PullItemInfoVo;
-import com.apl.wms.outstorage.operator.pojo.vo.PullItemListVo;
+import com.apl.wms.outstorage.operator.pojo.dto.PullAllocationItemKeyDto;
+import com.apl.wms.outstorage.operator.pojo.po.PullAllocationItemPo;
+import com.apl.wms.outstorage.operator.pojo.vo.PullAllocationItemInfoVo;
+import com.apl.wms.outstorage.operator.pojo.vo.PullAllocationItemListVo;
 import com.apl.wms.warehouse.lib.pojo.bo.PullBatchOrderItemBo;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -20,7 +20,7 @@ import java.util.List;
  * @author cy
  * @since 2020-06-09
  */
-public interface PullItemService extends IService<PullItemPo> {
+public interface PullItemService extends IService<PullAllocationItemPo> {
 
 
         /**
@@ -28,13 +28,13 @@ public interface PullItemService extends IService<PullItemPo> {
          * @Author: CY
          * @Date: 2020/6/10 14:18
          */
-        List<PullItemInfoVo> listPullItemByBatchId(Long batchId) throws Exception;
+        List<PullAllocationItemInfoVo> listPullItemByBatchId(Long batchId) throws Exception;
         /**
          * @Desc: 添加一个PullItemPo实体
          * @author cy
          * @since 2020-06-09
          */
-        ResultUtils<Integer> add(PullItemPo pullItem);
+        ResultUtils<Integer> add(PullAllocationItemPo pullItem);
 
 
         /**
@@ -42,7 +42,7 @@ public interface PullItemService extends IService<PullItemPo> {
          * @author cy
          * @since 2020-06-09
          */
-        ResultUtils<Boolean> updById(PullItemPo pullItem);
+        ResultUtils<Boolean> updById(PullAllocationItemPo pullItem);
 
 
         /**
@@ -58,7 +58,7 @@ public interface PullItemService extends IService<PullItemPo> {
          * @author cy
          * @since 2020-06-09
          */
-        ResultUtils<PullItemInfoVo> selectById(Long id);
+        ResultUtils<PullAllocationItemInfoVo> selectById(Long id);
 
 
         /**
@@ -66,7 +66,7 @@ public interface PullItemService extends IService<PullItemPo> {
          * @author cy
          * @since 2020-06-09
          */
-        ResultUtils<Page<PullItemListVo>>getList(PageDto pageDto, PullItemKeyDto keyDto);
+        ResultUtils<Page<PullAllocationItemListVo>>getList(PageDto pageDto, PullAllocationItemKeyDto keyDto);
 
         /**
          * @Desc: 商品下架
