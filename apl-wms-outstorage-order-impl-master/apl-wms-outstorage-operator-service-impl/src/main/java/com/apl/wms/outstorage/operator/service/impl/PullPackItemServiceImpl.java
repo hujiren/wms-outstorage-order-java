@@ -2,7 +2,7 @@ package com.apl.wms.outstorage.operator.service.impl;
 
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.pojo.dto.PageDto;
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
 import com.apl.wms.outstorage.operator.mapper.PullPackItemMapper;
 import com.apl.wms.outstorage.operator.pojo.dto.PackOrderSubmitDto;
@@ -52,54 +52,54 @@ public class PullPackItemServiceImpl extends ServiceImpl<PullPackItemMapper, Pul
     WarehouseFeign warehouseFeign;
 
     @Override
-    public ResultUtils<Integer> add(PullPackItemPo pullPackItem){
+    public ResultUtil<Integer> add(PullPackItemPo pullPackItem){
 
 
         Integer flag = baseMapper.insert(pullPackItem);
         if(flag.equals(1)){
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_SUCCESS , pullPackItem.getId());
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS , pullPackItem.getId());
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_FAIL , null);
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_FAIL , null);
         }
 
 
     @Override
-    public ResultUtils<Boolean> updById(PullPackItemPo pullPackItem){
+    public ResultUtil<Boolean> updById(PullPackItemPo pullPackItem){
 
 
         Integer flag = baseMapper.updateById(pullPackItem);
         if(flag.equals(1)){
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_SUCCESS , true);
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS , true);
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_FAIL , false);
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_FAIL , false);
         }
 
 
     @Override
-    public ResultUtils<Boolean> delById(Long id){
+    public ResultUtil<Boolean> delById(Long id){
 
         boolean flag = removeById(id);
         if(flag){
-        return ResultUtils.APPRESULT(CommonStatusCode.DEL_SUCCESS , true);
+        return ResultUtil.APPRESULT(CommonStatusCode.DEL_SUCCESS , true);
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.DEL_FAIL , false);
+        return ResultUtil.APPRESULT(CommonStatusCode.DEL_FAIL , false);
         }
 
 
     @Override
-    public ResultUtils<PullPackItemInfoVo> selectById(Long id){
+    public ResultUtil<PullPackItemInfoVo> selectById(Long id){
 
     PullPackItemInfoVo pullPackItemInfoVo = baseMapper.getById(id);
 
-        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, pullPackItemInfoVo);
+        return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, pullPackItemInfoVo);
         }
 
 
     @Override
-    public ResultUtils<Page<PullPackItemListVo>> getList(PageDto pageDto, PullPackItemKeyDto keyDto){
+    public ResultUtil<Page<PullPackItemListVo>> getList(PageDto pageDto, PullPackItemKeyDto keyDto){
 
         Page<PullPackItemListVo> page = new Page();
         page.setCurrent(pageDto.getPageIndex());
@@ -108,7 +108,7 @@ public class PullPackItemServiceImpl extends ServiceImpl<PullPackItemMapper, Pul
         List<PullPackItemListVo> list = baseMapper.getList(page , keyDto);
         page.setRecords(list);
 
-        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS , page);
+        return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS , page);
         }
 
     @Override

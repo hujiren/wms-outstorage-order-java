@@ -1,5 +1,5 @@
 package com.apl.wms.outstorage.operator.controller;
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.wms.outstorage.operator.service.PullAllocationItemService;
 import com.apl.wms.warehouse.lib.pojo.bo.CompareStorageLocalStocksBo;
 import io.swagger.annotations.Api;
@@ -31,7 +31,7 @@ public class PullAllocationItemController {
     @ApiOperation(value =  "获取分配明细对象列表 插入到数据库" , notes = "获取分配明细对象列表 插入到数据库")
     @ApiImplicitParams({@ApiImplicitParam(name = "outOrderId",value = "订单id",required = true  , paramType = "query"),
                         @ApiImplicitParam(name = "compareStorageLocalStocksBos", value = "分配明细对象列表", required = true, paramType = "query") })
-    public ResultUtils<Integer> insertAllocationItem(Long outOrderId, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos){
+    public ResultUtil<Integer> insertAllocationItem(Long outOrderId, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos){
 
         return pullAllocationItemService.insertAllocationItem(outOrderId, compareStorageLocalStocksBos);
     }

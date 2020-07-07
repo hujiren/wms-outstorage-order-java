@@ -1,6 +1,6 @@
 package com.apl.wms.outstorage.order.lib.feign;
 
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.wms.outstorage.order.lib.feign.impl.OutstorageOrderBusinessFeignImpl;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
@@ -13,7 +13,7 @@ public interface OutstorageOrderBusinessFeign {
 
 
     @PostMapping(value = "/out-order/create/call-back")
-    ResultUtils outStorageOrderCreateCallback(@RequestParam("orderId")Long orderId,
+    ResultUtil outStorageOrderCreateCallback(@RequestParam("orderId")Long orderId,
                                               @RequestParam("status")Integer status);
 
 

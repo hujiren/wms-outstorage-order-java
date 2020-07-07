@@ -94,7 +94,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
     // 根据订单id 获取打包信息
     @Override
-    public ResultUtils<PackOrderItemListVo> getSortMsg(Long orderId) throws Exception {
+    public ResultUtil<PackOrderItemListVo> getSortMsg(Long orderId) throws Exception {
 
         //获取批次信息
         PackOrderItemListVo packOrderItemListVo = baseMapper.getPullBatchMsg(orderId);
@@ -109,27 +109,27 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
             packOrderItemListVo.setOrderItemListVos(orderItems);
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, packOrderItemListVo);
+        return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, packOrderItemListVo);
     }
 
 
 
     @Override
-    public ResultUtils<List<PullBatchInfoVo>> listPullBatch(Integer pullStatus , String keyword , Long batchTime) {
+    public ResultUtil<List<PullBatchInfoVo>> listPullBatch(Integer pullStatus , String keyword , Long batchTime) {
 
         //缓存中操作对象
         OperatorCacheBo operator = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
 
         List<PullBatchInfoVo> pullBatchInfoVos = baseMapper.listOperatorBatchByStatus(operator.getMemberId(), pullStatus, keyword, new Timestamp(batchTime));
 
-        ResultUtils result = ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, pullBatchInfoVos);
+        ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, pullBatchInfoVos);
 
         return result;
     }
 
 
     @Override
-    public ResultUtils<List<OrderItemListVo>> getPickMsgSortByOrder(Long batchId) throws Exception {
+    public ResultUtil<List<OrderItemListVo>> getPickMsgSortByOrder(Long batchId) throws Exception {
 
         List<Long> orderIds = baseMapper.getBatchOrderList(batchId);
         System.out.println(orderIds.toString());
@@ -139,7 +139,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
 
     @Override
-    public ResultUtils<List<PullAllocationItemMsgVo>> getPickMsgSortByCommodity(Long batchId) throws Exception {
+    public ResultUtil<List<PullAllocationItemMsgVo>> getPickMsgSortByCommodity(Long batchId) throws Exception {
 
         List<PullAllocationItemMsgVo> pullAllocationItemMsgVos = new ArrayList<>();
         //批次对应的 下架分组信息 key:商品id value:商品对应的库位列表
@@ -148,7 +148,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         Map<String, List<PullAllocationItemInfoVo>> pullItemInfoVos = JoinUtils.listGrouping(pullAllocationItemInfoVoList, "commodityId");
 
         if (CollectionUtils.isEmpty(pullItemInfoVos)) {
-            return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, pullAllocationItemMsgVos);
+            return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, pullAllocationItemMsgVos);
         }
 
         //缓存对象
@@ -169,13 +169,13 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, pullAllocationItemMsgVos);
+        return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, pullAllocationItemMsgVos);
     }
 
 
     @Override
     @Transactional
-    public ResultUtils<String> createPullBatch(String ids) {
+    public ResultUtil<String> createPullBatch(String ids) {
 
         LockTool.repeatSubmit(CommonContextHolder.getHeader("token"), redisTemplate);
 
@@ -191,24 +191,24 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         //商品下架
         pullItemService.pullCommodity(batchId, pullBatchOrderItems);
 
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_SUCCESS, batchId.toString());
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, batchId.toString());
     }
 
 
     @Override
-    public ResultUtils<Boolean> delById(Long id) {
+    public ResultUtil<Boolean> delById(Long id) {
 
         boolean flag = removeById(id);
         if (flag) {
-            return ResultUtils.APPRESULT(CommonStatusCode.DEL_SUCCESS, true);
+            return ResultUtil.APPRESULT(CommonStatusCode.DEL_SUCCESS, true);
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.DEL_FAIL, false);
+        return ResultUtil.APPRESULT(CommonStatusCode.DEL_FAIL, false);
     }
 
 
     @Override
-    public ResultUtils<Page<PullBatchListVo>> getList(PageDto pageDto, PullBatchKeyDto keyDto) {
+    public ResultUtil<Page<PullBatchListVo>> getList(PageDto pageDto, PullBatchKeyDto keyDto) {
 
         Page<PullBatchListVo> page = new Page();
         page.setCurrent(pageDto.getPageIndex());
@@ -217,7 +217,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         List<PullBatchListVo> list = baseMapper.getList(page, keyDto);
         page.setRecords(list);
 
-        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, page);
+        return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, page);
     }
 
     @Override
@@ -241,7 +241,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
     @Override
     @Transactional
-    public ResultUtils submitPullBatch(PullBatchSubmitDto pullBatchSubmit) throws Exception {
+    public ResultUtil submitPullBatch(PullBatchSubmitDto pullBatchSubmit) throws Exception {
 
         OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
 
@@ -261,12 +261,12 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         //进行库存减扣 （仓库库存 / 库位库存)
         rabbitSender.send("pullBatchSubmitStockReduceExchange", "pullBatchSubmitStockReduceQueue", orderStock);
 
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_SUCCESS);
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS);
     }
 
     @Override
     @Transactional
-    public ResultUtils submitSortMsg(SortOrderSubmitDto sortOrderSubmitDto) throws Exception {
+    public ResultUtil submitSortMsg(SortOrderSubmitDto sortOrderSubmitDto) throws Exception {
 
         //前端提交的订单列表
         List<SortOrderSubmitDto.Order> orders = sortOrderSubmitDto.getOrders();
@@ -275,7 +275,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         List<Long> orderIds = baseMapper.getBatchOrderList(sortOrderSubmitDto.getBatchId());
 
         if (CollectionUtils.isEmpty(orderIds)) {
-            return ResultUtils.APPRESULT(PullBatchServiceCode.PULL_BATCH_NOT_EXIST.code, PullBatchServiceCode.PULL_BATCH_NOT_EXIST.msg, null);
+            return ResultUtil.APPRESULT(PullBatchServiceCode.PULL_BATCH_NOT_EXIST.code, PullBatchServiceCode.PULL_BATCH_NOT_EXIST.msg, null);
         }
         //订单对应的订单项目 数据
         List<OrderItemListVo> orderItems = outOrderService.getMultiOrderMsg(orderIds, OrderStatusEnum.CREATE.getStatus()).getData();
@@ -292,7 +292,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
         updatePullBatchStatus(sortOrderSubmitDto.getBatchId(), PullStatusType.SORT_DONE.getStatus());
 
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_SUCCESS, null);
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, null);
     }
 
     /**

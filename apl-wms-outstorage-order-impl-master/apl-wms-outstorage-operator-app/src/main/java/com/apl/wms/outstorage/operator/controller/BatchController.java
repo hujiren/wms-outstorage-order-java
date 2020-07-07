@@ -1,6 +1,6 @@
 package com.apl.wms.outstorage.operator.controller;
 
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
 import com.apl.lib.validate.TypeValidator;
 import com.apl.wms.outstorage.operator.service.PullBatchService;
@@ -36,13 +36,13 @@ public class BatchController {
             @ApiImplicitParam(name = "keyword",value = "订单编号 关键字" ,  paramType = "query"),
             @ApiImplicitParam(name = "batchTime",value = "批次创建时间",required = true  , paramType = "query")
     })
-    public ResultUtils<List<PullBatchInfoVo>> listPullBatch(@TypeValidator(value = {"5" , "6" , "7" , "8"} , message = "拣货状态错误")
+    public ResultUtil<List<PullBatchInfoVo>> listPullBatch(@TypeValidator(value = {"5" , "6" , "7" , "8"} , message = "拣货状态错误")
                                                                 @NotNull(message = "pullStatus 不能为空")Integer pullStatus,
                                                             String keyword,
                                                             @NotNull(message = "pullStatus 不能为空") Long batchTime){
 
-        ResultUtils resultUtils = pullBatchService.listPullBatch(pullStatus, keyword, batchTime);
-        return resultUtils;
+        ResultUtil ResultUtil = pullBatchService.listPullBatch(pullStatus, keyword, batchTime);
+        return ResultUtil;
     }
 
 
@@ -51,7 +51,7 @@ public class BatchController {
     @PostMapping(value = "/create-pull-batch")
     @ApiOperation(value =  "创建收货批次" , notes = "保存收货批次，并且完成库位库存锁定")
     @ApiImplicitParam(name = "ids",value = "订单列表",required = true  , paramType = "query")
-    public ResultUtils<String> createPullBatch(@NotNull(message = "ids 不能为空")String ids){
+    public ResultUtil<String> createPullBatch(@NotNull(message = "ids 不能为空")String ids){
 
         return pullBatchService.createPullBatch(ids);
     }

@@ -1,7 +1,7 @@
 package com.apl.wms.outstorage.operator.service;
 
 import com.apl.lib.pojo.dto.PageDto;
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.wms.outstorage.operator.pojo.dto.PackOrderSubmitDto;
 import com.apl.wms.outstorage.operator.pojo.dto.PullPackItemKeyDto;
 import com.apl.wms.outstorage.operator.pojo.po.PullPackItemPo;
@@ -27,7 +27,7 @@ public interface PullPackItemService extends IService<PullPackItemPo> {
      * @author cy
      * @since 2020-06-13
      */
-    ResultUtils<Integer> add(PullPackItemPo pullPackItem);
+    ResultUtil<Integer> add(PullPackItemPo pullPackItem);
 
 
     /**
@@ -35,7 +35,7 @@ public interface PullPackItemService extends IService<PullPackItemPo> {
      * @author cy
      * @since 2020-06-13
      */
-    ResultUtils<Boolean> updById(PullPackItemPo pullPackItem);
+    ResultUtil<Boolean> updById(PullPackItemPo pullPackItem);
 
 
     /**
@@ -43,7 +43,7 @@ public interface PullPackItemService extends IService<PullPackItemPo> {
      * @author cy
      * @since 2020-06-13
      */
-    ResultUtils<Boolean> delById(Long id);
+    ResultUtil<Boolean> delById(Long id);
 
 
     /**
@@ -51,7 +51,7 @@ public interface PullPackItemService extends IService<PullPackItemPo> {
      * @author cy
      * @since 2020-06-13
      */
-    ResultUtils<PullPackItemInfoVo> selectById(Long id);
+    ResultUtil<PullPackItemInfoVo> selectById(Long id);
 
 
     /**
@@ -59,7 +59,7 @@ public interface PullPackItemService extends IService<PullPackItemPo> {
      * @author cy
      * @since 2020-06-13
      */
-    ResultUtils<Page<PullPackItemListVo>> getList(PageDto pageDto, PullPackItemKeyDto keyDto);
+    ResultUtil<Page<PullPackItemListVo>> getList(PageDto pageDto, PullPackItemKeyDto keyDto);
 
 
     /**

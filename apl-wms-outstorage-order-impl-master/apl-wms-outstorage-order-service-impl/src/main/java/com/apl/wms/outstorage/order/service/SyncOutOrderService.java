@@ -1,7 +1,7 @@
 package com.apl.wms.outstorage.order.service;
 
 import com.apl.lib.pojo.dto.PageDto;
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.wms.outstorage.order.pojo.dto.SyncOutOrderKeyDto;
 import com.apl.wms.outstorage.order.pojo.dto.SyncOutOrderSaveDto;
 import com.apl.wms.outstorage.order.pojo.vo.SyncOutOrderInfoVo;
@@ -26,7 +26,7 @@ public interface SyncOutOrderService extends IService<SyncOutOrderPo> {
          * @author arran
          * @since 2019-12-25
          */
-        ResultUtils<Integer> add(SyncOutOrderSaveDto syncOrder);
+        ResultUtil<Integer> add(SyncOutOrderSaveDto syncOrder);
 
 
         /**
@@ -34,7 +34,7 @@ public interface SyncOutOrderService extends IService<SyncOutOrderPo> {
          * @author arran
          * @since 2019-12-25
          */
-        ResultUtils<Boolean> updById(SyncOutOrderSaveDto syncOrder, Long customerId);
+        ResultUtil<Boolean> updById(SyncOutOrderSaveDto syncOrder, Long customerId);
 
 
         /**
@@ -42,7 +42,7 @@ public interface SyncOutOrderService extends IService<SyncOutOrderPo> {
          * @author arran
          * @since 2019-12-25
          */
-        ResultUtils<Boolean> updStatus(Long id, Integer status, Long customerId);
+        ResultUtil<Boolean> updStatus(Long id, Integer status, Long customerId);
 
 
         /**
@@ -50,7 +50,7 @@ public interface SyncOutOrderService extends IService<SyncOutOrderPo> {
          * @author arran
          * @since 2019-12-25
          */
-        ResultUtils<Boolean> delById(Long id, Long customerId);
+        ResultUtil<Boolean> delById(Long id, Long customerId);
 
 
         /**
@@ -58,7 +58,7 @@ public interface SyncOutOrderService extends IService<SyncOutOrderPo> {
          * @author arran
          * @since 2019-12-25
          */
-        ResultUtils<SyncOutOrderInfoVo> selectById(Long id, Long customerId, Integer isShowCustomer);
+        ResultUtil<SyncOutOrderInfoVo> selectById(Long id, Long customerId, Integer isShowCustomer);
 
 
         /**
@@ -66,7 +66,7 @@ public interface SyncOutOrderService extends IService<SyncOutOrderPo> {
          * @author arran
          * @since 2019-12-25
          */
-        ResultUtils<Page<SyncOutOrderListVo>>getList(PageDto pageDto, SyncOutOrderKeyDto keyDto, Integer isShowCustomer)  throws Exception ;
+        ResultUtil<Page<SyncOutOrderListVo>>getList(PageDto pageDto, SyncOutOrderKeyDto keyDto, Integer isShowCustomer)  throws Exception ;
 
 
         /**
@@ -74,7 +74,7 @@ public interface SyncOutOrderService extends IService<SyncOutOrderPo> {
          * @author arran
          * @since 2020-01-07
          */
-        ResultUtils<Boolean> bootTask(Long id, Long customerId);
+        ResultUtil<Boolean> bootTask(Long id, Long customerId);
 
 
         /**
@@ -82,6 +82,6 @@ public interface SyncOutOrderService extends IService<SyncOutOrderPo> {
          * @author arran
          * @since 2020-01-15
          */
-        ResultUtils<Integer> getStatus(Long id);
+        ResultUtil<Integer> getStatus(Long id);
 
 }

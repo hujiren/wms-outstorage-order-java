@@ -2,7 +2,7 @@ package com.apl.wms.outstorage.operator.controller;
 
 
 import com.apl.lib.pojo.dto.PageDto;
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.StringUtil;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
 import com.apl.wms.outstorage.order.service.OutOrderCommodityItemService;
@@ -47,7 +47,7 @@ public class PickController {
 
     @PostMapping("/page-order-pull")
     @ApiOperation(value =  "分页获取订单拣货信息" , notes = "分页获取订单拣货信息")
-    public ResultUtils<Page> pageOrderPull(PageDto pageDto, @Validated PullOrderKeyDto keyDto) throws Exception{
+    public ResultUtil<Page> pageOrderPull(PageDto pageDto, @Validated PullOrderKeyDto keyDto) throws Exception{
 
         return outOrderService.pageOrderPull(pageDto , keyDto);
     }
@@ -56,7 +56,7 @@ public class PickController {
     @PostMapping(value = "/sort/order/msg")
     @ApiOperation(value =  "获取拣货信息 根据订单进行分组" , notes = "根据批次id ，获取拣货信息，根据订单进行分组")
     @ApiImplicitParam(name = "batchId",value = "批次id",required = true  , paramType = "query")
-    public ResultUtils<List<OrderItemListVo>> getPickMsgSortByOrder(@NotNull(message = "batchId 不能为空")Long batchId) throws Exception {
+    public ResultUtil<List<OrderItemListVo>> getPickMsgSortByOrder(@NotNull(message = "batchId 不能为空")Long batchId) throws Exception {
 
         return pullBatchService.getPickMsgSortByOrder(batchId);
     }
@@ -65,7 +65,7 @@ public class PickController {
     @PostMapping(value = "/sort/commodity/msg")
     @ApiOperation(value =  "获取拣货信息 根据商品进行分组" , notes = "根据批次id ，获取拣货信息，根据商品进行分组")
     @ApiImplicitParam(name = "batchId",value = "批次id",required = true  , paramType = "query")
-    public ResultUtils<List<PullAllocationItemMsgVo>> getPickMsgSortByCommodity(@NotNull(message = "batchId 不能为空")Long batchId) throws Exception {
+    public ResultUtil<List<PullAllocationItemMsgVo>> getPickMsgSortByCommodity(@NotNull(message = "batchId 不能为空")Long batchId) throws Exception {
 
         return pullBatchService.getPickMsgSortByCommodity(batchId);
     }
@@ -77,7 +77,7 @@ public class PickController {
             @ApiImplicitParam(name = "memberId",value = "拣货员id",required = true  , paramType = "query"),
             @ApiImplicitParam(name = "orderIdList",value = "订单id 列表",required = true  , paramType = "query")
     })
-    public ResultUtils<Boolean> allocationOperator(@NotNull(message = "memberId 不能为空") @Min(value = 1 , message = "memberId 不能小于1")Long memberId ,
+    public ResultUtil<Boolean> allocationOperator(@NotNull(message = "memberId 不能为空") @Min(value = 1 , message = "memberId 不能小于1")Long memberId ,
                                                                 @NotNull(message = "orderIdList 不能为空")String orderIdList){
 
         return outOrderService.allocationOperator(memberId , orderIdList);
@@ -90,7 +90,7 @@ public class PickController {
             @ApiImplicitParam(name = "memberId",value = "拣货员id",required = true  , paramType = "query"),
             @ApiImplicitParam(name = "orderIdList",value = "订单id 列表",required = true  , paramType = "query")
     })
-    public ResultUtils<Boolean> cancelAllocationOperator(@NotNull(message = "memberId 不能为空") @Min(value = 1 , message = "memberId 不能小于1")Long memberId ,
+    public ResultUtil<Boolean> cancelAllocationOperator(@NotNull(message = "memberId 不能为空") @Min(value = 1 , message = "memberId 不能小于1")Long memberId ,
                                                                 @NotNull(message = "orderIdList 不能为空")String orderIdList){
 
         return outOrderService.cancelAllocationOperator(memberId , orderIdList);
@@ -98,7 +98,7 @@ public class PickController {
 
     @PostMapping("/list-operator-order")
     @ApiOperation(value =  "获取拣货员对应的订单列表" , notes = "获取分配给某个拣货员的订单列表")
-    public ResultUtils<List<OutOrderInfoVo>> listOperatorOrders() throws Exception {
+    public ResultUtil<List<OutOrderInfoVo>> listOperatorOrders() throws Exception {
 
         return outOrderService.listOperatorOrders();
     }
@@ -106,7 +106,7 @@ public class PickController {
 
     @PostMapping(value = "/submit-pick")
     @ApiOperation(value =  "提交拣货数据" , notes = "提交拣货数据 ， 进行库存减扣")
-    public ResultUtils submitPick(@RequestBody PullBatchSubmitDto pullBatchSubmit) throws Exception {
+    public ResultUtil submitPick(@RequestBody PullBatchSubmitDto pullBatchSubmit) throws Exception {
 
         return pullBatchService.submitPullBatch(pullBatchSubmit);
     }
@@ -114,7 +114,7 @@ public class PickController {
     @PostMapping(value = "/get-orders-commodity-by-allocation-warehouse")
     @ApiOperation(value =  "批量查询分配仓库时的订单与商品" , notes = "批量查询分配仓库时的订单与商品")
     @ApiImplicitParam(name = "orderIds",value = "订单id",required = true  , paramType = "query")
-    public ResultUtils<List<AllocationWarehouseOutOrderBo>> getOrdersByAllocationWarehouse(@NotNull(message = "订单id不能为空") String orderIds)  throws Exception{
+    public ResultUtil<List<AllocationWarehouseOutOrderBo>> getOrdersByAllocationWarehouse(@NotNull(message = "订单id不能为空") String orderIds)  throws Exception{
 
         List<Long> orderIdList = StringUtil.stringToLongList(orderIds);
 

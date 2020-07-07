@@ -1,7 +1,7 @@
 package com.apl.wms.outstorage.operator.service;
 
 import com.apl.lib.pojo.dto.PageDto;
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.wms.outstorage.order.pojo.vo.OrderItemListVo;
 import com.apl.wms.outstorage.operator.pojo.dto.PullBatchKeyDto;
 import com.apl.wms.outstorage.operator.pojo.dto.PullBatchSubmitDto;
@@ -31,7 +31,7 @@ public interface PullBatchService extends IService<PullBatchPo> {
          * @Author: CY
          * @Date: 2020/6/12 11:25
          */
-        ResultUtils<PackOrderItemListVo> getSortMsg(Long orderId) throws Exception;
+        ResultUtil<PackOrderItemListVo> getSortMsg(Long orderId) throws Exception;
 
 
         /**
@@ -39,35 +39,35 @@ public interface PullBatchService extends IService<PullBatchPo> {
          * @author cy
          * @since 2020-06-08
          */
-        ResultUtils listPullBatch(Integer pullStatus, String keyword, Long batchTime);
+        ResultUtil listPullBatch(Integer pullStatus, String keyword, Long batchTime);
 
         /**
          * @Desc: 根据批次id 获取拣货信息
          * @Author: CY
          * @Date: 2020/6/10 11:59
          */
-        ResultUtils<List<OrderItemListVo>> getPickMsgSortByOrder(Long batchId) throws Exception;
+        ResultUtil<List<OrderItemListVo>> getPickMsgSortByOrder(Long batchId) throws Exception;
 
         /**
          * @Desc: 根据批次id 获取拣货信息
          * @Author: CY
          * @Date: 2020/6/10 11:59
          */
-        ResultUtils<List<PullAllocationItemMsgVo>> getPickMsgSortByCommodity(Long batchId) throws Exception;
+        ResultUtil<List<PullAllocationItemMsgVo>> getPickMsgSortByCommodity(Long batchId) throws Exception;
 
         /**
          * @Desc: 创建收货批次
          * @Author: CY
          * @Date: 2020/6/8 18:18
          */
-        ResultUtils<String> createPullBatch(String ids);
+        ResultUtil<String> createPullBatch(String ids);
 
         /**
          * @Desc: 根据id 查找一个PullBatchPo 实体
          * @author cy
          * @since 2020-06-08
          */
-        ResultUtils<Boolean> delById(Long id);
+        ResultUtil<Boolean> delById(Long id);
 
 
         /**
@@ -75,7 +75,7 @@ public interface PullBatchService extends IService<PullBatchPo> {
          * @author cy
          * @since 2020-06-08
          */
-        ResultUtils<Page<PullBatchListVo>>getList(PageDto pageDto, PullBatchKeyDto keyDto);
+        ResultUtil<Page<PullBatchListVo>>getList(PageDto pageDto, PullBatchKeyDto keyDto);
 
         /**
          * @Desc: 创建一个捡货批次，返回批次号
@@ -90,7 +90,7 @@ public interface PullBatchService extends IService<PullBatchPo> {
          * @Author: CY
          * @Date: 2020/6/10 16:42
          */
-        ResultUtils submitPullBatch(PullBatchSubmitDto pullBatchSubmit) throws Exception;
+        ResultUtil submitPullBatch(PullBatchSubmitDto pullBatchSubmit) throws Exception;
 
 
         /**
@@ -98,5 +98,5 @@ public interface PullBatchService extends IService<PullBatchPo> {
          * @Author: CY
          * @Date: 2020/6/12 16:12
          */
-        ResultUtils submitSortMsg(SortOrderSubmitDto sortOrderSubmitDto) throws Exception;
+        ResultUtil submitSortMsg(SortOrderSubmitDto sortOrderSubmitDto) throws Exception;
 }

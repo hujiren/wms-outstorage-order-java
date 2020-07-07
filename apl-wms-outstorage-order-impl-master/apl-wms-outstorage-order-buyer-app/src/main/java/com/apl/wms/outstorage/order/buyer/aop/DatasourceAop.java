@@ -1,7 +1,8 @@
 package com.apl.wms.outstorage.order.buyer.aop;
 
+import com.apl.datasource.DataSourceContextHolder;
+import com.apl.lib.config.MyBatisPlusConfig;
 import com.apl.lib.constants.CommonAplConstants;
-import com.apl.lib.datasource.DataSourceContextHolder;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.CommonContextHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -33,25 +34,21 @@ public class DatasourceAop {
         Object proceed = null;
         try {
             String token = CommonContextHolder.getHeader(CommonAplConstants.TOKEN_FLAG);
+
+            // 安全用户上下文
             SecurityUser securityUser = CommonContextHolder.getSecurityUser(redisTemplate, token);
-            //if(securityUser==null || securityUser.getInnerOrgId()>10) {
-                //String uri = CommonContextHolder.getURI().toLowerCase();
-                //if (!uri.contains("/not-dev/") && !uri.contains("/share/")) {
-                //    throw new AplException(CommonStatusCode.NOT_AUTHORIZED);
-                //}
-            //}
             CommonContextHolder.securityUserContextHolder.set(securityUser);
 
-            //redisTemplate.expire(AplConstants.LOGIN_MSG + token, 30, TimeUnit.MINUTES); //登陆用户展期
-            //DataSourceContextHolder.set(token);  //pgs_pgs_1_xxxxxx
+            // 多数据源切换信息
             DataSourceContextHolder.set(securityUser.getTenantGroup(), securityUser.getInnerOrgCode(), securityUser.getInnerOrgId());
+
+            // 多租户ID值
+            MyBatisPlusConfig.tenantIdContextHolder.set(securityUser.getInnerOrgId());
 
             Object[] args = pjp.getArgs();
             proceed = pjp.proceed(args);
 
         } catch (Throwable e) {
-            //log.error(this.getClass().getName()+".doInvoke "+ e.getMessage());
-            //throw new AplException(ExceptionEnum.SYSTEM_ERROR);
             throw e;
         } finally {
             CommonContextHolder.securityUserContextHolder.remove();

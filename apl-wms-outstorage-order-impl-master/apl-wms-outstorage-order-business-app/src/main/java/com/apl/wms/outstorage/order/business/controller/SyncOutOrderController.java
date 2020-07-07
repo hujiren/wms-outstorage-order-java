@@ -3,7 +3,7 @@ package com.apl.wms.outstorage.order.business.controller;
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.CommonContextHolder;
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.validate.ApiParamValidate;
 import com.apl.wms.outstorage.order.pojo.dto.SyncOutOrderKeyDto;
 import com.apl.wms.outstorage.order.pojo.dto.SyncOutOrderSaveDto;
@@ -44,7 +44,7 @@ public class SyncOutOrderController {
     @PostMapping(value = "/add")
     @ApiOperation(value =  "添加", notes ="GET_STORE_API_CONFIG_FAIL : 获取店铺API配置失败\n  " +
             "STORE_NOT_CONFIG_API : 店铺没有配置API")
-    public ResultUtils<Integer> add(SyncOutOrderSaveDto syncOrder) {
+    public ResultUtil<Integer> add(SyncOutOrderSaveDto syncOrder) {
         ApiParamValidate.validate(syncOrder);
 
         return syncOutOrderService.add(syncOrder);
@@ -53,7 +53,7 @@ public class SyncOutOrderController {
 
     @PostMapping(value = "/upd")
     @ApiOperation(value =  "更新",  notes ="")
-    public ResultUtils<Boolean> updById(SyncOutOrderSaveDto syncOrder) {
+    public ResultUtil<Boolean> updById(SyncOutOrderSaveDto syncOrder) {
         ApiParamValidate.notEmpty("id", syncOrder.getId());
         ApiParamValidate.validate(syncOrder);
 
@@ -68,7 +68,7 @@ public class SyncOutOrderController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "status" , value = "状态  1等待同步  2正在同步  3已完成同步   4同步异常   5暂停同步   6作废" ,paramType = "query", required = true)
     })
-    public ResultUtils<Boolean> updStatus(Long id,  @Range(min = 1, max = 6, message = "状态值不正确") Integer status) {
+    public ResultUtil<Boolean> updStatus(Long id,  @Range(min = 1, max = 6, message = "状态值不正确") Integer status) {
         ApiParamValidate.notEmpty("id", id);
         ApiParamValidate.notEmpty("status", status);
 
@@ -79,7 +79,7 @@ public class SyncOutOrderController {
     @PostMapping(value = "/del")
     @ApiOperation(value =  "删除" , notes = "")
     @ApiImplicitParam(name = "id",value = " id",required = true  , paramType = "query")
-    public ResultUtils<Boolean> delById(@NotNull(message = "id不能为空") @Min(value = 1 , message = "id不能小于1") Long id) {
+    public ResultUtil<Boolean> delById(@NotNull(message = "id不能为空") @Min(value = 1 , message = "id不能小于1") Long id) {
 
         SecurityUser securityUser = CommonContextHolder.getSecurityUser();
 
@@ -90,7 +90,7 @@ public class SyncOutOrderController {
     @PostMapping(value = "/get")
     @ApiOperation(value =  "获取详细" , notes = "")
     @ApiImplicitParam(name = "id",value = "id",required = true  , paramType = "query")
-    public ResultUtils<SyncOutOrderInfoVo> selectById(@NotNull(message = "id不能为空") @Min(value = 1 , message = "id不能小于1") Long id) {
+    public ResultUtil<SyncOutOrderInfoVo> selectById(@NotNull(message = "id不能为空") @Min(value = 1 , message = "id不能小于1") Long id) {
 
         SecurityUser securityUser = CommonContextHolder.getSecurityUser();
 
@@ -100,7 +100,7 @@ public class SyncOutOrderController {
 
     @PostMapping("/get-list")
     @ApiOperation(value =  "分页查找" , notes = "状态  1等待同步  2正在同步  3已完成同步   4同步异常   5暂停同步   6作废")
-    public ResultUtils<Page<SyncOutOrderListVo>> getList(PageDto pageDto, @Validated SyncOutOrderKeyDto keyDto)  throws Exception {
+    public ResultUtil<Page<SyncOutOrderListVo>> getList(PageDto pageDto, @Validated SyncOutOrderKeyDto keyDto)  throws Exception {
         ApiParamValidate.notEmpty("startTime", keyDto.getStartTime());
         ApiParamValidate.notEmpty("endTime", keyDto.getEndTime());
 
@@ -112,7 +112,7 @@ public class SyncOutOrderController {
     @ApiOperation(value =  "启动任务",  notes ="TASK_ALREADY_BOOT : 启动任务已启动\n " +
             "GET_STORE_API_CONFIG_FAIL : 获取店铺API配置失败\n  " +
             "STORE_NOT_CONFIG_API : 店铺没有配置API")
-    public ResultUtils<Boolean> bootTask(Long id) {
+    public ResultUtil<Boolean> bootTask(Long id) {
         ApiParamValidate.notEmpty("id", id);
         SecurityUser securityUser = CommonContextHolder.getSecurityUser();
 
@@ -122,7 +122,7 @@ public class SyncOutOrderController {
 
     @PostMapping(value = "/get-status")
     @ApiOperation(value =  "获取任务状态",  notes ="状态  1等待同步  2正在同步  3已完成同步   4同步异常   5暂停同步   6作废")
-    public ResultUtils<Integer> getStatus(Long id) {
+    public ResultUtil<Integer> getStatus(Long id) {
         ApiParamValidate.notEmpty("id", id);
 
         return syncOutOrderService.getStatus(id);

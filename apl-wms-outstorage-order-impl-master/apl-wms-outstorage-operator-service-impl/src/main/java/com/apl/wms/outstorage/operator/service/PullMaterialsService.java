@@ -1,7 +1,7 @@
 package com.apl.wms.outstorage.operator.service;
 
 import com.apl.lib.pojo.dto.PageDto;
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.wms.outstorage.operator.pojo.dto.PackOrderSubmitDto;
 import com.apl.wms.outstorage.operator.pojo.dto.PullMaterialsKeyDto;
 import com.apl.wms.outstorage.operator.pojo.po.PullMaterialsPo;
@@ -25,7 +25,7 @@ public interface PullMaterialsService extends IService<PullMaterialsPo> {
          * @author cy
          * @since 2020-06-13
          */
-        ResultUtils<Integer> add(PullMaterialsPo pullMaterials);
+        ResultUtil<Integer> add(PullMaterialsPo pullMaterials);
 
 
         /**
@@ -33,7 +33,7 @@ public interface PullMaterialsService extends IService<PullMaterialsPo> {
          * @author cy
          * @since 2020-06-13
          */
-        ResultUtils<Boolean> updById(PullMaterialsPo pullMaterials);
+        ResultUtil<Boolean> updById(PullMaterialsPo pullMaterials);
 
 
         /**
@@ -41,7 +41,7 @@ public interface PullMaterialsService extends IService<PullMaterialsPo> {
          * @author cy
          * @since 2020-06-13
          */
-        ResultUtils<Boolean> delById(Long id);
+        ResultUtil<Boolean> delById(Long id);
 
 
         /**
@@ -49,7 +49,7 @@ public interface PullMaterialsService extends IService<PullMaterialsPo> {
          * @author cy
          * @since 2020-06-13
          */
-        ResultUtils<PullMaterialsInfoVo> selectById(Long id);
+        ResultUtil<PullMaterialsInfoVo> selectById(Long id);
 
 
         /**
@@ -57,12 +57,12 @@ public interface PullMaterialsService extends IService<PullMaterialsPo> {
          * @author cy
          * @since 2020-06-13
          */
-        ResultUtils<Page<PullMaterialsListVo>>getList(PageDto pageDto, PullMaterialsKeyDto keyDto);
+        ResultUtil<Page<PullMaterialsListVo>>getList(PageDto pageDto, PullMaterialsKeyDto keyDto);
 
         /**
          * @Desc: 提交打包信息
          * @Author: CY
          * @Date: 2020/6/15 11:58
          */
-        ResultUtils submitPackMsg(PackOrderSubmitDto packOrderSubmit) throws Exception;
+        ResultUtil submitPackMsg(PackOrderSubmitDto packOrderSubmit) throws Exception;
 }

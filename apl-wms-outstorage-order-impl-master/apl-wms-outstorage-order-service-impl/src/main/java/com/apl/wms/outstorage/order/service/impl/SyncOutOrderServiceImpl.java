@@ -9,7 +9,7 @@ import com.apl.lib.join.JoinUtils;
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.CommonContextHolder;
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
 import com.apl.lib.utils.StringUtil;
 import com.apl.sys.lib.cache.CustomerCacheBo;
@@ -88,9 +88,9 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
     static JoinFieldInfo joinStoreInfo = null; //跨项目跨库关联 店铺表 反射字段缓存
 
     @Override
-    public ResultUtils<Integer> add(SyncOutOrderSaveDto syncOrder){
+    public ResultUtil<Integer> add(SyncOutOrderSaveDto syncOrder){
 
-        ResultUtils<String> feignResult =  warehouseFeign.getStoreApiConfigStrVal(syncOrder.getStoreId());
+        ResultUtil<String> feignResult =  warehouseFeign.getStoreApiConfigStrVal(syncOrder.getStoreId());
         if(feignResult==null  || feignResult.getCode()==null || !feignResult.getCode().equals("SYSTEM_SUCCESS") ) {
             throw new AplException(SyncOrderServiceCode.GET_STORE_API_CONFIG_FAIL.code, SyncOrderServiceCode.GET_STORE_API_CONFIG_FAIL.msg);
         }
@@ -118,58 +118,58 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
 
         Integer flag = baseMapper.insert(syncOrderPo);
         if(flag.equals(1)){
-            return ResultUtils.APPRESULT(CommonStatusCode.SAVE_SUCCESS , syncOrder.getId());
+            return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS , syncOrder.getId());
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_FAIL , null);
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_FAIL , null);
     }
 
 
     @Override
-    public ResultUtils<Boolean> updById(SyncOutOrderSaveDto syncOrder, Long customerId){
+    public ResultUtil<Boolean> updById(SyncOutOrderSaveDto syncOrder, Long customerId){
 
         SyncOutOrderPo syncOrderPo = new SyncOutOrderPo();
         BeanUtils.copyProperties(syncOrder , syncOrderPo);
 
         Integer flag = baseMapper.updateById(syncOrderPo);
         if(flag.equals(1)){
-            return ResultUtils.APPRESULT(CommonStatusCode.SAVE_SUCCESS , true);
+            return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS , true);
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_FAIL , false);
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_FAIL , false);
     }
 
 
     @Override
-    public ResultUtils<Boolean> updStatus(Long id, Integer status, Long customerId){
+    public ResultUtil<Boolean> updStatus(Long id, Integer status, Long customerId){
 
         Integer flag = baseMapper.updStatus(id, status, customerId);
         if(flag.equals(1)){
-            return ResultUtils.APPRESULT(CommonStatusCode.SAVE_SUCCESS , true);
+            return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS , true);
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_FAIL , false);
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_FAIL , false);
     }
 
 
     @Override
-    public ResultUtils<Boolean> delById(Long id, Long customerId){
+    public ResultUtil<Boolean> delById(Long id, Long customerId){
 
         boolean flag = removeById(id);
         if(flag){
-            return ResultUtils.APPRESULT(CommonStatusCode.DEL_SUCCESS , true);
+            return ResultUtil.APPRESULT(CommonStatusCode.DEL_SUCCESS , true);
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.DEL_FAIL , false);
+        return ResultUtil.APPRESULT(CommonStatusCode.DEL_FAIL , false);
     }
 
 
     @Override
-    public ResultUtils<SyncOutOrderInfoVo> selectById(Long id, Long customerId, Integer isShowCustomer) {
+    public ResultUtil<SyncOutOrderInfoVo> selectById(Long id, Long customerId, Integer isShowCustomer) {
 
         SyncOutOrderInfoVo syncOrderInfoVo = baseMapper.getById(id);
         if(syncOrderInfoVo==null){
-            return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, null);
+            return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, null);
         }
 
         //关联客户名称
@@ -183,12 +183,12 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
         syncOrderInfoVo.setStoreName(storeCacheBo.getStoreName());
         syncOrderInfoVo.setStoreNameEn(storeCacheBo.getStoreNameEn());
 
-        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, syncOrderInfoVo);
+        return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, syncOrderInfoVo);
     }
 
 
     @Override
-    public ResultUtils<Page<SyncOutOrderListVo>> getList(PageDto pageDto, SyncOutOrderKeyDto keyDto, Integer isShowCustomer) throws Exception{
+    public ResultUtil<Page<SyncOutOrderListVo>> getList(PageDto pageDto, SyncOutOrderKeyDto keyDto, Integer isShowCustomer) throws Exception{
 
         Page<SyncOutOrderListVo> page = new Page();
         page.setCurrent(pageDto.getPageIndex());
@@ -197,7 +197,7 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
         List<SyncOutOrderListVo> list = baseMapper.getList(page , keyDto);
         if(list==null || list.size()==0) {
             page.setRecords(list);
-            return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, page);
+            return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, page);
         }
 
         SecurityUser securityUser = CommonContextHolder.getSecurityUser();
@@ -244,7 +244,7 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
         }
         redisTemplate.opsForValue().multiSet(maps);
 
-        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, page);
+        return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, page);
     }
 
 
@@ -256,14 +256,14 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
         }
     }
 
-    public ResultUtils<Boolean> bootTask(Long id, Long customerId){
+    public ResultUtil<Boolean> bootTask(Long id, Long customerId){
 
         SyncOutOrderTaskBo byncOutOrderTaskBo = baseMapper.bootTask(id, customerId);
         if (null==byncOutOrderTaskBo) {
             throw new AplException("TASK_NOT_EXIST", "任务不存在");
         }
 
-        ResultUtils<String> apiConfigByFeign =  warehouseFeign.getStoreApiConfigStrVal(byncOutOrderTaskBo.getStoreId());
+        ResultUtil<String> apiConfigByFeign =  warehouseFeign.getStoreApiConfigStrVal(byncOutOrderTaskBo.getStoreId());
         if(apiConfigByFeign==null  || apiConfigByFeign.getCode()==null || !apiConfigByFeign.getCode().equals("SYSTEM_SUCCESS") ) {
             throw new AplException(SyncOrderServiceCode.GET_STORE_API_CONFIG_FAIL.code, SyncOrderServiceCode.GET_STORE_API_CONFIG_FAIL.msg);
         }
@@ -286,11 +286,11 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
             redisTemplate.opsForValue().set(key, 2);
         }
 
-        return ResultUtils.APPRESULT(SyncOrderServiceCode.TASK_ALREADY_BOOT.code, SyncOrderServiceCode.TASK_ALREADY_BOOT.msg, true);
+        return ResultUtil.APPRESULT(SyncOrderServiceCode.TASK_ALREADY_BOOT.code, SyncOrderServiceCode.TASK_ALREADY_BOOT.msg, true);
     }
 
 
-    public ResultUtils<Integer> getStatus(Long id){
+    public ResultUtil<Integer> getStatus(Long id){
 
         SecurityUser securityUser = CommonContextHolder.getSecurityUser();
         String key = "TASK_STATUS:" + securityUser.getInnerOrgId().toString() + "_" + id.toString();
@@ -298,7 +298,7 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
         if(status!=null &&  status.equals(3)){
             //同步完成, 清空缓存
             redisTemplate.delete(key);
-            return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, status);
+            return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, status);
         }
 
         if(status==null){
@@ -309,6 +309,6 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
             }
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, status);
+        return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, status);
     }
 }

@@ -3,7 +3,7 @@ package com.apl.wms.outstorage.operator.service.impl;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.pojo.dto.PageDto;
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
 import com.apl.wms.outstorage.operator.mapper.PullAllocationItemMapper;
 import com.apl.wms.outstorage.operator.pojo.dto.PullAllocationItemKeyDto;
@@ -61,54 +61,54 @@ public class PullItemServiceImpl extends ServiceImpl<PullAllocationItemMapper, P
     }
 
     @Override
-    public ResultUtils<Integer> add(PullAllocationItemPo pullItem){
+    public ResultUtil<Integer> add(PullAllocationItemPo pullItem){
 
 
         Integer flag = baseMapper.insert(pullItem);
         if(flag.equals(1)){
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_SUCCESS , pullItem.getId());
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS , pullItem.getId());
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_FAIL , null);
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_FAIL , null);
         }
 
 
     @Override
-    public ResultUtils<Boolean> updById(PullAllocationItemPo pullItem){
+    public ResultUtil<Boolean> updById(PullAllocationItemPo pullItem){
 
 
         Integer flag = baseMapper.updateById(pullItem);
         if(flag.equals(1)){
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_SUCCESS , true);
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS , true);
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_FAIL , false);
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_FAIL , false);
         }
 
 
     @Override
-    public ResultUtils<Boolean> delById(Long id){
+    public ResultUtil<Boolean> delById(Long id){
 
         boolean flag = removeById(id);
         if(flag){
-        return ResultUtils.APPRESULT(CommonStatusCode.DEL_SUCCESS , true);
+        return ResultUtil.APPRESULT(CommonStatusCode.DEL_SUCCESS , true);
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.DEL_FAIL , false);
+        return ResultUtil.APPRESULT(CommonStatusCode.DEL_FAIL , false);
         }
 
 
     @Override
-    public ResultUtils<PullAllocationItemInfoVo> selectById(Long id){
+    public ResultUtil<PullAllocationItemInfoVo> selectById(Long id){
 
     PullAllocationItemInfoVo pullAllocationItemInfoVo = baseMapper.getById(id);
 
-        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, pullAllocationItemInfoVo);
+        return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, pullAllocationItemInfoVo);
         }
 
 
     @Override
-    public ResultUtils<Page<PullAllocationItemListVo>> getList(PageDto pageDto, PullAllocationItemKeyDto keyDto){
+    public ResultUtil<Page<PullAllocationItemListVo>> getList(PageDto pageDto, PullAllocationItemKeyDto keyDto){
 
         Page<PullAllocationItemListVo> page = new Page();
         page.setCurrent(pageDto.getPageIndex());
@@ -117,14 +117,14 @@ public class PullItemServiceImpl extends ServiceImpl<PullAllocationItemMapper, P
         List<PullAllocationItemListVo> list = baseMapper.getList(page , keyDto);
         page.setRecords(list);
 
-        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS , page);
+        return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS , page);
         }
 
     @Override
     public void pullCommodity(Long batchId, List<PullBatchOrderItemBo> pullBatchOrderItems) {
 
         //冻结库位库存
-        ResultUtils<Map<String, List<PullBatchOrderItemBo>>> invokeResult = warehouseFeign.lockStorageLocal(pullBatchOrderItems);
+        ResultUtil<Map<String, List<PullBatchOrderItemBo>>> invokeResult = warehouseFeign.lockStorageLocal(pullBatchOrderItems);
 
         if(invokeResult.getCode().equals(CommonStatusCode.SERVER_INVOKE_FAIL)){
             throw new AplException(CommonStatusCode.SERVER_INVOKE_FAIL);

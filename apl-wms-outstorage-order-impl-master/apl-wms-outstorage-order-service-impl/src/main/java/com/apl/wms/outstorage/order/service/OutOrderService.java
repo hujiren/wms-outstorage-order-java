@@ -1,7 +1,7 @@
 package com.apl.wms.outstorage.order.service;
 
 import com.apl.lib.pojo.dto.PageDto;
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.wms.outstorage.order.lib.pojo.bo.OutOrderMultipleBo;
 import com.apl.wms.outstorage.order.lib.pojo.dto.OutOrderCommodityItemUpdDto;
 import com.apl.wms.outstorage.order.lib.pojo.dto.OutOrderDestUpdDto;
@@ -34,7 +34,7 @@ public interface OutOrderService extends IService<OutOrderPo> {
          * @author arran
          * @since 2020-01-07
          */
-        ResultUtils<String> saveCommodity(OutOrderMainDto outOrderMainDto , List<OutOrderCommodityItemUpdDto> outOrderCommodityItemUpdDtos, Integer isMultipleOrder) throws Exception;
+        ResultUtil<String> saveCommodity(OutOrderMainDto outOrderMainDto , List<OutOrderCommodityItemUpdDto> outOrderCommodityItemUpdDtos, Integer isMultipleOrder) throws Exception;
 
 
         /**
@@ -42,7 +42,7 @@ public interface OutOrderService extends IService<OutOrderPo> {
          * @author arran
          * @since 2020-01-07
          */
-        ResultUtils<Boolean> saveDestInfo(OutOrderDestUpdDto destDto, Long customerId, Integer orderFrom);
+        ResultUtil<Boolean> saveDestInfo(OutOrderDestUpdDto destDto, Long customerId, Integer orderFrom);
 
 
         //保存多个订单
@@ -50,7 +50,7 @@ public interface OutOrderService extends IService<OutOrderPo> {
 
 
         //更新订单状态
-        ResultUtils<Boolean> updStatus(Long id, Integer status, Long customerId);
+        ResultUtil<Boolean> updStatus(Long id, Integer status, Long customerId);
 
         /**
          * @Desc: 批量更新 拣货状态
@@ -64,7 +64,7 @@ public interface OutOrderService extends IService<OutOrderPo> {
          * @author arran
          * @since 2020-01-07
          */
-        ResultUtils<Boolean> delById(Long orderId , Long customerId);
+        ResultUtil<Boolean> delById(Long orderId , Long customerId);
 
 
         /**
@@ -72,28 +72,28 @@ public interface OutOrderService extends IService<OutOrderPo> {
          * @author arran
          * @since 2020-01-07
          */
-        ResultUtils<Map> selectById(Long id, Long customerId)  throws Exception;
+        ResultUtil<Map> selectById(Long id, Long customerId)  throws Exception;
 
         /**
          * @Desc: 获取订单打包详细
          * @Author: CY
          * @Date: 2020/6/13 12:10
          */
-        ResultUtils<OrderItemListVo> getOrderPackMsg(Long orderId) throws Exception;
+        ResultUtil<OrderItemListVo> getOrderPackMsg(Long orderId) throws Exception;
 
         /**
          * @Desc: 获取多个订单信息
          * @Author: CY
          * @Date: 2020/6/8 16:32
          */
-        ResultUtils<List<OrderItemListVo>> getMultiOrderMsg(List<Long> orderIds , Integer orderStatus) throws Exception;
+        ResultUtil<List<OrderItemListVo>> getMultiOrderMsg(List<Long> orderIds , Integer orderStatus) throws Exception;
 
         /**
          * @Desc: 查询
          * @author arran
          * @since 2020-01-07
          */
-        ResultUtils<OutOrderListResultVo>getList(PageDto pageDto, OutOrderKeyDto keyDto)  throws Exception;
+        ResultUtil<OutOrderListResultVo>getList(PageDto pageDto, OutOrderKeyDto keyDto)  throws Exception;
 
 
         /**
@@ -101,21 +101,21 @@ public interface OutOrderService extends IService<OutOrderPo> {
          * @Author: CY
          * @Date: 2020/6/2 10:11
          */
-        ResultUtils<OutOrderListResultVo> listWrongOrder(PageDto pageDto, OutOrderKeyDto keyDto) throws Exception;
+        ResultUtil<OutOrderListResultVo> listWrongOrder(PageDto pageDto, OutOrderKeyDto keyDto) throws Exception;
 
         /**
          * @Desc: 获取某个拣货员 的订单列表
          * @Author: CY
          * @Date: 2020/6/8 10:10
          */
-        ResultUtils<List<OutOrderInfoVo>> listOperatorOrders() throws Exception;
+        ResultUtil<List<OutOrderInfoVo>> listOperatorOrders() throws Exception;
 
         /**
          * @Desc: 分页获取订单捡货信息
          * @Author: CY
          * @Date: 2020/6/1 11:39
          */
-        ResultUtils<Page> pageOrderPull(PageDto pageDto, PullOrderKeyDto keyDto);
+        ResultUtil<Page> pageOrderPull(PageDto pageDto, PullOrderKeyDto keyDto);
 
 
         /**
@@ -123,28 +123,28 @@ public interface OutOrderService extends IService<OutOrderPo> {
          * @Author: CY
          * @Date: 2020/6/1 17:34
          */
-        ResultUtils<List<StatisticsOrderVo>> statisticsOrder(PullOrderKeyDto keyDto);
+        ResultUtil<List<StatisticsOrderVo>> statisticsOrder(PullOrderKeyDto keyDto);
 
         /**
          * @Desc: 分配 订单给对应的拣货员
          * @Author: CY
          * @Date: 2020/1/13 9:54
          */
-        ResultUtils<Boolean> allocationOperator(Long memberId, String orderIdList);
+        ResultUtil<Boolean> allocationOperator(Long memberId, String orderIdList);
 
         /**
          * @Desc: 订单拣货分配取消
          * @Author: CY
          * @Date: 2020/1/13 9:54
          */
-        ResultUtils<Boolean> cancelAllocationOperator(Long memberId, String orderIdList);
+        ResultUtil<Boolean> cancelAllocationOperator(Long memberId, String orderIdList);
 
         /**
          * @Desc: 取消订单
          * @Author: CY
          * @Date: 2020/5/30 10:15
          */
-        ResultUtils<Boolean> cancelOrder(Long orderId);
+        ResultUtil<Boolean> cancelOrder(Long orderId);
 
 
 

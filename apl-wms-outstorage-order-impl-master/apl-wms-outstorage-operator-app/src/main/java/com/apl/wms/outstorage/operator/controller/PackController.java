@@ -1,7 +1,7 @@
 package com.apl.wms.outstorage.operator.controller;
 
 
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.wms.outstorage.order.pojo.vo.OutOrderCommodityItemInfoVo;
 import com.apl.wms.outstorage.order.service.OutOrderCommodityItemService;
 import com.apl.wms.outstorage.order.service.OutOrderService;
@@ -39,14 +39,14 @@ public class PackController {
     @PostMapping(value = "/get-order-pack")
     @ApiOperation(value =  "获取订单打包详细" , notes = "获取订单打包详细")
     @ApiImplicitParam(name = "orderId",value = "订单id",required = true  , paramType = "query")
-    public ResultUtils<OrderItemListVo> getOrderPackMsg(@NotNull(message = "id不能为空") @Min(value = 1 , message = "id不能小于1") Long orderId)  throws Exception{
+    public ResultUtil<OrderItemListVo> getOrderPackMsg(@NotNull(message = "id不能为空") @Min(value = 1 , message = "id不能小于1") Long orderId)  throws Exception{
 
         return outOrderService.getOrderPackMsg(orderId);
     }
 
     @PostMapping("/submit-pack")
     @ApiOperation(value =  "提交打包数据" , notes = "提交打包数据")
-    public ResultUtils submitPackMsg(@RequestBody PackOrderSubmitDto packOrderSubmit) throws Exception {
+    public ResultUtil submitPackMsg(@RequestBody PackOrderSubmitDto packOrderSubmit) throws Exception {
 
         //return pullMaterialsService.submitPackMsg(packOrderSubmit);
         return  null;

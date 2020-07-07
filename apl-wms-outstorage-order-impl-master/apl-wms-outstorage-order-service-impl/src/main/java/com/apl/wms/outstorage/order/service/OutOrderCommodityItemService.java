@@ -1,6 +1,6 @@
 package com.apl.wms.outstorage.order.service;
 
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
 import com.apl.wms.outstorage.order.lib.pojo.dto.OutOrderCommodityItemUpdDto;
 import com.apl.wms.outstorage.order.pojo.po.OutOrderCommodityItemPo;
@@ -52,7 +52,7 @@ public interface OutOrderCommodityItemService extends IService<OutOrderCommodity
          * @author arran
          * @since 2020-01-07
          */
-        ResultUtils<Boolean> delById(Long id);
+        ResultUtil<Boolean> delById(Long id);
 
 
         /**
@@ -75,7 +75,7 @@ public interface OutOrderCommodityItemService extends IService<OutOrderCommodity
          * @param: 多个订单id
          * @return
          */
-        ResultUtils<List<AllocationWarehouseOutOrderBo>> getOrdersByAllocationWarehouse(List<Long> orderIds) throws Exception;
+        ResultUtil<List<AllocationWarehouseOutOrderBo>> getOrdersByAllocationWarehouse(List<Long> orderIds) throws Exception;
 
 
 

@@ -1,7 +1,7 @@
 package com.apl.wms.outstorage.operator.service.impl;
 
 import com.apl.lib.constants.CommonStatusCode;
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.wms.outstorage.operator.mapper.PullAllocationItemMapper;
 import com.apl.wms.outstorage.operator.pojo.po.PullAllocationItemPo;
 import com.apl.wms.outstorage.operator.service.PullAllocationItemService;
@@ -24,7 +24,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
 
     @Override
-    public ResultUtils<Integer> insertAllocationItem(Long outOrderId, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos) {
+    public ResultUtil<Integer> insertAllocationItem(Long outOrderId, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos) {
 
         List<PullAllocationItemPo> itemPoList = new ArrayList<>();
 
@@ -39,6 +39,6 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
         Integer integer = baseMapper.insertPullAllocationItem(itemPoList);
 
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_SUCCESS, integer);
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, integer);
     }
 }

@@ -5,7 +5,7 @@ import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinKeyValues;
 import com.apl.lib.join.JoinUtils;
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOrderCommodityBo;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
@@ -141,14 +141,14 @@ public class OutOrderCommodityItemServiceImpl extends ServiceImpl<OutOrderCommod
 
 
     @Override
-    public ResultUtils<Boolean> delById(Long id) {
+    public ResultUtil<Boolean> delById(Long id) {
 
         boolean flag = removeById(id);
         if (flag) {
-            return ResultUtils.APPRESULT(CommonStatusCode.DEL_SUCCESS, true);
+            return ResultUtil.APPRESULT(CommonStatusCode.DEL_SUCCESS, true);
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.DEL_FAIL, false);
+        return ResultUtil.APPRESULT(CommonStatusCode.DEL_FAIL, false);
     }
 
 
@@ -184,7 +184,7 @@ public class OutOrderCommodityItemServiceImpl extends ServiceImpl<OutOrderCommod
      * @return
      */
     @Override
-    public ResultUtils<List<AllocationWarehouseOutOrderBo>> getOrdersByAllocationWarehouse(List<Long> orderIds) throws Exception {
+    public ResultUtil<List<AllocationWarehouseOutOrderBo>> getOrdersByAllocationWarehouse(List<Long> orderIds) throws Exception {
 
         JoinKeyValues joinKeyValues = JoinUtils.getLongKeys(orderIds);
         //根据分配仓库传来的多个订单id获取 订单id, 仓库id列表集合  database: out_order  result: orderId, whId
@@ -211,7 +211,7 @@ public class OutOrderCommodityItemServiceImpl extends ServiceImpl<OutOrderCommod
             allocationWarehouseOutOrderIterator.setAllocationWarehouseOrderCommodityBoList(allocationWarehouseOrderCommodityBoList);
         }
 
-        ResultUtils result = ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, allocationWarehouseOutOrderList);
+        ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, allocationWarehouseOutOrderList);
 
         return result;
     }

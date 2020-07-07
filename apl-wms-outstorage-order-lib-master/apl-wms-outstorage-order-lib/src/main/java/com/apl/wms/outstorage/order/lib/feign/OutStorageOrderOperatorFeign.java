@@ -1,6 +1,6 @@
 package com.apl.wms.outstorage.order.lib.feign;
 
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.wms.outstorage.order.lib.feign.impl.OutStorageOrderOperatorFeignImpl;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
 import com.apl.wms.warehouse.lib.pojo.bo.CompareStorageLocalStocksBo;
@@ -20,8 +20,8 @@ import java.util.List;
 public interface OutStorageOrderOperatorFeign {
 
     @PostMapping(value = "/order-pick/get-orders-commodity-by-allocation-warehouse")
-    ResultUtils<List<AllocationWarehouseOutOrderBo>> getOrdersByAllocationWarehouse(@RequestParam("orderIds")String orderIds);
+    ResultUtil<List<AllocationWarehouseOutOrderBo>> getOrdersByAllocationWarehouse(@RequestParam("orderIds")String orderIds);
 
     @PostMapping(value = "/pull-allocation-item/insert")
-    ResultUtils<Integer>  insertAllocationItem(@RequestParam("outOrderId")Long outOrderId, @RequestParam("compareStorageLocalStocksBos")List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos);
+    ResultUtil<Integer>  insertAllocationItem(@RequestParam("outOrderId")Long outOrderId, @RequestParam("compareStorageLocalStocksBos")List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos);
 }

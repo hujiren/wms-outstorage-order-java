@@ -4,7 +4,7 @@ import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinUtils;
 import com.apl.lib.pojo.dto.PageDto;
-import com.apl.lib.utils.ResultUtils;
+import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
 import com.apl.wms.outstorage.order.pojo.po.OutOrderPo;
 import com.apl.wms.outstorage.order.service.OutOrderService;
@@ -76,54 +76,54 @@ public class PullMaterialsServiceImpl extends ServiceImpl<PullMaterialsMapper, P
 
 
     @Override
-    public ResultUtils<Integer> add(PullMaterialsPo pullMaterials){
+    public ResultUtil<Integer> add(PullMaterialsPo pullMaterials){
 
 
         Integer flag = baseMapper.insert(pullMaterials);
         if(flag.equals(1)){
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_SUCCESS , pullMaterials.getId());
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS , pullMaterials.getId());
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_FAIL , null);
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_FAIL , null);
         }
 
 
     @Override
-    public ResultUtils<Boolean> updById(PullMaterialsPo pullMaterials){
+    public ResultUtil<Boolean> updById(PullMaterialsPo pullMaterials){
 
 
         Integer flag = baseMapper.updateById(pullMaterials);
         if(flag.equals(1)){
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_SUCCESS , true);
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS , true);
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_FAIL , false);
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_FAIL , false);
         }
 
 
     @Override
-    public ResultUtils<Boolean> delById(Long id){
+    public ResultUtil<Boolean> delById(Long id){
 
         boolean flag = removeById(id);
         if(flag){
-        return ResultUtils.APPRESULT(CommonStatusCode.DEL_SUCCESS , true);
+        return ResultUtil.APPRESULT(CommonStatusCode.DEL_SUCCESS , true);
         }
 
-        return ResultUtils.APPRESULT(CommonStatusCode.DEL_FAIL , false);
+        return ResultUtil.APPRESULT(CommonStatusCode.DEL_FAIL , false);
         }
 
 
     @Override
-    public ResultUtils<PullMaterialsInfoVo> selectById(Long id){
+    public ResultUtil<PullMaterialsInfoVo> selectById(Long id){
 
         PullMaterialsInfoVo pullMaterialsInfoVo = baseMapper.getById(id);
 
-        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS, pullMaterialsInfoVo);
+        return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, pullMaterialsInfoVo);
     }
 
 
     @Override
-    public ResultUtils<Page<PullMaterialsListVo>> getList(PageDto pageDto, PullMaterialsKeyDto keyDto){
+    public ResultUtil<Page<PullMaterialsListVo>> getList(PageDto pageDto, PullMaterialsKeyDto keyDto){
 
         Page<PullMaterialsListVo> page = new Page();
         page.setCurrent(pageDto.getPageIndex());
@@ -132,12 +132,12 @@ public class PullMaterialsServiceImpl extends ServiceImpl<PullMaterialsMapper, P
         List<PullMaterialsListVo> list = baseMapper.getList(page , keyDto);
         page.setRecords(list);
 
-        return ResultUtils.APPRESULT(CommonStatusCode.GET_SUCCESS , page);
+        return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS , page);
         }
 
     @Override
     @Transactional
-    public ResultUtils submitPackMsg(PackOrderSubmitDto packOrderSubmit) throws Exception {
+    public ResultUtil submitPackMsg(PackOrderSubmitDto packOrderSubmit) throws Exception {
 
         //判断订单状态
         OutOrderPo outOrderPo = outOrderService.getById(packOrderSubmit.getOrderId());
@@ -166,7 +166,7 @@ public class PullMaterialsServiceImpl extends ServiceImpl<PullMaterialsMapper, P
         outOrderPo.setPullStatus(PullStatusType.PACK_DONE.getStatus());
         outOrderService.updateById(outOrderPo);
 
-        return ResultUtils.APPRESULT(CommonStatusCode.SAVE_SUCCESS , null);
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS , null);
     }
 
     private void validatePackMsg(PackOrderSubmitDto packOrderSubmit) throws Exception {
