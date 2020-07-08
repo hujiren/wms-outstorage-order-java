@@ -2,7 +2,7 @@ package com.apl.wms.outstorage.operator.service.impl;
 
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
-import com.apl.lib.join.JoinUtils;
+import com.apl.lib.join.JoinUtil;
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
@@ -183,7 +183,7 @@ public class PullMaterialsServiceImpl extends ServiceImpl<PullMaterialsMapper, P
             packagingMaterialsCountBoList.addAll(packagingMaterialsCountEntry.getValue());
         }
 
-        Map<String, List<PackagingMaterialsCountBo>> materialsMap = JoinUtils.listGrouping(packagingMaterialsCountBoList , "id");
+        Map<String, List<PackagingMaterialsCountBo>> materialsMap = JoinUtil.listGrouping(packagingMaterialsCountBoList , "id");
 
         for (Map.Entry<String, List<PackagingMaterialsCountBo>> packagingMaterialsEntry : materialsMap.entrySet()) {
 

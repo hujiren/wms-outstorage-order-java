@@ -3,7 +3,7 @@ package com.apl.wms.outstorage.operator.service.impl;
 import com.apl.lib.amqp.RabbitSender;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
-import com.apl.lib.join.JoinUtils;
+import com.apl.lib.join.JoinUtil;
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.*;
@@ -145,7 +145,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         //批次对应的 下架分组信息 key:商品id value:商品对应的库位列表
 
         List<PullAllocationItemInfoVo> pullAllocationItemInfoVoList = pullItemService.listPullItemByBatchId(batchId);
-        Map<String, List<PullAllocationItemInfoVo>> pullItemInfoVos = JoinUtils.listGrouping(pullAllocationItemInfoVoList, "commodityId");
+        Map<String, List<PullAllocationItemInfoVo>> pullItemInfoVos = JoinUtil.listGrouping(pullAllocationItemInfoVoList, "commodityId");
 
         if (CollectionUtils.isEmpty(pullItemInfoVos)) {
             return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, pullAllocationItemMsgVos);

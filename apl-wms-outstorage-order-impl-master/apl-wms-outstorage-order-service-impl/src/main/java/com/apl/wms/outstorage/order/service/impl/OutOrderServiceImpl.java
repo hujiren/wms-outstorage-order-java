@@ -6,7 +6,7 @@ import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinBase;
 import com.apl.lib.join.JoinFieldInfo;
 import com.apl.lib.join.JoinKeyValues;
-import com.apl.lib.join.JoinUtils;
+import com.apl.lib.join.JoinUtil;
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.*;
@@ -371,7 +371,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         }
         joinTabs.add(joinCommodity);
         //执行跨项目跨库关联商品图片
-        JoinUtils.join(commodityItems, joinTabs);
+        JoinUtil.join(commodityItems, joinTabs);
 
         //目的地信息
         OutOrderDestVo destVo = outOrderDestService.selectById(orderId);
@@ -433,10 +433,10 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         //获取订单列表 id SKU
         List<OrderItemListVo> orderListVos = baseMapper.selectOrderByIds(orderIds , orderStatus);
 
-        JoinKeyValues joinKeyValues = JoinUtils.getLongKeys(orderIds);
+        JoinKeyValues joinKeyValues = JoinUtil.getLongKeys(orderIds);
         List<OutOrderCommodityItemInfoVo> orderItems = outOrderCommodityItemService.getOrderItemsByOrderIds(joinKeyValues.getSbKeys().toString());
 
-        LinkedHashMap<String, List<OutOrderCommodityItemInfoVo>> outOrderCommodityMaps = JoinUtils.listGrouping(orderItems, "orderId");
+        LinkedHashMap<String, List<OutOrderCommodityItemInfoVo>> outOrderCommodityMaps = JoinUtil.listGrouping(orderItems, "orderId");
 
         for (OrderItemListVo orderItemListVo : orderListVos) {
 
@@ -489,7 +489,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
             }
 
             //查找第二步，用订单id列表查找订单
-            joinKeyValues = JoinUtils.getLongKeys(listIds);
+            joinKeyValues = JoinUtil.getLongKeys(listIds);
             list = baseMapper.getListByIds(joinKeyValues.getSbKeys().toString(), joinKeyValues.getMinKey(), joinKeyValues.getMaxKey());
 
         } else {
@@ -501,7 +501,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
                 return result;
             }
 
-            joinKeyValues = JoinUtils.getKeys(list, "id", Long.class);
+            joinKeyValues = JoinUtil.getKeys(list, "id", Long.class);
         }
 
         //查找多个订单商品项目总表
@@ -509,7 +509,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
         //订单商品项目总表，按订单id, 拆分成多个子表
         Map<String, List<OutOrderCommodityItemInfoVo>> commodityItemsMap = null;
-        commodityItemsMap = JoinUtils.listGrouping(commodityItemVos, "orderId");
+        commodityItemsMap = JoinUtil.listGrouping(commodityItemVos, "orderId");
         outOrderListResultVo.setCommodityItems(commodityItemsMap);
 
         //跨项目跨库关联表数组
@@ -525,7 +525,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         }
         joinTabs.add(joinCommodity);
         //执行跨项目跨库关联商品图片
-        JoinUtils.join(commodityItemVos, joinTabs);
+        JoinUtil.join(commodityItemVos, joinTabs);
 
 
         joinTabs = new ArrayList<>();
@@ -563,7 +563,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
 
         //执行跨项目跨库关联
-        JoinUtils.join(list, joinTabs);
+        JoinUtil.join(list, joinTabs);
 
         //组装分页信息
         outOrderListResultVo.setOutOrders(list);
@@ -603,14 +603,14 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
             return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, null);
         }
 
-        JoinKeyValues joinKeyValues = JoinUtils.getKeys(list, "id", Long.class);
+        JoinKeyValues joinKeyValues = JoinUtil.getKeys(list, "id", Long.class);
 
         //查找多个订单商品项目总表
         List<OutOrderCommodityItemInfoVo> commodityItemVos = outOrderCommodityItemService.getOrderItemsByOrderIds(joinKeyValues.getSbKeys().toString());
 
         //订单商品项目总表，按订单id, 拆分成多个子表
         Map<String, List<OutOrderCommodityItemInfoVo>> commodityItemsMap = null;
-        commodityItemsMap = JoinUtils.listGrouping(commodityItemVos, "orderId");
+        commodityItemsMap = JoinUtil.listGrouping(commodityItemVos, "orderId");
         outOrderListResultVo.setCommodityItems(commodityItemsMap);
 
         //跨项目跨库关联表数组
@@ -626,7 +626,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         }
         joinTabs.add(joinCommodity);
         //执行跨项目跨库关联商品图片
-        JoinUtils.join(commodityItemVos, joinTabs);
+        JoinUtil.join(commodityItemVos, joinTabs);
 
 
         joinTabs = new ArrayList<>();
@@ -664,7 +664,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
 
         //执行跨项目跨库关联
-        JoinUtils.join(list, joinTabs);
+        JoinUtil.join(list, joinTabs);
 
         //组装分页信息
         outOrderListResultVo.setOutOrders(list);
@@ -702,7 +702,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         joinTabs.add(joinCustomer);
 
         //执行跨项目跨库关联
-        JoinUtils.join(outOrderInfoVos, joinTabs);
+        JoinUtil.join(outOrderInfoVos, joinTabs);
 
         return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS , outOrderInfoVos);
 
@@ -978,7 +978,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         joinCommodity.addField("commodityId", Long.class, "imgUrl", String.class);
         joinTabs.add(joinCommodity);
 
-        JoinUtils.join(commodityItems, joinTabs);
+        JoinUtil.join(commodityItems, joinTabs);
     }
 
 

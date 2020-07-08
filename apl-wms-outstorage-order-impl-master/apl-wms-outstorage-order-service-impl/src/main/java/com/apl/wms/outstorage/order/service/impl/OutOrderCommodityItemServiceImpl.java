@@ -4,7 +4,7 @@ import com.apl.lib.amqp.RabbitSender;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinKeyValues;
-import com.apl.lib.join.JoinUtils;
+import com.apl.lib.join.JoinUtil;
 import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOrderCommodityBo;
@@ -186,7 +186,7 @@ public class OutOrderCommodityItemServiceImpl extends ServiceImpl<OutOrderCommod
     @Override
     public ResultUtil<List<AllocationWarehouseOutOrderBo>> getOrdersByAllocationWarehouse(List<Long> orderIds) throws Exception {
 
-        JoinKeyValues joinKeyValues = JoinUtils.getLongKeys(orderIds);
+        JoinKeyValues joinKeyValues = JoinUtil.getLongKeys(orderIds);
         //根据分配仓库传来的多个订单id获取 订单id, 仓库id列表集合  database: out_order  result: orderId, whId
         List<AllocationWarehouseOutOrderBo> allocationWarehouseOutOrderList =
                 baseMapper.getOutOrderEntityByIds(joinKeyValues.getSbKeys().toString(), joinKeyValues.getMinKey(), joinKeyValues.getMaxKey());
@@ -196,11 +196,11 @@ public class OutOrderCommodityItemServiceImpl extends ServiceImpl<OutOrderCommod
         List<AllocationWarehouseOrderCommodityBo> allocationWarehouseOrderCommodityList = baseMapper.getOrdersByAllocationWarehouse
                 (joinKeyValues.getSbKeys().toString(),  joinKeyValues.getMinKey(), joinKeyValues.getMaxKey());
 
-//        JoinKeyValues CommodityIdValues = JoinUtils.getKeys(allocationWarehouseOrderCommodityList, "commodityId", Long.class);
+//        JoinKeyValues CommodityIdValues = JoinUtil.getKeys(allocationWarehouseOrderCommodityList, "commodityId", Long.class);
 
         //将获取的商品信息对象按照订单id分组, orderId为key
         Map<String, List<AllocationWarehouseOrderCommodityBo>> maps =
-                JoinUtils.listGrouping(allocationWarehouseOrderCommodityList, "orderId");
+                JoinUtil.listGrouping(allocationWarehouseOrderCommodityList, "orderId");
 
 
         //遍历订单 信息对象, 并将每个商品信息对象组合到订单信息对象中
