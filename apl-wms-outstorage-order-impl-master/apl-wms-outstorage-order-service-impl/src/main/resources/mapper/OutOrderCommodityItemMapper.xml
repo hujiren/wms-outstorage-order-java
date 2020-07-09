@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.apl.wms.outstorage.order.mapper.OutOrderCommodityItemMapper">
+<mapper namespace="com.apl.wms.outstorage.order.dao.OutOrderCommodityItemMapper">
 
 
 
@@ -59,36 +59,4 @@
     </delete>
 
 
-    <select id="getOrdersByAllocationWarehouse" resultType="com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOrderCommodityBo">
-        SELECT
-            order_id,
-            commodity_id,
-            order_qty
-        FROM
-            out_order_commodity_item
-        WHERE
-            1=1
-        <if test="minId != null and maxId != null">
-            AND order_id BETWEEN ${minId} AND ${maxId}
-        </if>
-            and order_id in (${orderIds})
-            order by order_id desc
-    </select>
-
-
-    <select id="getOutOrderEntityByIds" resultType="com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo">
-        select
-            id as orderId,
-            wh_id
-        from
-            out_order
-        WHERE
-        1=1
-        <if test="minId != null and maxId != null">
-            AND id BETWEEN ${minId} AND ${maxId}
-        </if>
-        and id in (${orderIds})
-        order by id desc
-
-    </select>
 </mapper>

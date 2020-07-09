@@ -1,4 +1,4 @@
-package com.apl.wms.outstorage.order.mapper;
+package com.apl.wms.outstorage.order.dao;
 
 
 import com.apl.wms.outstorage.order.pojo.po.OutOrderDestPo;

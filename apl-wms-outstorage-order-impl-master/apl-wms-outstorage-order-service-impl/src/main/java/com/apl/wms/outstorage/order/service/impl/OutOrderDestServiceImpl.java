@@ -1,6 +1,6 @@
 package com.apl.wms.outstorage.order.service.impl;
 
-import com.apl.wms.outstorage.order.mapper.OutOrderAttachmentMapper;
+import com.apl.wms.outstorage.order.dao.OutOrderAttachmentMapper;
 import com.apl.wms.outstorage.order.pojo.po.OutOrderDestPo;
 import com.apl.wms.outstorage.order.pojo.vo.OutOrderDestVo;
 import com.apl.wms.outstorage.order.service.OutOrderDestService;

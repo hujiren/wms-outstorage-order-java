@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.apl.wms.outstorage.operator.mapper.PullAllocationItemMapper">
+<mapper namespace="com.apl.wms.outstorage.operator.dao.PullAllocationItemMapper">
 
 
     <!-- 查找详情 2020-06-09-->
@@ -57,4 +57,81 @@
         </foreach>
 
     </insert>
+
+    <!-- 将分配好的订单更新订单状态为已分配仓库 -->
+    <update id="updateOrderStatus">
+        update out_order set pull_status = #{status} where id = #{orderId}
+    </update>
+
+
+    <update id="updateOrdersStatus">
+        update out_order set pull_status = #{status}
+        where
+        order_id in (${orderIds})
+        <if test="minId != null and maxId != null">
+            AND order_id BETWEEN ${minId} AND ${maxId}
+        </if>
+    </update>
+
+
+    <select id="getCommodityInfoById" resultType="com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOrderCommodityBo">
+        SELECT
+            order_id,
+            commodity_id,
+            order_qty
+        FROM
+            out_order_commodity_item
+        WHERE
+           order_id=#{orderId}
+    </select>
+
+
+    <!-- 根据多个订单id, 批量获取订单中商品信息 -->
+    <select id="getCommodityInfoByIds" resultType="com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOrderCommodityBo">
+        SELECT
+        order_id,
+        commodity_id,
+        order_qty
+        FROM
+        out_order_commodity_item
+        WHERE
+        order_id in (${orderIds})
+        <if test="minId != null and maxId != null">
+            AND order_id BETWEEN ${minId} AND ${maxId}
+        </if>
+    </select>
+
+
+    <select id="getOutOrderInfoById" resultType="com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo">
+        select
+            id as orderId,
+            wh_id,
+            order_sn,
+            order_status,
+            pull_status
+        from
+            out_order
+        WHERE
+            id=#{orderId}
+    </select>
+
+
+    <select id="getOutOrderInfoByIds" resultType="com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo">
+        select
+        id as orderId,
+        wh_id,
+        order_sn,
+        order_status,
+        pull_status
+        from
+        out_order
+        WHERE
+        1=1
+        <if test="minId != null and maxId != null">
+            AND id BETWEEN ${minId} AND ${maxId}
+        </if>
+        and id in (${orderIds})
+    </select>
+
+
 </mapper>

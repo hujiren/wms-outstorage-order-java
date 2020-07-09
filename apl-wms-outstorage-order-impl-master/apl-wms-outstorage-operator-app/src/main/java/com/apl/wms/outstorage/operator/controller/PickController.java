@@ -111,15 +111,5 @@ public class PickController {
         return pullBatchService.submitPullBatch(pullBatchSubmit);
     }
 
-    @PostMapping(value = "/get-orders-commodity-by-allocation-warehouse")
-    @ApiOperation(value =  "批量查询分配仓库时的订单与商品" , notes = "批量查询分配仓库时的订单与商品")
-    @ApiImplicitParam(name = "orderIds",value = "订单id",required = true  , paramType = "query")
-    public ResultUtil<List<AllocationWarehouseOutOrderBo>> getOrdersByAllocationWarehouse(@NotNull(message = "订单id不能为空") String orderIds)  throws Exception{
-
-        List<Long> orderIdList = StringUtil.stringToLongList(orderIds);
-
-        return outOrderCommodityItemService.getOrdersByAllocationWarehouse(orderIdList);
-    }
-
 
 }
