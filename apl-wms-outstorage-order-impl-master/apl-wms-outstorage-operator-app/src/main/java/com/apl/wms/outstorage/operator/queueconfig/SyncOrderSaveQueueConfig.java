@@ -1,4 +1,4 @@
-package com.apl.wms.outstorage.order.business.config;
+package com.apl.wms.outstorage.operator.queueconfig;
 
 import org.springframework.amqp.core.*;
 import org.springframework.context.annotation.Bean;
@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class SyncOrderSaveMqConfig {
+public class SyncOrderSaveQueueConfig {
 
     @Bean
     public Queue syncOrderSaveQueue(){

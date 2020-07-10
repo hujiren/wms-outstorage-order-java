@@ -70,13 +70,6 @@ public interface OutOrderCommodityItemService extends IService<OutOrderCommodity
         List<PullBatchOrderItemBo> getPullBatchOrderItem(List<Long> orderIds);
 
 
-        /**
-         * 批量获取商品id和下单数量
-         * @param: 多个订单id
-         * @return
-         */
-        ResultUtil<List<AllocationWarehouseOutOrderBo>> getOrdersByAllocationWarehouse(List<Long> orderIds) throws Exception;
-
 
 
 }

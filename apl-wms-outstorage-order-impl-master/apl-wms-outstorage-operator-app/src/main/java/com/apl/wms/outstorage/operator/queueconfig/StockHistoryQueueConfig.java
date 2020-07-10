@@ -1,4 +1,4 @@
-package com.apl.wms.outstorage.order.queue;
+package com.apl.wms.outstorage.operator.queueconfig;
 
 import org.springframework.amqp.core.*;
 import org.springframework.context.annotation.Bean;
@@ -13,8 +13,7 @@ import java.util.Map;
  * @Date: 2020/1/8 9:48
  */
 @Component
-public class StockHistoryMqConfig {
-
+public class StockHistoryQueueConfig {
 
     private String stockHistoryQueue = "stockHistoryQueue";
 

@@ -5,12 +5,14 @@ import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinKeyValues;
 import com.apl.lib.join.JoinUtil;
+import com.apl.lib.security.SecurityUser;
+import com.apl.lib.utils.CommonContextHolder;
 import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOrderCommodityBo;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
 import com.apl.wms.outstorage.order.lib.pojo.dto.OutOrderCommodityItemUpdDto;
-import com.apl.wms.outstorage.order.mapper.OutOrderCommodityItemMapper;
+import com.apl.wms.outstorage.order.dao.OutOrderCommodityItemMapper;
 import com.apl.wms.outstorage.order.pojo.po.OutOrderCommodityItemPo;
 import com.apl.wms.outstorage.order.pojo.vo.OutOrderCommodityItemInfoVo;
 import com.apl.wms.outstorage.order.service.OutOrderCommodityItemService;
@@ -24,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -58,14 +61,14 @@ public class OutOrderCommodityItemServiceImpl extends ServiceImpl<OutOrderCommod
         }
     }
 
-    @Autowired
-    RabbitSender rabbitSender;
 
     @Autowired
     RedisTemplate redisTemplate;
 
     @Autowired
     WarehouseFeign warehouseFeign;
+
+
 
     @Override
     public List<OutOrderCommodityItemInfoVo> getOrderItemsByOrderId(Long orderId) {
@@ -178,41 +181,4 @@ public class OutOrderCommodityItemServiceImpl extends ServiceImpl<OutOrderCommod
     }
 
 
-    /**
-     * 获取商品id和下单数量以及订单id和仓库id
-     * @param: 多个订单id
-     * @return
-     */
-    @Override
-    public ResultUtil<List<AllocationWarehouseOutOrderBo>> getOrdersByAllocationWarehouse(List<Long> orderIds) throws Exception {
-
-        JoinKeyValues joinKeyValues = JoinUtil.getLongKeys(orderIds);
-        //根据分配仓库传来的多个订单id获取 订单id, 仓库id列表集合  database: out_order  result: orderId, whId
-        List<AllocationWarehouseOutOrderBo> allocationWarehouseOutOrderList =
-                baseMapper.getOutOrderEntityByIds(joinKeyValues.getSbKeys().toString(), joinKeyValues.getMinKey(), joinKeyValues.getMaxKey());
-
-
-        //获取商品id和下单数量   database:out_order_commodity_item  result: orderId, commodityId, orderQty
-        List<AllocationWarehouseOrderCommodityBo> allocationWarehouseOrderCommodityList = baseMapper.getOrdersByAllocationWarehouse
-                (joinKeyValues.getSbKeys().toString(),  joinKeyValues.getMinKey(), joinKeyValues.getMaxKey());
-
-//        JoinKeyValues CommodityIdValues = JoinUtil.getKeys(allocationWarehouseOrderCommodityList, "commodityId", Long.class);
-
-        //将获取的商品信息对象按照订单id分组, orderId为key
-        Map<String, List<AllocationWarehouseOrderCommodityBo>> maps =
-                JoinUtil.listGrouping(allocationWarehouseOrderCommodityList, "orderId");
-
-
-        //遍历订单 信息对象, 并将每个商品信息对象组合到订单信息对象中
-        for (AllocationWarehouseOutOrderBo allocationWarehouseOutOrderIterator : allocationWarehouseOutOrderList) {
-
-            //获取当前订单信息对象的orderId, 并作为key从分组的map中取出商品信息列表集合组合到订单信息对象中, 使orderId相对应
-            List<AllocationWarehouseOrderCommodityBo> allocationWarehouseOrderCommodityBoList = maps.get(allocationWarehouseOutOrderIterator.getOrderId().toString());
-            allocationWarehouseOutOrderIterator.setAllocationWarehouseOrderCommodityBoList(allocationWarehouseOrderCommodityBoList);
-        }
-
-        ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, allocationWarehouseOutOrderList);
-
-        return result;
-    }
 }

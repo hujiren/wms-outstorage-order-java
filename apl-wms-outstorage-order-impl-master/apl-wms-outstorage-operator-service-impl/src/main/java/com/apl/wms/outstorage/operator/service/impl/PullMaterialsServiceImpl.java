@@ -8,7 +8,7 @@ import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
 import com.apl.wms.outstorage.order.pojo.po.OutOrderPo;
 import com.apl.wms.outstorage.order.service.OutOrderService;
-import com.apl.wms.outstorage.operator.mapper.PullMaterialsMapper;
+import com.apl.wms.outstorage.operator.dao.PullMaterialsMapper;
 import com.apl.wms.outstorage.operator.pojo.dto.PackOrderSubmitDto;
 import com.apl.wms.outstorage.operator.pojo.dto.PullMaterialsKeyDto;
 import com.apl.wms.outstorage.operator.pojo.po.PullMaterialsPo;

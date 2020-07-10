@@ -1,4 +1,4 @@
-package com.apl.wms.outstorage.order.mapper;
+package com.apl.wms.outstorage.order.dao;
 
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOrderCommodityBo;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
@@ -54,17 +54,5 @@ public interface OutOrderCommodityItemMapper extends BaseMapper<OutOrderCommodit
     Boolean delByOrderId(@Param("orderId") Long orderId);
 
 
-    /**
-     * 根据订单Id查询商品id和下单数量
-     * @param
-     * @return
-     */
-    List<AllocationWarehouseOrderCommodityBo>  getOrdersByAllocationWarehouse(@Param("orderIds" ) String orderIds, @Param("minId")Long minId, @Param("maxId") Long maxId);
 
-
-    /**
-     * 根据分配仓库传递的多个订单id, 获取订单id和仓库id的列表集合
-     * @return
-     */
-    List<AllocationWarehouseOutOrderBo> getOutOrderEntityByIds(@Param("orderIds" ) String orderIds, @Param("minId")Long minId, @Param("maxId") Long maxId);
 }

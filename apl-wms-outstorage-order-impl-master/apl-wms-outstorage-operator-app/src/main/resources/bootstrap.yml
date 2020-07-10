@@ -5,3 +5,7 @@ spring:
   profiles:
     include:
       common, apl-wms-outstorage-operator-app
+
+feign:
+  httpclient:
+    enabled: true

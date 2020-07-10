@@ -1,4 +1,4 @@
-package com.apl.wms.outstorage.order.mq;
+package com.apl.wms.outstorage.operator.queuecustomer;
 
 import com.apl.datasource.DataSourceContextHolder;
 import com.apl.lib.config.MyBatisPlusConfig;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class SyncOrderSaveMqListener {
+public class SyncOrderSaveQueueListener {
 
     @Autowired
     OutOrderService outOrderService;
@@ -33,7 +33,7 @@ public class SyncOrderSaveMqListener {
         try {
 
             OutOrderMultipleBo outOrderMultipleBo = (OutOrderMultipleBo) StringUtil.getObjectFromBytes(message.getBody());
-
+            
             SecurityUser securityUser  = outOrderMultipleBo.getSecurityUser();
 
             //创建临时token，并把securityUser放入redis中，供微服务调用
