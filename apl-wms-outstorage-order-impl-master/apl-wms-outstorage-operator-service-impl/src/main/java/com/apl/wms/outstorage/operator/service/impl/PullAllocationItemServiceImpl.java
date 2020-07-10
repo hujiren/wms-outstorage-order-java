@@ -170,6 +170,13 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
     @Transactional
     public ResultUtil<Integer> insertAllocationItem(String tranId, Long outOrderId, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos) {
 
+        if(null==compareStorageLocalStocksBos || compareStorageLocalStocksBos.size()==0){
+            //分配的库位为空, 代表库存不足, 恢复订单拣货状态为1(未分配库存)
+            baseMapper.updateOrderStatus(outOrderId, 1);
+            redisTemplate.opsForValue().set(tranId, 1);
+            return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, 0);
+        }
+
         List<PullAllocationItemPo> itemPoList = new ArrayList<>();
 
         for (CompareStorageLocalStocksBo stock : compareStorageLocalStocksBos) {
