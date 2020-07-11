@@ -16,6 +16,12 @@
 
         <dependency>
             <groupId>com.apl</groupId>
+            <artifactId>apl-amqp</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.apl</groupId>
             <artifactId>apl-wms-outstorage-order-lib</artifactId>
             <version>1.0.0</version>
         </dependency>
@@ -47,11 +53,7 @@
         </dependency>
 
 
-        <!--<dependency>
-            <groupId>com.netflix.feign</groupId>
-            <artifactId>feign-httpclient</artifactId>
-            <version>8.18.0</version>
-        </dependency>-->
+
 
     </dependencies>
 

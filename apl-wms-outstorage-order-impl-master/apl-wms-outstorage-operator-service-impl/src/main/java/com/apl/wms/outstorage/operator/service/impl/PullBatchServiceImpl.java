@@ -1,6 +1,6 @@
 package com.apl.wms.outstorage.operator.service.impl;
 
-import com.apl.lib.amqp.RabbitSender;
+import com.apl.amqp.RabbitSender;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinUtil;

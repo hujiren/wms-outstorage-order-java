@@ -1,6 +1,6 @@
 package com.apl.wms.outstorage.order.service.impl;
 
-import com.apl.lib.amqp.RabbitSender;
+import com.apl.amqp.RabbitSender;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinKeyValues;
@@ -9,8 +9,6 @@ import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.CommonContextHolder;
 import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
-import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOrderCommodityBo;
-import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
 import com.apl.wms.outstorage.order.lib.pojo.dto.OutOrderCommodityItemUpdDto;
 import com.apl.wms.outstorage.order.dao.OutOrderCommodityItemMapper;
 import com.apl.wms.outstorage.order.pojo.po.OutOrderCommodityItemPo;

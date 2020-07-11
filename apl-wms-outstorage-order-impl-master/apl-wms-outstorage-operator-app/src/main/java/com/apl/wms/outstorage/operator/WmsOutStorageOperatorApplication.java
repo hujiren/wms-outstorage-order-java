@@ -9,7 +9,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-@SpringBootApplication(scanBasePackages = {"com.apl.wms.outstorage.operator.*" ,  "com.apl.wms.outstorage.order.*" , "com.apl.wms.warehouse.lib.*", "com.apl.lib", "com.apl.datasource",  "com.apl.lib.handler"}, exclude = {DataSourceAutoConfiguration.class})
+@SpringBootApplication(scanBasePackages = {"com.apl.wms.outstorage.operator.*" ,  "com.apl.wms.outstorage.order.*" , "com.apl.wms.warehouse.lib.*", "com.apl.datasource", "com.apl.amqp",  "com.apl.lib",  "com.apl.lib.handler"}, exclude = {DataSourceAutoConfiguration.class})
 @EnableFeignClients(basePackages = {"com.apl.wms.outstorage.order.lib.feign", "com.apl.wms.warehouse.lib.feign", "com.apl.sys.lib.feign"})
 @MapperScan({"com.apl.wms.outstorage.operator.dao" , "com.apl.wms.outstorage.order.dao"})
 @EnableDiscoveryClient

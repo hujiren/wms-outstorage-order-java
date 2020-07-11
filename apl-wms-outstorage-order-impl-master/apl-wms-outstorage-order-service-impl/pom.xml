@@ -38,6 +38,12 @@
 
         <dependency>
             <groupId>com.apl</groupId>
+            <artifactId>apl-amqp</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.apl</groupId>
             <artifactId>apl-wms-warehouse-lib</artifactId>
             <version>1.0.0</version>
         </dependency>
