@@ -1,5 +1,6 @@
 package com.apl.wms.outstorage.operator.service.impl;
 
+import com.alibaba.druid.sql.ast.statement.SQLIfStatement;
 import com.apl.lib.amqp.RabbitSender;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
@@ -36,10 +37,12 @@ import java.util.Map;
 public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationItemMapper, PullAllocationItemPo> implements PullAllocationItemService {
 
 
+
     //状态code枚举
     enum PullAllocationItemServiceCode {
         ORDER_STATUS_UNTRUE("ORDER_STATUS_UNTRUE" ,"该订单不是<已提交状态>的订单"),
-        PULL_STATUS_UNTRUE("PULL_STATUS_UNTRUE", "该订单不是<未分配仓库状态>的订单")
+        PULL_STATUS_UNTRUE("PULL_STATUS_UNTRUE", "该订单不是<未分配仓库状态>的订单"),
+        PULL_STATUS_IS_NULL("PULL_STATUS_IS_NULL", "pullStatus是空值->in apl-wms-outstorage-order-java->AllocOutOrderStockCallBack()")
         ;
 
         private String code;
@@ -178,7 +181,12 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
             redisTemplate.opsForValue().set(tranId, 1);
             return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, 0);
         }
-        if(pullStatus == 0) pullStatus = 1;
+
+        if(pullStatus == null){
+            throw new AplException(PullAllocationItemServiceCode.PULL_STATUS_IS_NULL.code, PullAllocationItemServiceCode.PULL_STATUS_IS_NULL.msg);
+        }else if(pullStatus == 0) {
+            pullStatus = 1;
+        }
 
         Integer integer = baseMapper.updatePullStatus(outOrderId, pullStatus);
         if(integer == 0){
@@ -209,8 +217,9 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
         redisTemplate.opsForValue().set(tranId, 1);
 
-        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, integer);
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, 1);
     }
+
 
 
     /**
