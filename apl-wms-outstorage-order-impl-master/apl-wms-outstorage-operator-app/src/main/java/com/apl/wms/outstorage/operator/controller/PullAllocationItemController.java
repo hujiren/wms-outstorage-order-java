@@ -52,9 +52,9 @@ public class PullAllocationItemController {
     //AllocOutOrderStockCallBack   insertAllocationItem
     @PostMapping(value = "/insert", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value =  "插入分配明细" , notes = "插入分配明细")
-    public ResultUtil<Integer> AllocOutOrderStockCallBack(String tranId, Long outOrderId,Integer pickStatus, @RequestBody List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos){
+    public ResultUtil<Integer> AllocOutOrderStockCallBack(String tranId, Long outOrderId,Integer pullStatus, @RequestBody List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos){
 
-        return pullAllocationItemService.AllocOutOrderStockCallBack(tranId, outOrderId, pickStatus, compareStorageLocalStocksBos);
+        return pullAllocationItemService.AllocOutOrderStockCallBack(tranId, outOrderId, pullStatus, compareStorageLocalStocksBos);
     }
 
 }

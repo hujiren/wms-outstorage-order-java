@@ -18,7 +18,7 @@ public class OutStorageOrderOperatorFeignImpl implements OutStorageOrderOperator
     }
 
     @Override
-    public ResultUtil<Integer> AllocOutOrderStockCallBack(String tranId, Long outOrderId, Integer pickStatus, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos) {
+    public ResultUtil<Integer> AllocOutOrderStockCallBack(String tranId, Long outOrderId, Integer pullStatus, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos) {
         return ResultUtil.APPRESULT(CommonStatusCode.SAVE_FAIL.getCode(), CommonStatusCode.SAVE_FAIL.getMsg(), null);
     }
 

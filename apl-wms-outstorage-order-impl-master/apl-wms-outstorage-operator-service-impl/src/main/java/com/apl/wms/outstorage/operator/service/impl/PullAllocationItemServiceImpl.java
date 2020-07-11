@@ -170,7 +170,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
      */
     @Override
     @Transactional
-    public ResultUtil<Integer> AllocOutOrderStockCallBack(String tranId, Long outOrderId, Integer pickStatus, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos) {
+    public ResultUtil<Integer> AllocOutOrderStockCallBack(String tranId, Long outOrderId, Integer pullStatus, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos) {
 
         if(null==compareStorageLocalStocksBos || compareStorageLocalStocksBos.size()==0){
             //分配的库位为空, 代表库存不足, 恢复订单拣货状态为1(未分配库存)
@@ -178,8 +178,9 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
             redisTemplate.opsForValue().set(tranId, 1);
             return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, 0);
         }
+        if(pullStatus == 0) pullStatus = 1;
 
-        Integer integer = baseMapper.updatePickStatus(outOrderId, pickStatus);
+        Integer integer = baseMapper.updatePullStatus(outOrderId, pullStatus);
         if(integer == 0){
             throw new AplException(CommonStatusCode.SAVE_FAIL.code, CommonStatusCode.SAVE_FAIL.msg, null);
         }

@@ -135,7 +135,7 @@
     </select>
 
 
-    <update id="updatePickStatus">
-        update out_order set pick_status = #{pickStatus} where id = #{outOrderId}
+    <update id="updatePullStatus">
+        update out_order set pull_status = #{pullStatus} where id = #{outOrderId}
     </update>
 </mapper>

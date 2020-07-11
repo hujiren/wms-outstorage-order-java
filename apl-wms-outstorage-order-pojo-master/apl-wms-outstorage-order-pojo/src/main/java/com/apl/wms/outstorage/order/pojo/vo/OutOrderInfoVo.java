@@ -123,8 +123,6 @@ public class OutOrderInfoVo implements Serializable {
     // 订单创建时间
     private Timestamp crTime;
 
-    //拣货状态
-    private Integer pickStatus;
 
 
 
