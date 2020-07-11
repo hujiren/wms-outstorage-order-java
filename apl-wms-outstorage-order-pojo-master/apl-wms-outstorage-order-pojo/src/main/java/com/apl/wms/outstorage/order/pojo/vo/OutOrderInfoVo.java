@@ -114,21 +114,17 @@ public class OutOrderInfoVo implements Serializable {
     // 出库总体积
     private BigDecimal outVolume;
 
-
-
     // 备注
     private String remark;
 
     //是否问题件 1:正常订单 2：问题订单
     private Integer isWrong;
 
-
-
     // 订单创建时间
     private Timestamp crTime;
 
-
-
+    //拣货状态
+    private Integer pickStatus;
 
 
 

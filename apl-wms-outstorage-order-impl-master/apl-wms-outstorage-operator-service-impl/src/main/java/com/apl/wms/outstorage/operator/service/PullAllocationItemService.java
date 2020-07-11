@@ -41,6 +41,6 @@ public interface PullAllocationItemService extends IService<PullAllocationItemPo
      * @param compareStorageLocalStocksBos
      * @return
      */
-    ResultUtil<Integer> insertAllocationItem(String tranId, Long outOrderId, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos);
+    ResultUtil<Integer> AllocOutOrderStockCallBack(String tranId, Long outOrderId, Integer pickStatus, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos);
 
 }

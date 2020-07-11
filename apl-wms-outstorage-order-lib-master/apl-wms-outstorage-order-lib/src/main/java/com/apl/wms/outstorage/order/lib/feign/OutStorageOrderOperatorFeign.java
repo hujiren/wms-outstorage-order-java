@@ -1,10 +1,8 @@
 package com.apl.wms.outstorage.order.lib.feign;
-
 import com.apl.lib.utils.ResultUtil;
 import com.apl.wms.outstorage.order.lib.feign.impl.OutStorageOrderOperatorFeignImpl;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
 import com.apl.wms.warehouse.lib.pojo.bo.CompareStorageLocalStocksBo;
-import com.apl.wms.warehouse.lib.pojo.bo.OutOrderAlloStocksBo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -26,10 +24,7 @@ public interface OutStorageOrderOperatorFeign {
     ResultUtil<AllocationWarehouseOutOrderBo> getOrderByAllocationWarehouseManual(@RequestParam("outOrderId")Long outOrderId);
 
     @PostMapping(value = "/pull-allocation-item/insert", consumes = MediaType.APPLICATION_JSON_VALUE)
-    ResultUtil<Integer>  insertAllocationItem(@RequestParam("tranId")String tranId, @RequestParam("outOrderId")Long outOrderId, @RequestBody @RequestParam("compareStorageLocalStocksBos")List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos);
+    ResultUtil<Integer>  AllocOutOrderStockCallBack(@RequestParam("tranId")String tranId, @RequestParam("outOrderId")Long outOrderId, @RequestParam("pickStatus")Integer pickStatus, @RequestBody List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos);
 
-
-    @PostMapping(value = "/pull-allocation-item/insert2", consumes = MediaType.APPLICATION_JSON_VALUE)
-    ResultUtil<Integer>  insertAllocationItem2(@RequestBody OutOrderAlloStocksBo alloStocksBo);
 
 }

@@ -8,6 +8,7 @@ import com.apl.lib.join.JoinUtil;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.CommonContextHolder;
 import com.apl.lib.utils.ResultUtil;
+import com.apl.lib.utils.SnowflakeIdWorker;
 import com.apl.wms.outstorage.operator.dao.PullAllocationItemMapper;
 import com.apl.wms.outstorage.operator.pojo.po.PullAllocationItemPo;
 import com.apl.wms.outstorage.operator.service.PullAllocationItemService;
@@ -117,6 +118,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
         List<AllocationWarehouseOutOrderBo> orderList =
                 baseMapper.getOutOrderInfoByIds(joinKeyValues.getSbKeys().toString(), joinKeyValues.getMinKey(), joinKeyValues.getMaxKey());
 
+        //批量检查订单状态和拣货状态
         for (AllocationWarehouseOutOrderBo outOrderBo : orderList) {
             StatusCheck(outOrderBo);
         }
@@ -168,7 +170,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
      */
     @Override
     @Transactional
-    public ResultUtil<Integer> insertAllocationItem(String tranId, Long outOrderId, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos) {
+    public ResultUtil<Integer> AllocOutOrderStockCallBack(String tranId, Long outOrderId, Integer pickStatus, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos) {
 
         if(null==compareStorageLocalStocksBos || compareStorageLocalStocksBos.size()==0){
             //分配的库位为空, 代表库存不足, 恢复订单拣货状态为1(未分配库存)
@@ -177,10 +179,16 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
             return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, 0);
         }
 
+        Integer integer = baseMapper.updatePickStatus(outOrderId, pickStatus);
+        if(integer == 0){
+            throw new AplException(CommonStatusCode.SAVE_FAIL.code, CommonStatusCode.SAVE_FAIL.msg, null);
+        }
+
         List<PullAllocationItemPo> itemPoList = new ArrayList<>();
 
         for (CompareStorageLocalStocksBo stock : compareStorageLocalStocksBos) {
             PullAllocationItemPo po = new PullAllocationItemPo();
+            po.setId(SnowflakeIdWorker.generateId());
             po.setAllocationQty(stock.getAllocationQty());
             po.setOutOrderId(outOrderId);
             po.setCommodityId(stock.getCommodityId());
@@ -188,8 +196,8 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
             itemPoList.add(po);
         }
 
-        Integer integer = baseMapper.insertPullAllocationItem(itemPoList);
-        if(integer==0) {
+        Integer resultInteger = baseMapper.AllocOutOrderStockCallBack(itemPoList);
+        if(resultInteger==0) {
             throw new AplException(CommonStatusCode.SAVE_FAIL);
         }
 

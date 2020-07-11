@@ -50,7 +50,7 @@ public interface PullAllocationItemMapper extends BaseMapper<PullAllocationItemP
      * @param itemPoList
      * @return
      */
-     Integer insertPullAllocationItem(@Param("list") List<PullAllocationItemPo> itemPoList);
+     Integer AllocOutOrderStockCallBack(@Param("itemPoList") List<PullAllocationItemPo> itemPoList);
 
 
     /**
@@ -106,4 +106,5 @@ public interface PullAllocationItemMapper extends BaseMapper<PullAllocationItemP
      */
     List<AllocationWarehouseOutOrderBo> getOutOrderInfoByIds(@Param("orderIds") String orderIds, @Param("minId")Long minId, @Param("maxId") Long maxId);
 
+    Integer updatePickStatus(Long outOrderId, Integer pickStatus);
 }
