@@ -52,7 +52,6 @@ public class PullAllocationItemPo extends Model<PullAllocationItemPo> {
     @Min(value = 0 , message = "拣货数量不合法")
     private Integer allocationQty;
 
-
     private static final long serialVersionUID=1L;
 
 

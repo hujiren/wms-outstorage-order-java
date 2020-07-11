@@ -49,11 +49,11 @@
         order by id desc
     </select>
 
-    <insert id="insertPullAllocationItem" parameterType="java.util.List">
+    <insert id="AllocOutOrderStockCallBack" parameterType="java.util.List">
 
-        <foreach collection="list" separator="," item="com.apl.wms.outstorage.operator.pojo.po.PullAllocationItemPo" open="" close="" index="">
-            insert into pull_allocation_item(out_order_id, commodity_id, storage_local_id, allocation_qty)
-            values(#{list.outOrderId}, #{list.commodityId}, #{list.storageLocalId}, #{allocationQty})
+        <foreach collection="itemPoList" separator=";" item="row" open="" close="" index="">
+            insert into pull_allocation_item(id, out_order_id, commodity_id, storage_local_id, allocation_qty)
+            values(#{row.id}, #{row.outOrderId}, #{row.commodityId}, #{row.storageLocalId}, #{row.allocationQty})
         </foreach>
 
     </insert>
@@ -72,6 +72,7 @@
             AND order_id BETWEEN ${minId} AND ${maxId}
         </if>
     </update>
+
 
 
     <select id="getCommodityInfoById" resultType="com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOrderCommodityBo">
@@ -134,4 +135,7 @@
     </select>
 
 
+    <update id="updatePullStatus">
+        update out_order set pull_status = #{pullStatus} where id = #{outOrderId}
+    </update>
 </mapper>

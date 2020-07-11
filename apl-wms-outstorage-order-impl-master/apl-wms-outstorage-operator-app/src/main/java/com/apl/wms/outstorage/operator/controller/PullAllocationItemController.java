@@ -49,21 +49,12 @@ public class PullAllocationItemController {
         return pullAllocationItemService.allocationWarehouseForOrderQueueSend(orderIds);
     }
 
-
-    @PostMapping(value = "/insert")
+    //AllocOutOrderStockCallBack   insertAllocationItem
+    @PostMapping(value = "/insert", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value =  "插入分配明细" , notes = "插入分配明细")
-    public ResultUtil<Integer> insertAllocationItem(String tranId, Long outOrderId, @RequestBody List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos){
+    public ResultUtil<Integer> AllocOutOrderStockCallBack(String tranId, Long outOrderId,Integer pullStatus, @RequestBody List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos){
 
-
-        return pullAllocationItemService.insertAllocationItem(tranId, outOrderId, compareStorageLocalStocksBos);
+        return pullAllocationItemService.AllocOutOrderStockCallBack(tranId, outOrderId, pullStatus, compareStorageLocalStocksBos);
     }
 
-    @PostMapping(value = "/insert2", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @ApiOperation(value =  "插入分配明细2" , notes = "插入分配明细2")
-    public ResultUtil<Integer> insertAllocationItem2(@RequestBody OutOrderAlloStocksBo alloStocksBo){
-
-        String tranId ="tranId:1234546789";
-        Long outOrderId=441039997610778624l;
-        return pullAllocationItemService.insertAllocationItem(tranId, outOrderId, null);
-    }
 }
