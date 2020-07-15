@@ -1,7 +1,7 @@
 package com.apl.wms.outstorage.order.utils;
 
 import com.apl.lib.exception.AplException;
-import com.apl.lib.utils.LockTool;
+import com.apl.lib.utils.RedisLock;
 import com.apl.lib.utils.StringUtil;
 import com.apl.sys.lib.cache.CustomerCacheBo;
 import com.apl.sys.lib.cache.JoinCustomer;
@@ -74,7 +74,7 @@ public class OutstorageOrderSnGenUtils {
         if (null == snNum || snNum <= 1L) {
             //加锁
             try {
-                if (LockTool.lock(redisTemplate, "SN-OUT", 8l)) {
+                if (RedisLock.lock(redisTemplate, "SN-OUT", 8l)) {
 
                     //从订单记录上找到这个客户的最大订单号，放到redis中  IN-PGS-AIR-0002
                     String sql = "SELECT order_sn FROM out_order WHERE id=(SELECT max(id) FROM out_order WHERE customer_id=" + customerId.toString() + " AND inner_org_id=" + innerOrgId.toString() + ")";
@@ -93,7 +93,7 @@ public class OutstorageOrderSnGenUtils {
             } catch (Exception exception) {
                 throw new AplException("LOCK_ERROR", "加锁失败");
             } finally {
-                LockTool.unlock(redisTemplate, "SN-OUT");
+                RedisLock.unlock(redisTemplate, "SN-OUT");
             }
         }
 

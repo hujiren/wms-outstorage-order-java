@@ -1,10 +1,11 @@
 package com.apl.wms.outstorage.operator.queuecustomer;
 
-import com.apl.datasource.DataSourceContextHolder;
-import com.apl.lib.config.MyBatisPlusConfig;
+import com.apl.db.datasource.DataSourceContextHolder;
+
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.CommonContextHolder;
 import com.apl.lib.utils.StringUtil;
+import com.apl.db.mybatis.MyBatisPlusConfig;
 import com.apl.wms.outstorage.order.lib.pojo.bo.OutOrderMultipleBo;
 import com.apl.wms.outstorage.order.service.OutOrderService;
 import com.rabbitmq.client.Channel;
