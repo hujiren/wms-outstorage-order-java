@@ -4,6 +4,7 @@ package com.apl.wms.outstorage.operator.controller;
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.StringUtil;
+import com.apl.wms.outstorage.operator.service.PickService;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
 import com.apl.wms.outstorage.order.service.OutOrderCommodityItemService;
 import com.apl.wms.outstorage.order.service.OutOrderService;
@@ -14,6 +15,7 @@ import com.apl.wms.outstorage.operator.pojo.dto.PullBatchSubmitDto;
 import com.apl.wms.outstorage.operator.pojo.dto.PullOrderKeyDto;
 import com.apl.wms.outstorage.operator.pojo.vo.PullAllocationItemMsgVo;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -45,6 +47,9 @@ public class PickController {
     @Autowired
     OutOrderCommodityItemService outOrderCommodityItemService;
 
+    @Autowired
+    PickService pickService;
+
     @PostMapping("/page-order-pull")
     @ApiOperation(value =  "分页获取订单拣货信息" , notes = "分页获取订单拣货信息")
     public ResultUtil<Page> pageOrderPull(PageDto pageDto, @Validated PullOrderKeyDto keyDto) throws Exception{
@@ -72,13 +77,13 @@ public class PickController {
 
 
     @PostMapping("/allocation-operator")
-    @ApiOperation(value =  "分配拣货员" , notes = "分配拣货员")
+    @ApiOperation(value =  "为订单分配拣货员" , notes = "为订单分配拣货员")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "memberId",value = "拣货员id",required = true  , paramType = "query"),
             @ApiImplicitParam(name = "orderIdList",value = "订单id 列表",required = true  , paramType = "query")
     })
     public ResultUtil<Boolean> allocationOperator(@NotNull(message = "memberId 不能为空") @Min(value = 1 , message = "memberId 不能小于1")Long memberId ,
-                                                                @NotNull(message = "orderIdList 不能为空")String orderIdList){
+                                                  @NotNull(message = "orderIdList 不能为空")String orderIdList){
 
         return outOrderService.allocationOperator(memberId , orderIdList);
     }
@@ -112,4 +117,10 @@ public class PickController {
     }
 
 
+
+    @PostMapping(value = "/allocation-picking-member")
+    @ApiOperation(value = "分配拣货员", notes = "分配拣货员")
+    public ResultUtil<Boolean> allocationPickingMember(@RequestBody @NotNull(message = "订单号不能为空")List<String> orderSns){
+        return pickService.allocationPickingMember(orderSns);
+    }
 }

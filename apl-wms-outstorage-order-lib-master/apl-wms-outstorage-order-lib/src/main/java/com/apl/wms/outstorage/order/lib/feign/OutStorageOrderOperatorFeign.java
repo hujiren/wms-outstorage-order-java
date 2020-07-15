@@ -26,5 +26,6 @@ public interface OutStorageOrderOperatorFeign {
     @PostMapping(value = "/pull-allocation-item/insert", consumes = MediaType.APPLICATION_JSON_VALUE)
     ResultUtil<Integer>  AllocOutOrderStockCallBack(@RequestParam("tranId")String tranId, @RequestParam("outOrderId")Long outOrderId, @RequestParam("pullStatus")Integer pullStatus, @RequestBody List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos);
 
-
+    @PostMapping(value = "/pull-allocation-item/delete")
+    ResultUtil<Integer>  deleteOrderAllocationItem(@RequestParam("outOrderId") Long outOrderId);
 }

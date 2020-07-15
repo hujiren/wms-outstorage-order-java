@@ -1,4 +1,4 @@
-package com.apl.wms.outstorage.operator.service;
+package com.apl.wms.outstorage.order.service;
 
 import com.apl.lib.utils.ResultUtil;
 import com.apl.wms.outstorage.operator.pojo.po.PullAllocationItemPo;
@@ -43,4 +43,11 @@ public interface PullAllocationItemService extends IService<PullAllocationItemPo
      */
     ResultUtil<Integer> AllocOutOrderStockCallBack(String tranId, Long outOrderId, Integer pullStatus, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos);
 
+
+    /**
+     * 删除订单分配明细
+     * @param outOrderId
+     * @return
+     */
+    ResultUtil<Integer> deleteOrderAllocationItem(Long outOrderId);
 }

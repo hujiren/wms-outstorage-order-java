@@ -34,7 +34,7 @@ public interface OutOrderService extends IService<OutOrderPo> {
          * @author arran
          * @since 2020-01-07
          */
-        ResultUtil<String> saveCommodity(OutOrderMainDto outOrderMainDto , List<OutOrderCommodityItemUpdDto> outOrderCommodityItemUpdDtos, Integer isMultipleOrder) throws Exception;
+        ResultUtil<String> saveCommodity(OutOrderMainDto outOrderMainDto , List<OutOrderCommodityItemUpdDto> outOrderCommodityItemUpdDtos) throws Exception;
 
 
         /**
@@ -147,5 +147,10 @@ public interface OutOrderService extends IService<OutOrderPo> {
         ResultUtil<Boolean> cancelOrder(Long orderId);
 
 
-
+        /**
+         * 提交订单
+         * @param
+         * @return
+         */
+        ResultUtil<Boolean> commitOrder(List<Long> outOrderIds, Long customerId) throws Exception;
 }

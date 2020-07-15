@@ -5,7 +5,7 @@ import com.apl.lib.exception.AplException;
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
-import com.apl.wms.outstorage.operator.dao.PullAllocationItemMapper;
+import com.apl.wms.outstorage.order.dao.PullAllocationItemMapper;
 import com.apl.wms.outstorage.operator.pojo.dto.PullAllocationItemKeyDto;
 import com.apl.wms.outstorage.operator.pojo.po.PullAllocationItemPo;
 import com.apl.wms.outstorage.operator.pojo.vo.PullAllocationItemInfoVo;

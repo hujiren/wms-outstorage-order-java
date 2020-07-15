@@ -58,11 +58,11 @@ public class OutOrderController {
     @ResponseBody
     public ResultUtil<String> saveCommodity(OutOrderMainDto outOrderMainDto , @RequestBody  List<OutOrderCommodityItemUpdDto> outOrderCommodityItemUpdDtos) throws Exception {
         ApiParamValidate.validate(outOrderCommodityItemUpdDtos);
-
+        if(outOrderMainDto.getOrderId() == null) outOrderMainDto.setOrderId(0l);
         SecurityUser securityUser = CommonContextHolder.getSecurityUser();
         outOrderMainDto.setInnerOrgId(securityUser.getInnerOrgId()); //内部组织id, 生成订单时用到
         outOrderMainDto.setOrderFrom(2); //订单来源:手动下单
-        ResultUtil<String> result = outOrderService.saveCommodity(outOrderMainDto , outOrderCommodityItemUpdDtos, 0);
+        ResultUtil<String> result = outOrderService.saveCommodity(outOrderMainDto , outOrderCommodityItemUpdDtos);
 
         return result;
     }
@@ -124,7 +124,7 @@ public class OutOrderController {
     @ApiImplicitParam(name = "ids",value = "订单列表",required = true  , paramType = "query")
     public ResultUtil<List<OrderItemListVo>> getMultiOrderMsg(@NotNull(message = "ids 不能为空")String ids) throws Exception {
 
-        return outOrderService.getMultiOrderMsg(StringUtil.stringToLongList(ids) , OrderStatusEnum.CREATE.getStatus());
+        return outOrderService.getMultiOrderMsg(StringUtil.stringToLongList(ids) , OrderStatusEnum.HAS_BEEN_COMMITED.getStatus());
     }
 
     @ResponseBody
@@ -166,4 +166,10 @@ public class OutOrderController {
     }
 
 
+    @PostMapping("/commit-order")
+    @ApiOperation(value = "提交订单", notes = "提交订单之后, 不能再修改,删除订单商品")
+    public ResultUtil<Boolean> commitOrder(@RequestBody @NotNull(message = "订单id不能为空") List<Long> outOrderIds) throws Exception {
+
+        return outOrderService.commitOrder(outOrderIds, 0l);
+    }
 }

@@ -20,13 +20,13 @@ public class OutOrderMainDto {
     @Min(value = 1, message = "客户id值不合法")
     private Long customerId;
 
-    @ApiModelProperty(name = "customerNo" , value = "客户编号", hidden = true)
-    private String customerNo;
-
     @ApiModelProperty(name = "whId" , value = "仓库id")
     @NotNull(message = "仓库不能为空")
     @Min(value = 1, message = "仓库id值不合法")
     private Long whId;
+
+    @ApiModelProperty(name = "customerNo" , value = "客户编号", hidden = true)
+    private String customerNo;
 
     @ApiModelProperty(name = "ecPlatformCode" , value = "电商平台", hidden = true)
     private String ecPlatformCode;
@@ -35,10 +35,10 @@ public class OutOrderMainDto {
     private String referenceSn;
 
     @ApiModelProperty(name = "orderFrom" , value = "订单来源 1自动同步平台订单  2手动下单", hidden = true)
-    Integer orderFrom;
+    private Integer orderFrom;
 
     @ApiModelProperty(hidden = true)
-    Integer pullStatus;
+    private Integer pullStatus;
 
     @ApiModelProperty(hidden = true)
     private  Long innerOrgId;

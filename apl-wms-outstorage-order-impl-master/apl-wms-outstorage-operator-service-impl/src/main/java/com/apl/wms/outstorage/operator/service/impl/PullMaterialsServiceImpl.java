@@ -144,7 +144,7 @@ public class PullMaterialsServiceImpl extends ServiceImpl<PullMaterialsMapper, P
         if(outOrderPo == null){
             throw new AplException(PullMaterialsServiceCode.OUT_ORDER_NOT_EXIST.code , PullMaterialsServiceCode.OUT_ORDER_NOT_EXIST.msg);
         }
-        if(!outOrderPo.getOrderStatus().equals(OutStorageOrderStatusEnum.CREATE.getStatus()) || !outOrderPo.getPullStatus().equals(PullStatusType.SORT_DONE.getStatus())){
+        if(!outOrderPo.getOrderStatus().equals(OutStorageOrderStatusEnum.CREATE.getStatus()) || !outOrderPo.getPullStatus().equals(PullStatusType.HAS_BEEN_SORTED.getStatus())){
             throw new AplException(PullMaterialsServiceCode.OUT_ORDER_NOT_ALLOW_PACK.code , PullMaterialsServiceCode.OUT_ORDER_NOT_ALLOW_PACK.msg);
         }
 
@@ -163,7 +163,7 @@ public class PullMaterialsServiceImpl extends ServiceImpl<PullMaterialsMapper, P
         pullPackItemService.batchAddPullPackItem(packOrderSubmit.getOrderId() , packOrderSubmit.getPackMsgs());
 
         //更新订单状态
-        outOrderPo.setPullStatus(PullStatusType.PACK_DONE.getStatus());
+        outOrderPo.setPullStatus(PullStatusType.HAS_BEEN_PACKED.getStatus());
         outOrderService.updateById(outOrderPo);
 
         return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS , null);

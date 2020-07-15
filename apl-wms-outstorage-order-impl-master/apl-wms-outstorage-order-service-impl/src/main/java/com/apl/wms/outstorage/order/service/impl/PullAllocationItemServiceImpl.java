@@ -1,6 +1,5 @@
-package com.apl.wms.outstorage.operator.service.impl;
+package com.apl.wms.outstorage.order.service.impl;
 
-import com.alibaba.druid.sql.ast.statement.SQLIfStatement;
 import com.apl.lib.amqp.RabbitSender;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
@@ -10,9 +9,9 @@ import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.CommonContextHolder;
 import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
-import com.apl.wms.outstorage.operator.dao.PullAllocationItemMapper;
 import com.apl.wms.outstorage.operator.pojo.po.PullAllocationItemPo;
-import com.apl.wms.outstorage.operator.service.PullAllocationItemService;
+import com.apl.wms.outstorage.order.dao.PullAllocationItemMapper;
+import com.apl.wms.outstorage.order.service.PullAllocationItemService;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOrderCommodityBo;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
 import com.apl.wms.warehouse.lib.pojo.bo.CompareStorageLocalStocksBo;
@@ -40,9 +39,8 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
     //状态code枚举
     enum PullAllocationItemServiceCode {
-        ORDER_STATUS_UNTRUE("ORDER_STATUS_UNTRUE" ,"该订单不是<已提交状态>的订单"),
-        PULL_STATUS_UNTRUE("PULL_STATUS_UNTRUE", "该订单不是<未分配仓库状态>的订单"),
-        PULL_STATUS_IS_NULL("PULL_STATUS_IS_NULL", "pullStatus是空值->in apl-wms-outstorage-order-java->AllocOutOrderStockCallBack()")
+        ORDER_IS_ALLOCATING("ORDER_IS_ALLOCATING" ,"该订单正在分配库位中"),
+        ORDER_IS_ALLOCATED_STORAGE("ORDER_IS_ALLOCATED_STORAGE", "订单已经分配库位"),
         ;
 
         private String code;
@@ -76,7 +74,15 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
         //根据分配仓库传来的单个订单id获取 订单id, 仓库id  database: out_order  result: orderId, whId
         AllocationWarehouseOutOrderBo orderBo = baseMapper.getOutOrderInfoById(outOrderId);
 
-        StatusCheck(orderBo);
+        if(orderBo.getPullStatus() !=1) {
+            if (orderBo.getPullStatus() == 2) {
+                throw new AplException(PullAllocationItemServiceCode.ORDER_IS_ALLOCATING.code,
+                        PullAllocationItemServiceCode.ORDER_IS_ALLOCATING.msg + "order_id:" + orderBo.getOrderId());
+            } else {
+                throw new AplException(PullAllocationItemServiceCode.ORDER_IS_ALLOCATED_STORAGE.code,
+                        PullAllocationItemServiceCode.ORDER_IS_ALLOCATED_STORAGE.msg + "order_id:" + orderBo.getOrderId());
+            }
+        }
 
         //获取商品id和下单数量   database:out_order_commodity_item  result: orderId, commodityId, orderQty
         List<AllocationWarehouseOrderCommodityBo> commodityList = baseMapper.getCommodityInfoById(outOrderId);
@@ -122,14 +128,38 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
                 baseMapper.getOutOrderInfoByIds(joinKeyValues.getSbKeys().toString(), joinKeyValues.getMinKey(), joinKeyValues.getMaxKey());
 
         //批量检查订单状态和拣货状态
+        List<Long> orderIds2 = new ArrayList<>();
         for (AllocationWarehouseOutOrderBo outOrderBo : orderList) {
-            StatusCheck(outOrderBo);
+            if(outOrderBo.getPullStatus()==1)
+                orderIds2.add(outOrderBo.getOrderId());
         }
+        if(orderIds2.size()==0)
+            return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, true);
 
+        joinKeyValues = JoinUtil.getLongKeys(orderIds2);
         //获取商品id和下单数量   database:out_order_commodity_item  result: orderId, commodityId, orderQty
         List<AllocationWarehouseOrderCommodityBo> OrderCommodityList = baseMapper.getCommodityInfoByIds
                 (joinKeyValues.getSbKeys().toString(),  joinKeyValues.getMinKey(), joinKeyValues.getMaxKey());
 
+        //将获取的商品信息对象按照订单id分组, orderId为key
+        Map<String, List<AllocationWarehouseOrderCommodityBo>> maps =
+                JoinUtil.listGrouping(OrderCommodityList, "orderId");
+
+        SecurityUser securityUser = CommonContextHolder.getSecurityUser();
+        //遍历订单信息对象, 并将每个商品信息对象组合到订单信息对象中
+        for (AllocationWarehouseOutOrderBo outOrderBo : orderList) {
+            if(outOrderBo.getPullStatus()==1) {
+                outOrderBo.setPullStatus(2);
+
+                //获取当前订单信息对象的orderId, 并作为key从分组的map中取出商品信息列表集合组合到订单信息对象中, 使orderId相对应
+                List<AllocationWarehouseOrderCommodityBo> commodityBoList = maps.get(outOrderBo.getOrderId().toString());
+                outOrderBo.setAllocationWarehouseOrderCommodityBoList(commodityBoList);
+
+                // 循环发送分配的订单对象到队列, 携带安全用户一起发送
+                outOrderBo.setSecurityUser(securityUser);
+                rabbitSender.send("allocationWarehouseForOrderQueueExchange", "allocationWarehouseForOrderQueue", outOrderBo);
+            }
+        }
 
         //批量更新订单状态为2
         Integer integer = baseMapper.updateOrdersStatus(joinKeyValues.getSbKeys().toString(), joinKeyValues.getMinKey(), joinKeyValues.getMaxKey(), 2);
@@ -137,27 +167,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
             return ResultUtil.APPRESULT(CommonStatusCode.SAVE_FAIL, false);
         }
 
-        //将获取的商品信息对象按照订单id分组, orderId为key
-        Map<String, List<AllocationWarehouseOrderCommodityBo>> maps =
-                JoinUtil.listGrouping(OrderCommodityList, "orderId");
-
-        SecurityUser securityUser = CommonContextHolder.getSecurityUser();
-
-        //遍历订单信息对象, 并将每个商品信息对象组合到订单信息对象中
-        for (AllocationWarehouseOutOrderBo outOrderBo : orderList) {
-
-            outOrderBo.setPullStatus(2);
-
-            //获取当前订单信息对象的orderId, 并作为key从分组的map中取出商品信息列表集合组合到订单信息对象中, 使orderId相对应
-            List<AllocationWarehouseOrderCommodityBo> commodityBoList = maps.get(outOrderBo.getOrderId().toString());
-            outOrderBo.setAllocationWarehouseOrderCommodityBoList(commodityBoList);
-
-            // 循环发送分配的订单对象到队列, 携带安全用户一起发送
-            outOrderBo.setSecurityUser(securityUser);
-            rabbitSender.send("allocationWarehouseForOrderQueueExchange" ,"allocationWarehouseForOrderQueue" , outOrderBo);
-        }
-
-        ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, true);
+        ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, true);
 
         return result;
     }
@@ -180,12 +190,6 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
             baseMapper.updateOrderStatus(outOrderId, 1);
             redisTemplate.opsForValue().set(tranId, 1);
             return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, 0);
-        }
-
-        if(pullStatus == null){
-            throw new AplException(PullAllocationItemServiceCode.PULL_STATUS_IS_NULL.code, PullAllocationItemServiceCode.PULL_STATUS_IS_NULL.msg);
-        }else if(pullStatus == 0) {
-            pullStatus = 1;
         }
 
         Integer integer = baseMapper.updatePullStatus(outOrderId, pullStatus);
@@ -221,20 +225,20 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
     }
 
 
-
     /**
-     * 状态校验
-     * @param outOrderBo 订单信息对象
+     * 删除订单分配明细
+     * @param outOrderId
+     * @return
      */
-    public void StatusCheck(AllocationWarehouseOutOrderBo outOrderBo){
+    @Override
+    public ResultUtil<Integer> deleteOrderAllocationItem(Long outOrderId) {
 
-            if(outOrderBo.getOrderStatus() != 3){
-                throw new AplException(PullAllocationItemServiceCode.ORDER_STATUS_UNTRUE.code,
-                        PullAllocationItemServiceCode.ORDER_STATUS_UNTRUE.msg + "order_id:" + outOrderBo.getOrderId());
+        Integer integer = baseMapper.deleteByOrderId(outOrderId);
 
-            }else if(outOrderBo.getPullStatus() != 1){
-                throw new AplException(PullAllocationItemServiceCode.PULL_STATUS_UNTRUE.code,
-                        PullAllocationItemServiceCode.PULL_STATUS_UNTRUE.msg + "order_id:" + outOrderBo.getOrderId());
-            }
+        if(integer == 0){
+            return ResultUtil.APPRESULT(CommonStatusCode.DEL_FAIL, CommonStatusCode.DEL_FAIL);
+        }
+
+        return ResultUtil.APPRESULT(CommonStatusCode.DEL_SUCCESS,CommonStatusCode.DEL_SUCCESS);
     }
 }

@@ -5,7 +5,7 @@ public enum OrderStatusEnum {
 
     CREATE_ING(1,"CREATE_ING" , "创建中"),
     ERROR(2,"ERROR" , "创建异常"),
-    CREATE(3, "CREATE" , "新建"),
+    HAS_BEEN_COMMITED(3, "HAS_BEEN_COMMITED" , "已提交"),
     SENDING(4,"SENDING" , "供应商发货中"),
     START_IN_WH(5,"START_IN_WH" , "起运仓已入库"),
     OPERATOR_ING(6, "OPERATOR_ING" , "仓库操作中"),

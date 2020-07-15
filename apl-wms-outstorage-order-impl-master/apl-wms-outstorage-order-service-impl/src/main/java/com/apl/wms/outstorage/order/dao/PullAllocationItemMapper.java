@@ -1,4 +1,4 @@
-package com.apl.wms.outstorage.operator.dao;
+package com.apl.wms.outstorage.order.dao;
 import com.apl.wms.outstorage.operator.pojo.dto.PullAllocationItemKeyDto;
 import com.apl.wms.outstorage.operator.pojo.po.PullAllocationItemPo;
 import com.apl.wms.outstorage.operator.pojo.vo.PullAllocationItemInfoVo;
@@ -106,5 +106,15 @@ public interface PullAllocationItemMapper extends BaseMapper<PullAllocationItemP
      */
     List<AllocationWarehouseOutOrderBo> getOutOrderInfoByIds(@Param("orderIds") String orderIds, @Param("minId")Long minId, @Param("maxId") Long maxId);
 
+
+
     Integer updatePullStatus(@Param("outOrderId") Long outOrderId, @Param("pullStatus")Integer pullStatus);
+
+
+    /**
+     * 删除订单分配明细
+     * @param outOrderId
+     * @return
+     */
+    Integer deleteByOrderId(@Param("id") Long outOrderId);
 }
