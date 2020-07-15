@@ -140,22 +140,6 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         arr.add(orderId);
         pullAllocationItemService.allocationWarehouseForOrderQueueSend(arr);
 
-        //如果子订单的商品数量没有改变，不需要进行库存的改变，不需要发送消息队列
-        /*if(CollectionUtils.isEmpty(platformOutOrderStockBo.getPlatformOutOrderStocks())){
-            //返回前端数据
-            return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS , orderId.toString());
-
-        }else{
-            //检查库存是否足够
-            checkStockCount(platformOutOrderStockBo);
-
-            platformOutOrderStockBo.setSecurityUser(CommonContextHolder.getSecurityUser(redisTemplate));
-            platformOutOrderStockBo.setCustomerId(outOrderMainDto.getCustomerId());
-
-            //更新库存
-            rabbitSender.send("outStorageOrderCreateCountLockExchange" ,"outStorageOrderCreateCountLockQueue" , platformOutOrderStockBo);
-        }*/
-
         return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS , orderId.toString());
 
     }
@@ -970,7 +954,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         outOrderPo.setId(SnowflakeIdWorker.generateId());//订单id, 雪花算法
         outOrderPo.setIsWrong(1);
 
-        outOrderPo.insert();
+        baseMapper.insert(outOrderPo);
         return outOrderPo.getId();
     }
 

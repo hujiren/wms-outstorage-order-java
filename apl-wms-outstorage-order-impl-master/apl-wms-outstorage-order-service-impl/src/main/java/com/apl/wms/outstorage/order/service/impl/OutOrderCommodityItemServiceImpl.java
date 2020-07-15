@@ -118,8 +118,8 @@ public class OutOrderCommodityItemServiceImpl extends ServiceImpl<OutOrderCommod
                 entity.setOrderQty(commodityItemDto.getOrderQty());
                 entity.setOrderId(orderId);
                 entity.setId(SnowflakeIdWorker.generateId());
-                save(entity);// 封装了baseMapper.insert();
-
+//                save(entity);// 封装了baseMapper.insert();
+                baseMapper.insert(entity);
                 buildOrderItemStock(platformOutOrderStockBo, commodityItemDto.getCommodityId(), commodityItemDto.getOrderQty());
 
             } else {
