@@ -256,42 +256,13 @@
         order by o.id desc
     </select>
 
-    <!-- 分页查找 第2步, 根据ids查找订单列表-->
-    <select id="getListByIds" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderListVo">
-        SELECT
-            id,
-            customer_id,
-            order_sn,
-            order_status,
-            pull_status,
-            order_from,
-            ec_platform_code,
-            reference_sn,
-            store_id,
-            wh_id,
-            remark,
-            cr_time
-        FROM
-            out_order as o
-        where
-        1=1
-        <if test="minId>0 and minId==maxId">
-            AND o.id=${ids}
-        </if>
-        <if test="minId!= null and maxId != null">
-            AND o.id BETWEEN ${minId} AND ${maxId}
-        </if>
-        AND o.id in (${ids})
-        order by o.id desc
-    </select>
-
 
     <!-- 更新状态 2019-12-25-->
     <update id="updOrderStatus">
         update  out_order  set order_status=#{status}
-        where id=#{id}
+        where id in ${ids}
         <if test="customerId != null and customerId>0">
-            AND customer_id =  #{customerId}
+            and customer_id =  #{customerId}
         </if>
     </update>
 
@@ -332,6 +303,36 @@
             and customer_id = #{customerId}
         </if>
         and reference_sn = #{referenceSn}
+    </select>
+
+
+    <!-- 分页查找 第2步, 根据ids查找订单列表-->
+    <select id="getListByIds" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderListVo">
+        SELECT
+        id,
+        customer_id,
+        order_sn,
+        order_status,
+        pull_status,
+        order_from,
+        ec_platform_code,
+        reference_sn,
+        store_id,
+        wh_id,
+        remark,
+        cr_time
+        FROM
+        out_order as o
+        where
+        1=1
+        <if test="minId>0 and minId==maxId">
+            AND o.id=${ids}
+        </if>
+        <if test="minId!= null and maxId != null">
+            AND o.id BETWEEN ${minId} AND ${maxId}
+        </if>
+        AND o.id in (${ids})
+        order by o.id desc
     </select>
 
 

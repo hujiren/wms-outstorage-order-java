@@ -1,12 +1,10 @@
 package com.apl.wms.outstorage.operator.controller;
 import com.apl.lib.utils.ResultUtil;
-import com.apl.wms.outstorage.operator.service.PullAllocationItemService;
+import com.apl.wms.outstorage.order.service.PullAllocationItemService;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
 import com.apl.wms.warehouse.lib.pojo.bo.CompareStorageLocalStocksBo;
-import com.apl.wms.warehouse.lib.pojo.bo.OutOrderAlloStocksBo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -14,7 +12,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
-import java.awt.*;
 import java.util.List;
 
 /**
@@ -43,18 +40,27 @@ public class PullAllocationItemController {
 
     @PostMapping(value = "/get-order-by-allocation-warehouse-queue")
     @ApiOperation(value =  "批量查询分配仓库时的订单与商品" , notes = "批量查询分配仓库时的订单与商品")
-    @ApiImplicitParam(name = "orderIds",value = "订单id",required = true  , paramType = "query")
-    public ResultUtil<Boolean> allocationWarehouseForOrderQueueSend(@NotNull(message = "订单id不能为空") List<Long> orderIds)  throws Exception{
-
+    public ResultUtil<Boolean> allocationWarehouseForOrderQueueSend(@RequestBody @NotNull(message = "订单id不能为空") List<Long> orderIds)  throws Exception{
         return pullAllocationItemService.allocationWarehouseForOrderQueueSend(orderIds);
     }
 
-    //AllocOutOrderStockCallBack   insertAllocationItem
+
     @PostMapping(value = "/insert", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value =  "插入分配明细" , notes = "插入分配明细")
-    public ResultUtil<Integer> AllocOutOrderStockCallBack(String tranId, Long outOrderId,Integer pullStatus, @RequestBody List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos){
+    public ResultUtil<Integer> AllocOutOrderStockCallBack(@NotNull(message = "tranId不能为空") String tranId,
+                                                          @NotNull(message = "outOrderId不能为空") Long outOrderId,
+                                                          @NotNull(message = "pullStatus不能为空") Integer pullStatus,
+                                                          @NotNull(message = "compareStorageLocalStocksBos不能为空")  @RequestBody List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos){
 
         return pullAllocationItemService.AllocOutOrderStockCallBack(tranId, outOrderId, pullStatus, compareStorageLocalStocksBos);
+    }
+
+
+    @PostMapping(value = "/delete")
+    @ApiOperation(value =  "删除分配明细" , notes = "删除分配明细")
+    @ApiImplicitParam(name = "outOrderId",value = "订单id",required = true  , paramType = "query")
+    public ResultUtil<Integer> deleteOrderAllocationItem(@NotNull(message = "订单id不能为空")Long outOrderId){
+        return pullAllocationItemService.deleteOrderAllocationItem(outOrderId);
     }
 
 }

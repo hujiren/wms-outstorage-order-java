@@ -5,7 +5,7 @@ public enum OutStorageOrderStatusEnum {
 
     CREATE_ING(1,"CREATE_ING" , "创建中"),
     ERROR(2,"ERROR" , "创建异常"),
-    CREATE(3, "CREATE" , "新建"),
+    CREATE(3, "CREATE" , "已提交"),
     SENDING(4,"SENDING" , "发货中"),
     FINISH(5,"FINISH" , "完成"),
     CANCEL(6, "CANCEL" , "取消"),

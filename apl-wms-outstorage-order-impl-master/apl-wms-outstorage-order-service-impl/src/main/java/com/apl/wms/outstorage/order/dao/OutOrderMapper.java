@@ -92,13 +92,13 @@ public interface OutOrderMapper extends BaseMapper<OutOrderPo> {
 
 
     /**
-     * @Description : 更新状态
+     * @Description : 更新订单状态
      * @Param ：
      * @Return ：
      * @Author : arran
      * @Date :
      */
-    Integer updOrderStatus(@Param("id") Long id, @Param("status") Integer status, @Param("customerId") Long customerId);
+    Integer updOrderStatus(@Param("ids") String ids, @Param("status") Integer status, @Param("customerId") Long customerId);
 
     /**
      * @Desc: 批量更新 拣货状态
@@ -117,6 +117,8 @@ public interface OutOrderMapper extends BaseMapper<OutOrderPo> {
 
     //根据参考号查询订单号是否存在
     OutOrderInfoVo existsByRefSn(@Param("referenceSn") String referenceSn, @Param("customerId") Long customerId, @Param("startTime") Timestamp startTime);
+
+
 
 
 }

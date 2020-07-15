@@ -104,7 +104,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
             //获取打包 订单信息
             List<Long> orderIds = baseMapper.getBatchOrderListByOrderId(orderId);
 
-            List<OrderItemListVo> orderItems = outOrderService.getMultiOrderMsg(orderIds, OrderStatusEnum.CREATE.getStatus()).getData();
+            List<OrderItemListVo> orderItems = outOrderService.getMultiOrderMsg(orderIds, OrderStatusEnum.HAS_BEEN_COMMITED.getStatus()).getData();
 
             packOrderItemListVo.setOrderItemListVos(orderItems);
         }
@@ -133,7 +133,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
         List<Long> orderIds = baseMapper.getBatchOrderList(batchId);
         System.out.println(orderIds.toString());
-        return outOrderService.getMultiOrderMsg(orderIds, OrderStatusEnum.CREATE.getStatus());
+        return outOrderService.getMultiOrderMsg(orderIds, OrderStatusEnum.HAS_BEEN_COMMITED.getStatus());
 
     }
 
@@ -187,7 +187,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         Long batchId = createBatch();
 
         //更改出库订单状态
-        outOrderService.batchUpdateOrderPullStatus(orderIds, PullStatusType.START_PULL.getStatus(), null);
+        outOrderService.batchUpdateOrderPullStatus(orderIds, PullStatusType.START_PICKING.getStatus(), null);
         //商品下架
         pullItemService.pullCommodity(batchId, pullBatchOrderItems);
 
@@ -232,7 +232,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         pullBatch.setBatchSn(UUID.randomUUID().toString());
 
         pullBatch.setPullOperatorId(securityUser.getMemberId());
-        pullBatch.setPullStatus(PullStatusType.START_PULL.getStatus());
+        pullBatch.setPullStatus(PullStatusType.START_PICKING.getStatus());
 
         baseMapper.insert(pullBatch);
 
@@ -252,10 +252,10 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         Set<Long> orderIds = checkSubmitPullBatch(orderStock, pullBatchSubmit);
 
         //更新拣货批次状态
-        updatePullBatchStatus(pullBatchSubmit.getBatchId(), PullStatusType.PULL_DONE.getStatus());
+        updatePullBatchStatus(pullBatchSubmit.getBatchId(), PullStatusType.HAS_BEEN_PICKED.getStatus());
 
         //更改出库订单状态
-        outOrderService.batchUpdateOrderPullStatus(new ArrayList<>(orderIds), PullStatusType.PULL_DONE.getStatus(), null);
+        outOrderService.batchUpdateOrderPullStatus(new ArrayList<>(orderIds), PullStatusType.HAS_BEEN_PICKED.getStatus(), null);
 
         orderStock.setSecurityUser(CommonContextHolder.getSecurityUser());
         //进行库存减扣 （仓库库存 / 库位库存)
@@ -278,7 +278,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
             return ResultUtil.APPRESULT(PullBatchServiceCode.PULL_BATCH_NOT_EXIST.code, PullBatchServiceCode.PULL_BATCH_NOT_EXIST.msg, null);
         }
         //订单对应的订单项目 数据
-        List<OrderItemListVo> orderItems = outOrderService.getMultiOrderMsg(orderIds, OrderStatusEnum.CREATE.getStatus()).getData();
+        List<OrderItemListVo> orderItems = outOrderService.getMultiOrderMsg(orderIds, OrderStatusEnum.HAS_BEEN_COMMITED.getStatus()).getData();
 
         //提交的批次的订单数量 和保存的批次的订单数量不一致
         if (orders.size() != orderItems.size()) {
@@ -288,9 +288,9 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         //校验 提交数据的合法性
         validateSortMsg(orders, orderItems);
         //更新订单状态
-        outOrderService.batchUpdateOrderPullStatus(orderIds, PullStatusType.SORT_DONE.getStatus(), null);
+        outOrderService.batchUpdateOrderPullStatus(orderIds, PullStatusType.HAS_BEEN_SORTED.getStatus(), null);
 
-        updatePullBatchStatus(sortOrderSubmitDto.getBatchId(), PullStatusType.SORT_DONE.getStatus());
+        updatePullBatchStatus(sortOrderSubmitDto.getBatchId(), PullStatusType.HAS_BEEN_SORTED.getStatus());
 
         return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, null);
     }
@@ -348,11 +348,11 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         pullBatchPo.setPullStatus(status);
 
         //拣货完成，填充 完成时间
-        if (PullStatusType.PULL_DONE.getStatus().equals(status)) {
+        if (PullStatusType.HAS_BEEN_PICKED.getStatus().equals(status)) {
             pullBatchPo.setPullFinishTime(new Timestamp(System.currentTimeMillis()));
         }
         //分拣完成，填充完成时间，且填充分拣员id
-        else if (PullStatusType.SORT_DONE.getStatus().equals(status)) {
+        else if (PullStatusType.HAS_BEEN_SORTED.getStatus().equals(status)) {
             pullBatchPo.setSortingFinishTime(new Timestamp(System.currentTimeMillis()));
             pullBatchPo.setSortingOperatorId(CommonContextHolder.getSecurityUser().getMemberId());
         }

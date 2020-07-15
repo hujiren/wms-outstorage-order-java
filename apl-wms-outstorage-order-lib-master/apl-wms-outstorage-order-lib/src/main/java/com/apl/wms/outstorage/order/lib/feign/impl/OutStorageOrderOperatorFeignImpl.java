@@ -22,4 +22,8 @@ public class OutStorageOrderOperatorFeignImpl implements OutStorageOrderOperator
         return ResultUtil.APPRESULT(CommonStatusCode.SAVE_FAIL.getCode(), CommonStatusCode.SAVE_FAIL.getMsg(), null);
     }
 
+    @Override
+    public ResultUtil<Integer> deleteOrderAllocationItem(Long outOrderId) {
+        return ResultUtil.APPRESULT(CommonStatusCode.DEL_FAIL.getCode(), CommonStatusCode.DEL_FAIL.getMsg(), null);
+    }
 }

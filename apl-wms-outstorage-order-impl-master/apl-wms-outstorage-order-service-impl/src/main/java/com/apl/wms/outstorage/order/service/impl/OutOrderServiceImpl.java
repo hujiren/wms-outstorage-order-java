@@ -14,9 +14,9 @@ import com.apl.sys.lib.cache.CustomerCacheBo;
 import com.apl.sys.lib.cache.JoinCustomer;
 import com.apl.sys.lib.feign.InnerFeign;
 import com.apl.sys.lib.utils.CheckCacheUtils;
-import com.apl.wms.outstorage.order.lib.enumwms.OrderStatusEnum;
 import com.apl.wms.outstorage.order.lib.enumwms.OutStorageOrderStatusEnum;
 import com.apl.wms.outstorage.order.lib.enumwms.PullStatusType;
+import com.apl.wms.outstorage.order.service.*;
 import com.apl.wms.warehouse.lib.cache.*;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.apl.wms.warehouse.lib.pojo.bo.PlatformOutOrderStockBo;
@@ -34,10 +34,6 @@ import com.apl.wms.outstorage.order.pojo.po.OutOrderDestPo;
 import com.apl.wms.outstorage.order.pojo.po.OutOrderPo;
 import com.apl.wms.outstorage.operator.pojo.dto.PullOrderKeyDto;
 import com.apl.wms.outstorage.order.pojo.vo.*;
-import com.apl.wms.outstorage.order.service.OutOrderCommodityItemService;
-import com.apl.wms.outstorage.order.service.OutOrderDestService;
-import com.apl.wms.outstorage.order.service.OutOrderService;
-import com.apl.wms.outstorage.order.service.SyncOutOrderService;
 import com.apl.wms.outstorage.order.utils.OutstorageOrderSnGenUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -51,6 +47,7 @@ import org.springframework.util.CollectionUtils;
 
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -98,6 +95,9 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
     OutOrderDestService outOrderDestService;//出库订单附加信息 out_order_attachment
 
     @Autowired
+    PullAllocationItemService pullAllocationItemService;
+
+    @Autowired
     SyncOutOrderService syncOutOrderService;//同步出库订单
 
     @Autowired
@@ -121,7 +121,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
     //保存出库订单商品
     @Override
     @Transactional
-    public ResultUtil<String> saveCommodity(OutOrderMainDto outOrderMainDto, List<OutOrderCommodityItemUpdDto> outOrderCommodityItemUpdDtos, Integer isMultipleOrder) throws Exception {
+    public ResultUtil<String> saveCommodity(OutOrderMainDto outOrderMainDto, List<OutOrderCommodityItemUpdDto> outOrderCommodityItemUpdDtos) throws Exception {
 
         //校验客户是否存在
         CheckCacheUtils.checkCustomer(innerFeign , redisTemplate , outOrderMainDto.getCustomerId());
@@ -129,18 +129,19 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         String lockKey = "lock-stocks-" + outOrderMainDto.getCustomerId();
         LockTool.lock(redisTemplate , lockKey , 2);
 
-        //库存锁定状态  锁定库存
-        outOrderMainDto.setPullStatus(PullStatusType.STOCK_LOCK.getStatus());
-        //更新主订单
+        //更新主订单并写入到DB, 如果没有则新建并插入数据到DB
         Long orderId = updateMainOrder(outOrderMainDto, outOrderMainDto.getOrderId());
 
 
-        //保存商品 ,返回 需要锁定的库存数量
+        //保存商品 ,返回 需要锁定库存的数量
         PlatformOutOrderStockBo platformOutOrderStockBo = outOrderCommodityItemService.saveItems(orderId , outOrderMainDto.getWhId() , outOrderCommodityItemUpdDtos);
 
+        List<Long> arr = new ArrayList<>();
+        arr.add(orderId);
+        pullAllocationItemService.allocationWarehouseForOrderQueueSend(arr);
 
         //如果子订单的商品数量没有改变，不需要进行库存的改变，不需要发送消息队列
-        if(CollectionUtils.isEmpty(platformOutOrderStockBo.getPlatformOutOrderStocks())){
+        /*if(CollectionUtils.isEmpty(platformOutOrderStockBo.getPlatformOutOrderStocks())){
             //返回前端数据
             return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS , orderId.toString());
 
@@ -150,9 +151,10 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
             platformOutOrderStockBo.setSecurityUser(CommonContextHolder.getSecurityUser(redisTemplate));
             platformOutOrderStockBo.setCustomerId(outOrderMainDto.getCustomerId());
+
             //更新库存
             rabbitSender.send("outStorageOrderCreateCountLockExchange" ,"outStorageOrderCreateCountLockQueue" , platformOutOrderStockBo);
-        }
+        }*/
 
         return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS , orderId.toString());
 
@@ -184,14 +186,33 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         BeanUtils.copyProperties(destDto, outOrderDestPo);
         Long id = outOrderDestService.saveDest(outOrderDestPo);
 
-        //订单创建完成
-        baseMapper.updOrderStatus(id, OrderStatusEnum.CREATE.getStatus(), null);
+        // 提交订单
+        //baseMapper.updOrderStatus(id, OrderStatusEnum.HAS_BEEN_COMMITED.getStatus(), null);
 
         if (id > 0) {
             return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, null);
         }
 
         return ResultUtil.APPRESULT(CommonStatusCode.SAVE_FAIL, false);
+    }
+
+
+    /**
+     * 提交订单
+     * @param
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public ResultUtil<Boolean> commitOrder(List<Long> outOrderIds, Long customerId) throws Exception {
+
+        JoinKeyValues longKeys = JoinUtil.getLongKeys(outOrderIds);
+
+        baseMapper.updOrderStatus(longKeys.getSbKeys().toString(), 3, customerId);
+
+        ResultUtil<Boolean> booleanResultUtil = pullAllocationItemService.allocationWarehouseForOrderQueueSend(outOrderIds);
+
+        return booleanResultUtil;
     }
 
 
@@ -272,7 +293,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
     @Override
     public ResultUtil<Boolean> updStatus(Long id, Integer status, Long customerId) {
 
-        Integer flag = baseMapper.updOrderStatus(id, status, customerId);
+        Integer flag = baseMapper.updOrderStatus(id.toString(), status, customerId);
         if (flag.equals(1)) {
             return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, true);
         }
@@ -686,7 +707,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
         List<OutOrderInfoVo> outOrderInfoVos = baseMapper.listOrderByOrderStatusPullStatusAndPullId(
                 OutStorageOrderStatusEnum.CREATE.getStatus(),
-                PullStatusType.ALREADY_ALLOCATION.getStatus(),
+                PullStatusType.ALREADY_ALLOCATION_PICKING_MEMBER.getStatus(),
                 operatorCacheBo.getMemberId());
 
 
@@ -786,7 +807,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         for (OutOrderListVo findOutOrder : findOutOrderList) {
 
             //库位 没有锁定，不能够进行分配拣货员
-            if(!findOutOrder.getPullStatus().equals(PullStatusType.STOCK_LOCK.getStatus())){
+            if(!findOutOrder.getPullStatus().equals(PullStatusType.ALREADY_ALLOCATION_STOCK.getStatus())){
                 throw new AplException(OutOrderServiceCode.STORAGE_LOCAL_NOT_LOCK.code , OutOrderServiceCode.STORAGE_LOCAL_NOT_LOCK.msg);
             }
 
@@ -796,7 +817,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
             OutOrderPo outOrderPo = new OutOrderPo();
             outOrderPo.setPullOperatorId(memberId);
             outOrderPo.setId(findOutOrder.getId());
-            outOrderPo.setPullStatus(PullStatusType.ALREADY_ALLOCATION.getStatus());
+            outOrderPo.setPullStatus(PullStatusType.ALREADY_ALLOCATION_PICKING_MEMBER.getStatus());
             orderList.add(outOrderPo);
 
         }
@@ -817,7 +838,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
             OutOrderPo outOrderPo = new OutOrderPo();
             outOrderPo.setPullOperatorId(0L);
             outOrderPo.setId(findOutOrder.getId());
-            outOrderPo.setPullStatus(PullStatusType.STOCK_LOCK.getStatus());
+            outOrderPo.setPullStatus(PullStatusType.ALREADY_ALLOCATION_STOCK.getStatus());
             orderList.add(outOrderPo);
         }
         // 更新订单拣货状态
@@ -834,6 +855,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         if (exists == null) {
             throw new AplException(OutOrderServiceCode.OUT_ORDER_NOT_EXIST.code, OutOrderServiceCode.OUT_ORDER_NOT_EXIST.msg);
         }
+
 
         if (!cancel(orderId)) {
             return ResultUtil.APPRESULT(CommonStatusCode.SAVE_FAIL, false);
@@ -858,7 +880,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
      */
     private Boolean cancel(Long id) {
 
-        return baseMapper.updOrderStatus(id, OutStorageOrderStatusEnum.CANCEL.getStatus(), null) == 1 ? true : false;
+        return baseMapper.updOrderStatus(id.toString(), OutStorageOrderStatusEnum.CANCEL.getStatus(), null) == 1 ? true : false;
 
     }
 
@@ -904,16 +926,15 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
      * @Date: 2020/6/8 18:20
      */ //有可能是在现有的订单上增加保存商品, 有可能是新建的订单, 有创建订单操作和更新订单操作
     private Long updateMainOrder(OutOrderMainDto outOrderMainDto, Long orderId) {
-        //新建主订单
+        //新建主订单  默认值0
         if (orderId == 0) {
             orderId = createMainOrder(outOrderMainDto);
-
         } else{
-            //订单不存在
+            //如果订单不存在
             if (!this.exists(orderId, outOrderMainDto.getCustomerId())) {
                 throw new AplException(OutOrderServiceCode.OUT_ORDER_NOT_EXIST.code, OutOrderServiceCode.OUT_ORDER_NOT_EXIST.msg);
             }
-            //更新主订单
+            //有订单id, 则更新主订单
             OutOrderPo outOrderPo = new OutOrderPo();
             BeanUtils.copyProperties(outOrderMainDto, outOrderPo);
             outOrderPo.setId(outOrderMainDto.getOrderId());
@@ -934,7 +955,11 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
         BeanUtils.copyProperties(outOrderMainDto, outOrderPo);
 
-        outOrderPo.setOrderStatus(OutStorageOrderStatusEnum.CREATE_ING.getStatus()); //出库订单状态  1创建中  2创建异常  3新建  4已发货  5完成   6取消
+        // 订单状态  1创建中
+        outOrderPo.setOrderStatus(OutStorageOrderStatusEnum.CREATE_ING.getStatus());
+
+        // 拣货状态  1未分配库位
+        outOrderMainDto.setPullStatus(PullStatusType.NOT_ALLOCATION_STOCK.getStatus());
 
         Timestamp crTime = new Timestamp(System.currentTimeMillis());
         outOrderPo.setCrTime(crTime); //创建时间
@@ -942,7 +967,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         //生成订单号
         String sn = orderSnGenUtils.createOutOrderSn(outOrderMainDto.getCustomerId(), outOrderMainDto.getCustomerNo(), outOrderMainDto.getInnerOrgId(), 1);
         outOrderPo.setOrderSn(sn);//出库订单号
-        outOrderPo.setId(SnowflakeIdWorker.generateId());//订单号, 雪花算法
+        outOrderPo.setId(SnowflakeIdWorker.generateId());//订单id, 雪花算法
         outOrderPo.setIsWrong(1);
 
         outOrderPo.insert();
