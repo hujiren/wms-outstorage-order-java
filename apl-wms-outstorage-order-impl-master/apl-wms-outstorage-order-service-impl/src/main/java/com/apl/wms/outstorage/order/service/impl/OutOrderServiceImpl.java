@@ -1,6 +1,6 @@
 package com.apl.wms.outstorage.order.service.impl;
 
-import com.apl.lib.amqp.RabbitSender;
+import com.apl.amqp.RabbitSender;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinBase;
@@ -127,7 +127,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         CheckCacheUtils.checkCustomer(innerFeign , redisTemplate , outOrderMainDto.getCustomerId());
 
         String lockKey = "lock-stocks-" + outOrderMainDto.getCustomerId();
-        LockTool.lock(redisTemplate , lockKey , 2);
+        RedisLock.lock(redisTemplate , lockKey , 2);
 
         //更新主订单并写入到DB, 如果没有则新建并插入数据到DB
         Long orderId = updateMainOrder(outOrderMainDto, outOrderMainDto.getOrderId());

@@ -1,9 +1,10 @@
 package com.apl.wms.outstorage.order.lib.cache;
 
-import com.apl.lib.config.MyBatisPlusConfig;
+
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.join.JoinBase;
 import com.apl.lib.utils.ResultUtil;
+import com.apl.db.mybatis.MyBatisPlusConfig;
 import com.apl.wms.warehouse.lib.cache.StoreCacheBo;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -17,6 +18,7 @@ public class JoinStore extends JoinBase<StoreCacheBo> {
         this.redisTemplate = redisTemplate;
         this.tabName = "store";
         this.joinStyle = joinStyle;
+
 
         this.innerOrgId = MyBatisPlusConfig.tenantIdContextHolder.get();
         this.cacheKeyNamePrefix = "JOIN_CACHE:"+this.tabName+"_"+this.innerOrgId.toString()+"_";

@@ -4,14 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.apl</groupId>
-    <artifactId>apl-wms-outstorage-operator-app3</artifactId>
+    <artifactId>apl-wms-outstorage-operator-app</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.1.6.RELEASE</version>
+        <version>2.3.1.RELEASE</version>
         <relativePath/>
     </parent>
 
@@ -20,7 +20,7 @@
         <dependency>
             <groupId>com.apl</groupId>
             <artifactId>apl-web-dependency-parent</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.0</version>
         </dependency>
 
         <dependency>
