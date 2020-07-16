@@ -1,5 +1,4 @@
 package com.apl.wms.outstorage.order.utils;
-
 import com.apl.lib.exception.AplException;
 import com.apl.lib.utils.RedisLock;
 import com.apl.lib.utils.StringUtil;

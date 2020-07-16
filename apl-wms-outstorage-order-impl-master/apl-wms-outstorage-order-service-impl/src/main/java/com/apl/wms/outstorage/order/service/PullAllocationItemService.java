@@ -14,6 +14,22 @@ import java.util.List;
  */
 public interface PullAllocationItemService extends IService<PullAllocationItemPo> {
 
+    /**
+     * 将订单id及构建的分配明细对象写入到分配明细表
+     * @param tranId
+     * @param outOrderId
+     * @param compareStorageLocalStocksBos
+     * @return
+     */
+    ResultUtil<Integer> AllocOutOrderStockCallBack(String tranId, Long outOrderId, Integer pullStatus, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos);
+
+
+    /**
+     * 删除订单分配明细
+     * @param outOrderId
+     * @return
+     */
+    ResultUtil<Integer> deleteOrderAllocationItem(Long outOrderId);
 
 
     /**
@@ -35,19 +51,18 @@ public interface PullAllocationItemService extends IService<PullAllocationItemPo
 
 
     /**
-     * 将订单id及构建的分配明细对象写入到分配明细表
-     * @param tranId
-     * @param outOrderId
-     * @param compareStorageLocalStocksBos
+     * 获取单一订单商品id和下单数量
+     * @param: 多个订单id
      * @return
      */
-    ResultUtil<Integer> AllocOutOrderStockCallBack(String tranId, Long outOrderId, Integer pullStatus, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos);
+    ResultUtil<AllocationWarehouseOutOrderBo> getOrderForCancelAllocationWarehouseManual(Long outOrderId);
+
 
 
     /**
-     * 删除订单分配明细
-     * @param outOrderId
+     * 批量获取多个订单中商品id和下单数量
+     * @param: 多个订单id
      * @return
      */
-    ResultUtil<Integer> deleteOrderAllocationItem(Long outOrderId);
+    ResultUtil<Boolean> cancelAllocationWarehouseForOrderQueueSend(List<Long> orderIds) throws Exception;
 }

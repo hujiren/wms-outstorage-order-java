@@ -23,6 +23,9 @@ public interface OutStorageOrderOperatorFeign {
     @PostMapping(value = "/pull-allocation-item/get-order-by-allocation-warehouse-manual")
     ResultUtil<AllocationWarehouseOutOrderBo> getOrderByAllocationWarehouseManual(@RequestParam("outOrderId")Long outOrderId);
 
+    @PostMapping(value = "/pull-allocation-item/get-order-for-cancel-allocation-warehouse-manual")
+    ResultUtil<AllocationWarehouseOutOrderBo> getOrderForCancelAllocationWarehouseManual(@RequestParam("outOrderId")Long outOrderId);
+
     @PostMapping(value = "/pull-allocation-item/insert", consumes = MediaType.APPLICATION_JSON_VALUE)
     ResultUtil<Integer>  AllocOutOrderStockCallBack(@RequestParam("tranId")String tranId, @RequestParam("outOrderId")Long outOrderId, @RequestParam("pullStatus")Integer pullStatus, @RequestBody List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos);
 

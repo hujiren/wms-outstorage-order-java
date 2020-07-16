@@ -63,4 +63,20 @@ public class PullAllocationItemController {
         return pullAllocationItemService.deleteOrderAllocationItem(outOrderId);
     }
 
+
+    @PostMapping(value = "/get-order-for-cancel-allocation-warehouse-manual")
+    @ApiOperation(value =  "查询取消分配仓库时的订单与商品" , notes = "查询取消分配仓库时的订单与商品")
+    @ApiImplicitParam(name = "outOrderId",value = "订单id",required = true  , paramType = "query")
+    public ResultUtil<AllocationWarehouseOutOrderBo> getOrderForCancelAllocationWarehouseManual(@NotNull(message = "订单id不能为空") Long outOrderId)  throws Exception{
+
+        return pullAllocationItemService.getOrderForCancelAllocationWarehouseManual(outOrderId);
+    }
+
+
+    @PostMapping(value = "/get-order-for-cancel-allocation-warehouse-queue")
+    @ApiOperation(value =  "批量查询取消分配仓库时的订单与商品" , notes = "批量查询取消分配仓库时的订单与商品")
+    public ResultUtil<Boolean> cancelAllocationWarehouseForOrderQueueSend(@RequestBody @NotNull(message = "订单id不能为空") List<Long> orderIds)  throws Exception{
+        return pullAllocationItemService.cancelAllocationWarehouseForOrderQueueSend(orderIds);
+    }
+
 }

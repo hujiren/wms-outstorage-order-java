@@ -18,6 +18,11 @@ public class OutStorageOrderOperatorFeignImpl implements OutStorageOrderOperator
     }
 
     @Override
+    public ResultUtil<AllocationWarehouseOutOrderBo> getOrderForCancelAllocationWarehouseManual(Long outOrderId) {
+        return ResultUtil.APPRESULT(CommonStatusCode.GET_FAIL.getCode() , CommonStatusCode.GET_FAIL.getMsg() , null);
+    }
+
+    @Override
     public ResultUtil<Integer> AllocOutOrderStockCallBack(String tranId, Long outOrderId, Integer pullStatus, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos) {
         return ResultUtil.APPRESULT(CommonStatusCode.SAVE_FAIL.getCode(), CommonStatusCode.SAVE_FAIL.getMsg(), null);
     }

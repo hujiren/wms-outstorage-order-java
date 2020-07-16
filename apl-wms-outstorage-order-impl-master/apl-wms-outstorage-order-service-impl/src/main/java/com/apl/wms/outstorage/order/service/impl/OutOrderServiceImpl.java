@@ -41,13 +41,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.CollectionUtils;
-
-
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -112,6 +113,8 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
     @Autowired
     RedisTemplate redisTemplate;
 
+    @Autowired
+    DataSourceTransactionManager dataSourceTransactionManager;
 
     static JoinFieldInfo joinCommodityFieldInfo = null; //跨项目跨库关联 商品表 反射字段缓存
     static JoinFieldInfo joinCustomerFieldInfo = null; //跨项目跨库关联 客户表 反射字段缓存
@@ -120,24 +123,39 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
     //保存出库订单商品
     @Override
-    @Transactional
     public ResultUtil<String> saveCommodity(OutOrderMainDto outOrderMainDto, List<OutOrderCommodityItemUpdDto> outOrderCommodityItemUpdDtos) throws Exception {
 
-        //校验客户是否存在
-        CheckCacheUtils.checkCustomer(innerFeign , redisTemplate , outOrderMainDto.getCustomerId());
+        DefaultTransactionDefinition dtd = new DefaultTransactionDefinition();
+        dtd.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        TransactionStatus transactionStatus = dataSourceTransactionManager.getTransaction(dtd);
+        Long orderId = null;
+        List<Long> arr = null;
 
-        String lockKey = "lock-stocks-" + outOrderMainDto.getCustomerId();
-        RedisLock.lock(redisTemplate , lockKey , 2);
+        try {
+            //校验客户是否存在
+            CheckCacheUtils.checkCustomer(innerFeign , redisTemplate , outOrderMainDto.getCustomerId());
 
-        //更新主订单并写入到DB, 如果没有则新建并插入数据到DB
-        Long orderId = updateMainOrder(outOrderMainDto, outOrderMainDto.getOrderId());
+            String lockKey = "lock-stocks-" + outOrderMainDto.getCustomerId();
+            RedisLock.lock(redisTemplate , lockKey , 2);
+
+            //更新主订单并写入到DB, 如果没有则新建并插入数据到DB
+            orderId = updateMainOrder(outOrderMainDto, outOrderMainDto.getOrderId());
 
 
-        //保存商品 ,返回 需要锁定库存的数量
-        PlatformOutOrderStockBo platformOutOrderStockBo = outOrderCommodityItemService.saveItems(orderId , outOrderMainDto.getWhId() , outOrderCommodityItemUpdDtos);
+            //保存商品 ,返回 需要锁定库存的数量
+            outOrderCommodityItemService.saveItems(orderId , outOrderMainDto.getWhId() , outOrderCommodityItemUpdDtos);
 
-        List<Long> arr = new ArrayList<>();
-        arr.add(orderId);
+            arr = new ArrayList<>();
+            arr.add(orderId);
+
+            dataSourceTransactionManager.commit(transactionStatus);
+
+        } catch (Exception e) {
+
+            dataSourceTransactionManager.rollback(transactionStatus);
+            e.printStackTrace();
+        }
+
         pullAllocationItemService.allocationWarehouseForOrderQueueSend(arr);
 
         return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS , orderId.toString());
@@ -476,8 +494,8 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         Page page = null;
         if (pageDto != null) {
             page = new Page();
-            page.setCurrent(pageDto.getPageIndex());
-            page.setSize(pageDto.getPageSize());
+            page.setCurrent(pageDto.getPageIndex());//默认1
+            page.setSize(pageDto.getPageSize());//默认20
         }
 
         List<OutOrderListVo> list = null;
@@ -509,7 +527,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
             joinKeyValues = JoinUtil.getKeys(list, "id", Long.class);
         }
 
-        //查找多个订单商品项目总表
+        //根据订单查找多个订单商品项目总表
         List<OutOrderCommodityItemInfoVo> commodityItemVos = outOrderCommodityItemService.getOrderItemsByOrderIds(joinKeyValues.getSbKeys().toString());
 
         //订单商品项目总表，按订单id, 拆分成多个子表
@@ -943,7 +961,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         outOrderPo.setOrderStatus(OutStorageOrderStatusEnum.CREATE_ING.getStatus());
 
         // 拣货状态  1未分配库位
-        outOrderMainDto.setPullStatus(PullStatusType.NOT_ALLOCATION_STOCK.getStatus());
+        outOrderPo.setPullStatus(PullStatusType.NOT_ALLOCATION_STOCK.getStatus());
 
         Timestamp crTime = new Timestamp(System.currentTimeMillis());
         outOrderPo.setCrTime(crTime); //创建时间
