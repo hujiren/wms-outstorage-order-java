@@ -24,7 +24,7 @@ public class OutOrderInfoVo implements Serializable {
     private static final long serialVersionUID=1L;
 
 
-    //
+    //订单id
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
 

@@ -116,5 +116,5 @@ public interface PullAllocationItemMapper extends BaseMapper<PullAllocationItemP
      * @param outOrderId
      * @return
      */
-    Integer deleteByOrderId(@Param("id") Long outOrderId);
+    Integer deleteByOrderId(@Param("outOrderId") Long outOrderId);
 }

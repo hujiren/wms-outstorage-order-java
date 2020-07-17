@@ -112,7 +112,7 @@ public class SyncOutOrderController {
     @ApiOperation(value =  "启动任务",  notes ="TASK_ALREADY_BOOT : 启动任务已启动\n " +
             "GET_STORE_API_CONFIG_FAIL : 获取店铺API配置失败\n  " +
             "STORE_NOT_CONFIG_API : 店铺没有配置API")
-    public ResultUtil<Boolean> bootTask(Long id) {
+    public ResultUtil<Boolean> bootTask(Long id) throws Exception {
         ApiParamValidate.notEmpty("id", id);
         SecurityUser securityUser = CommonContextHolder.getSecurityUser();
 

@@ -1,6 +1,7 @@
 package com.apl.wms.outstorage.order.dao;
 
 
+import com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo;
 import com.apl.wms.outstorage.order.pojo.po.OutOrderPo;
 import com.apl.wms.outstorage.order.pojo.dto.OutOrderKeyDto;
 import com.apl.wms.outstorage.order.pojo.vo.OrderItemListVo;
@@ -54,6 +55,14 @@ public interface OutOrderMapper extends BaseMapper<OutOrderPo> {
     List<OutOrderListVo> getList(Page page , @Param("kd" ) OutOrderKeyDto keyDto);
 
     /**
+     * @Desc: 根据商品/sku 获取订单分拣信息
+     * @Author: CY
+     * @Date: 2020/6/2 10:16
+     */
+    List<OutOrderInfoVo> pageOrderPull(Page page , @Param("kd" ) PullOrderKeyDto keyDto);
+
+
+    /**
      * @Desc: 分页获取问题订单
      * @Author: CY
      * @Date: 2020/6/2 10:15
@@ -73,7 +82,7 @@ public interface OutOrderMapper extends BaseMapper<OutOrderPo> {
      * @Author: CY
      * @Date: 2020/6/2 10:16
      */
-    List<OutOrderInfoVo> pageOrderPull(Page page , @Param("kd" ) PullOrderKeyDto keyDto);
+    List<OutOrderPickListVo> queryOrderPickInfoByPage(Page page , @Param("kd") PullOrderKeyDto keyDto);
 
     /**
      * @Desc: 查找订单，返回ids
@@ -91,14 +100,6 @@ public interface OutOrderMapper extends BaseMapper<OutOrderPo> {
     List<OutOrderListVo> getListByIds(@Param("ids" ) String ids, @Param("minId" )Long minId, @Param("maxId" ) Long maxId);
 
 
-    /**
-     * @Description : 更新订单状态
-     * @Param ：
-     * @Return ：
-     * @Author : arran
-     * @Date :
-     */
-    Integer updOrderStatus(@Param("ids") String ids, @Param("status") Integer status, @Param("customerId") Long customerId);
 
     /**
      * @Desc: 批量更新 拣货状态
@@ -119,6 +120,19 @@ public interface OutOrderMapper extends BaseMapper<OutOrderPo> {
     OutOrderInfoVo existsByRefSn(@Param("referenceSn") String referenceSn, @Param("customerId") Long customerId, @Param("startTime") Timestamp startTime);
 
 
+    /**
+     * 根据多个Id查询列表
+     * @param ids
+     * @return
+     */
+    List<OutOrderInfoVo> queryList(@Param("ids") String ids);
 
+
+    /**
+     * 修改订单状态
+     * @param
+     * @return
+     */
+    Integer updateOrderStatus(@Param("ids")  List<Long> ids, @Param("status") Integer status, @Param("customerId") Long customerId);
 
 }

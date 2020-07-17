@@ -1,5 +1,6 @@
 package com.apl.wms.outstorage.order.business.controller;
 
+import com.apl.amqp.RabbitMqUtil;
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.CommonContextHolder;
@@ -18,6 +19,7 @@ import com.apl.wms.outstorage.order.pojo.vo.OrderItemListVo;
 import com.apl.wms.outstorage.order.pojo.vo.OutOrderListResultVo;
 import com.apl.wms.outstorage.order.pojo.vo.StatisticsOrderVo;
 import com.apl.wms.outstorage.operator.pojo.dto.PullOrderKeyDto;
+import com.rabbitmq.client.Channel;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -156,13 +158,11 @@ public class OutOrderController {
     }
 
 
-    @ResponseBody
     @PostMapping("/cancel")
     @ApiOperation(value =  "取消订单" , notes = "取消订单")
-    @ApiImplicitParam(name = "orderId",value = "订单id",required = true  , paramType = "query")
-    public ResultUtil<Boolean> cancelOrder(@NotNull(message = "orderId 不能为空") @Min(value = 1 , message = "orderId 不能小于1")Long orderId) throws Exception{
+    public ResultUtil<String> cancelOrder(@RequestBody @NotNull(message = "orderId 不能为空")List<Long> orderIds) throws Exception{
 
-        return outOrderService.cancelOrder(orderId);
+        return outOrderService.cancelOrder(orderIds);
     }
 
 
@@ -172,4 +172,6 @@ public class OutOrderController {
 
         return outOrderService.commitOrder(outOrderIds, 0l);
     }
+
+
 }

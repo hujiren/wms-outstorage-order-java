@@ -1,9 +1,14 @@
 package com.apl.wms.outstorage.operator.service.impl;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
+import com.apl.lib.join.JoinBase;
+import com.apl.lib.join.JoinFieldInfo;
 import com.apl.lib.join.JoinUtil;
 import com.apl.lib.utils.ResultUtil;
+import com.apl.sys.lib.cache.JoinCustomer;
+import com.apl.sys.lib.feign.InnerFeign;
 import com.apl.wms.outstorage.operator.dao.PickMapper;
+import com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo;
 import com.apl.wms.outstorage.operator.service.PickService;
 import com.apl.wms.outstorage.order.pojo.vo.OutOrderListVo;
 import com.apl.wms.warehouse.lib.cache.OperatorCacheBo;
@@ -31,7 +36,8 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
     enum AllocationWarehouseServiceCode {
         ORDER_STATUS_IS_CANCEL("ORDER_STATUS_IS_CANCEL" ,"该订单状态为取消状态"),
         ORDER_STATUS_IS_NOT_COMMIT("ORDER_STATUS_IS_NOT_COMMIT", "该订单不是已提交状态"),
-        THE_ORDER_HAS_BEEN_ASSIGNED_TO_A_PICKER("THE_ORDER_HAS_BEEN_ASSIGNED_TO_A_PICKER", "该订单已经分配拣货员")
+        THE_ORDER_HAS_BEEN_ASSIGNED_TO_A_PICKER("THE_ORDER_HAS_BEEN_ASSIGNED_TO_A_PICKER", "该订单已经分配拣货员"),
+        ORDER_INFO_IS_NULL_BY_QUERY("ORDER_INFO_IS_NULL_BY_QUERY", "查询出来的订单信息为空")
         ;
 
         private String code;
@@ -43,44 +49,88 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
         }
     }
 
+    static JoinFieldInfo joinCustomerFieldInfo = null; //跨项目跨库关联 客户表 反射字段缓存
+
     @Autowired
     RedisTemplate redisTemplate;
 
     @Autowired
     WarehouseFeign warehouseFeign;
 
+    @Autowired
+    InnerFeign innerFeign;
+
+
     @Override
-    public ResultUtil<Boolean> allocationPickingMember(List<String> orderSns) {
+    public ResultUtil<OutOrderPickListVo> allocationPickingMember(List<String> orderSns) throws Exception {
 
         OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
 
-        List<OutOrderListVo> outOrderListVo = baseMapper.getListByOrderSns(orderSns);
+        List<OutOrderPickListVo> outOrderPickListVo = baseMapper.getListByOrderSns(orderSns);
 
-        if(outOrderListVo.isEmpty()){
-            return ResultUtil.APPRESULT(CommonStatusCode.NULL_POINT_ERROR.code, CommonStatusCode.NULL_POINT_ERROR.msg, outOrderListVo);
+        if(outOrderPickListVo.isEmpty()){
+
+            return ResultUtil.APPRESULT(AllocationWarehouseServiceCode.ORDER_INFO_IS_NULL_BY_QUERY.code,
+                    AllocationWarehouseServiceCode.ORDER_INFO_IS_NULL_BY_QUERY.msg, null);
+
         }
 
-        List<Long> ids = new ArrayList<>();
-        for (OutOrderListVo vo : outOrderListVo) {
+        //订单列表
+        List<Long> orderIds = new ArrayList<>();
+
+        for (OutOrderPickListVo vo : outOrderPickListVo) {
+
             if(vo.getOrderStatus() == 6){
+
                 // 订单已取消状态
                 return ResultUtil.APPRESULT(AllocationWarehouseServiceCode.ORDER_STATUS_IS_CANCEL.code,
-                        AllocationWarehouseServiceCode.ORDER_STATUS_IS_CANCEL.msg + ", orderSn:" + vo.getOrderSn(), null);
+                        AllocationWarehouseServiceCode.ORDER_STATUS_IS_CANCEL.msg
+                                + ", orderSn:" + vo.getOrderSn(), null);
+
             }else if(vo.getOrderStatus() != 3){
+
                 // 订单不是已提交状态
                 return ResultUtil.APPRESULT(AllocationWarehouseServiceCode.ORDER_STATUS_IS_NOT_COMMIT.code,
-                        AllocationWarehouseServiceCode.ORDER_STATUS_IS_NOT_COMMIT.msg + ", orderSn:" + vo.getOrderSn(), null);
+                        AllocationWarehouseServiceCode.ORDER_STATUS_IS_NOT_COMMIT.msg
+                                + ", orderSn:" + vo.getOrderSn(), null);
+
             }
 
-            ids.add(vo.getId());
+            orderIds.add(vo.getOrderId());
+
         }
 
-        Integer integer =  baseMapper.updateOrderPickingMember(operatorCacheBo.getId(), ids);
+        //批量更新订单拣货员信息和订单状态
+        Integer integer =  baseMapper.updateOrderPickingMember(operatorCacheBo.getId(), orderIds);
+
         if(integer == 0){
+
             throw new AplException(CommonStatusCode.SAVE_FAIL.code, CommonStatusCode.SAVE_FAIL.msg, integer);
         }
 
-        ResultUtil<Boolean> booleanResult = ResultUtil.APPRESULT(CommonStatusCode.SYSTEM_SUCCESS,true);
-        return booleanResult;
+        //跨项目跨库关联表数组
+        List<JoinBase> joinTabs = new ArrayList<>();
+
+        //关联客户表字段信息
+        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, redisTemplate);
+
+        if (null != joinCustomerFieldInfo) {
+
+            joinCustomer.setJoinFieldInfo(joinCustomerFieldInfo);
+
+        } else {
+
+            joinCustomer.addField("customerId", Long.class, "customerName", String.class);
+
+            joinCustomerFieldInfo = joinCustomer.getJoinFieldInfo();
+
+        }
+        joinTabs.add(joinCustomer);
+
+        //执行跨项目跨库关联
+        JoinUtil.join(outOrderPickListVo, joinTabs);
+
+        return ResultUtil.APPRESULT(CommonStatusCode.SYSTEM_SUCCESS.code, CommonStatusCode.SYSTEM_SUCCESS.msg, outOrderPickListVo);
+
     }
 }

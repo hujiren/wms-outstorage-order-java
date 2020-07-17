@@ -5,20 +5,19 @@
 
     <!-- 分页查找 第2步, 根据ids查找订单列表-->
     <select id="getListByOrderSns" parameterType="java.util.List"
-            resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderListVo">
+            resultType="com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo">
         SELECT
-        id,
+        id as orderId,
         order_sn,
         order_status,
         pull_status,
-        wh_id,
-        pull_operator_id
+        cr_time
         FROM
         out_order
         where
         order_sn in (
             <foreach collection="orderSns" open="" separator="," close="" item="row">
-                #{row}
+                ${row}
             </foreach>
         )
     </select>

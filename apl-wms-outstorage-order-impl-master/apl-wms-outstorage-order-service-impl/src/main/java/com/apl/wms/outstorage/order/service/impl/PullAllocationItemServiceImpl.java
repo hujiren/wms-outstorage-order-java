@@ -1,6 +1,7 @@
 package com.apl.wms.outstorage.order.service.impl;
 
 
+import com.apl.amqp.RabbitMqUtil;
 import com.apl.amqp.RabbitSender;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
@@ -17,6 +18,7 @@ import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOrderCommodit
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
 import com.apl.wms.warehouse.lib.pojo.bo.CompareStorageLocalStocksBo;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.rabbitmq.client.Channel;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +59,9 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
     @Autowired
     RabbitSender rabbitSender;
+
+    @Autowired
+    RabbitMqUtil rabbitMqUtil;
 
     @Autowired
     RedisTemplate redisTemplate;
@@ -222,34 +227,45 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
         SecurityUser securityUser = CommonContextHolder.getSecurityUser();
 
-        //遍历订单信息对象, 并将每个商品信息对象组合到订单信息对象中
-        for (AllocationWarehouseOutOrderBo outOrderBo : orderList) {
-            if (outOrderBo.getPullStatus() == getPullStatus) {
-                outOrderBo.setPullStatus(setPullStatus);
+        Channel channel = rabbitMqUtil.createChannel("1", true);
 
-                //获取当前订单信息对象的orderId, 并作为key从分组的map中取出商品信息列表集合组合到订单信息对象中, 使orderId相对应
-                List<AllocationWarehouseOrderCommodityBo> commodityBoList = maps.get(outOrderBo.getOrderId().toString());
-                outOrderBo.setAllocationWarehouseOrderCommodityBoList(commodityBoList);
+        try {
+            //遍历订单信息对象, 并将每个商品信息对象组合到订单信息对象中
+            for (AllocationWarehouseOutOrderBo outOrderBo : orderList) {
+                if (outOrderBo.getPullStatus() == getPullStatus) {
+                    outOrderBo.setPullStatus(setPullStatus);
 
-                // 循环发送分配的订单对象到队列, 携带安全用户一起发送
-                outOrderBo.setSecurityUser(securityUser);
+                    //获取当前订单信息对象的orderId, 并作为key从分组的map中取出商品信息列表集合组合到订单信息对象中, 使orderId相对应
+                    List<AllocationWarehouseOrderCommodityBo> commodityBoList = maps.get(outOrderBo.getOrderId().toString());
+                    outOrderBo.setAllocationWarehouseOrderCommodityBoList(commodityBoList);
 
-                if (outOrderBo.getPullStatus() == 2) {
+                    // 循环发送分配的订单对象到队列, 携带安全用户一起发送
+                    outOrderBo.setSecurityUser(securityUser);
 
-                    rabbitSender.send("allocationWarehouseForOrderQueueExchange", "allocationWarehouseForOrderQueue", outOrderBo);
+                    if (outOrderBo.getPullStatus() == 2) {
 
-                } else if (outOrderBo.getPullStatus() == 1) {
+                        //rabbitSender.send("allocationWarehouseForOrderQueueExchange", "allocationWarehouseForOrderQueue", outOrderBo);
+                        rabbitMqUtil.send(channel, "allocationWarehouseForOrderQueue", outOrderBo);
 
-                    rabbitSender.send("cancelAllocWarehouseForOrderQueueExchange", "cancelAllocWarehouseForOrderQueue", outOrderBo);
+                    } else if (outOrderBo.getPullStatus() == 1) {
 
+                        //rabbitSender.send("cancelAllocWarehouseForOrderQueueExchange", "cancelAllocWarehouseForOrderQueue", outOrderBo);
+                        rabbitMqUtil.send(channel, "cancelAllocWarehouseForOrderQueue", outOrderBo);
+                    }
                 }
             }
-        }
 
-        //批量更新拣货状态
-        Integer integer = baseMapper.updateOrdersStatus(joinKeyValues.getSbKeys().toString(), joinKeyValues.getMinKey(), joinKeyValues.getMaxKey(), setPullStatus);
-        if (integer == 0) {
-            return ResultUtil.APPRESULT(CommonStatusCode.SAVE_FAIL, false);
+            //批量更新拣货状态
+            Integer integer = baseMapper.updateOrdersStatus(joinKeyValues.getSbKeys().toString(), joinKeyValues.getMinKey(), joinKeyValues.getMaxKey(), setPullStatus);
+            if (integer == 0) {
+                return ResultUtil.APPRESULT(CommonStatusCode.SAVE_FAIL, false);
+            }
+
+            channel.txCommit(); // 提交amqp事务
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            channel.txRollback(); // 回滚amqp事务
         }
 
         ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, true);
@@ -317,14 +333,14 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
      * @return
      */
     @Override
-    public ResultUtil<Integer> deleteOrderAllocationItem(Long outOrderId) {
+    public ResultUtil<Integer> deleteOrderAllocationItem(Long outOrderId, String tranId) {
 
         Integer integer = baseMapper.deleteByOrderId(outOrderId);
 
         if (integer == 0) {
             return ResultUtil.APPRESULT(CommonStatusCode.DEL_FAIL, CommonStatusCode.DEL_FAIL);
         }
-
-        return ResultUtil.APPRESULT(CommonStatusCode.DEL_SUCCESS, CommonStatusCode.DEL_SUCCESS);
+        redisTemplate.opsForValue().set(tranId, 1);
+        return ResultUtil.APPRESULT(CommonStatusCode.DEL_SUCCESS,  1);
     }
 }

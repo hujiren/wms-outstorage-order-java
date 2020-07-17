@@ -5,6 +5,7 @@ import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
 import com.apl.wms.warehouse.lib.pojo.bo.CompareStorageLocalStocksBo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -30,7 +31,7 @@ public class PullAllocationItemController {
 
 
     @PostMapping(value = "/get-order-by-allocation-warehouse-manual")
-    @ApiOperation(value =  "查询分配仓库时的订单与商品" , notes = "查询分配仓库时的订单与商品")
+    @ApiOperation(value =  "查询分配仓库时的订单与商品" , notes = "查询分配仓库时的订单与商品", hidden = true)
     @ApiImplicitParam(name = "outOrderId",value = "订单id",required = true  , paramType = "query")
     public ResultUtil<AllocationWarehouseOutOrderBo> getOrderForAllocationWarehouseManual(@NotNull(message = "订单id不能为空") Long outOrderId)  throws Exception{
 
@@ -38,10 +39,26 @@ public class PullAllocationItemController {
     }
 
 
+    @PostMapping(value = "/get-order-for-cancel-allocation-warehouse-manual")
+    @ApiOperation(value =  "查询取消分配仓库时的订单与商品" , notes = "查询取消分配仓库时的订单与商品", hidden = true)
+    @ApiImplicitParam(name = "outOrderId",value = "订单id",required = true  , paramType = "query")
+    public ResultUtil<AllocationWarehouseOutOrderBo> getOrderForCancelAllocationWarehouseManual(@NotNull(message = "订单id不能为空") Long outOrderId)  throws Exception{
+
+        return pullAllocationItemService.getOrderForCancelAllocationWarehouseManual(outOrderId);
+    }
+
+
     @PostMapping(value = "/get-order-by-allocation-warehouse-queue")
-    @ApiOperation(value =  "批量查询分配仓库时的订单与商品" , notes = "批量查询分配仓库时的订单与商品")
+    @ApiOperation(value =  "批量分配库位" , notes = "批量分配库位")
     public ResultUtil<Boolean> allocationWarehouseForOrderQueueSend(@RequestBody @NotNull(message = "订单id不能为空") List<Long> orderIds)  throws Exception{
         return pullAllocationItemService.allocationWarehouseForOrderQueueSend(orderIds);
+    }
+
+
+    @PostMapping(value = "/get-order-for-cancel-allocation-warehouse-queue")
+    @ApiOperation(value =  "批量取消分配" , notes = "批量取消分配")
+    public ResultUtil<Boolean> cancelAllocationWarehouseForOrderQueueSend(@RequestBody @NotNull(message = "订单id不能为空") List<Long> orderIds)  throws Exception{
+        return pullAllocationItemService.cancelAllocationWarehouseForOrderQueueSend(orderIds);
     }
 
 
@@ -59,24 +76,10 @@ public class PullAllocationItemController {
     @PostMapping(value = "/delete")
     @ApiOperation(value =  "删除分配明细" , notes = "删除分配明细")
     @ApiImplicitParam(name = "outOrderId",value = "订单id",required = true  , paramType = "query")
-    public ResultUtil<Integer> deleteOrderAllocationItem(@NotNull(message = "订单id不能为空")Long outOrderId){
-        return pullAllocationItemService.deleteOrderAllocationItem(outOrderId);
+    public ResultUtil<Integer> deleteOrderAllocationItem(@NotNull(message = "订单id不能为空")Long outOrderId,
+                                                         @NotNull(message = "tranId不能为空") String tranId){
+        return pullAllocationItemService.deleteOrderAllocationItem(outOrderId, tranId);
     }
 
-
-    @PostMapping(value = "/get-order-for-cancel-allocation-warehouse-manual")
-    @ApiOperation(value =  "查询取消分配仓库时的订单与商品" , notes = "查询取消分配仓库时的订单与商品")
-    @ApiImplicitParam(name = "outOrderId",value = "订单id",required = true  , paramType = "query")
-    public ResultUtil<AllocationWarehouseOutOrderBo> getOrderForCancelAllocationWarehouseManual(@NotNull(message = "订单id不能为空") Long outOrderId)  throws Exception{
-
-        return pullAllocationItemService.getOrderForCancelAllocationWarehouseManual(outOrderId);
-    }
-
-
-    @PostMapping(value = "/get-order-for-cancel-allocation-warehouse-queue")
-    @ApiOperation(value =  "批量查询取消分配仓库时的订单与商品" , notes = "批量查询取消分配仓库时的订单与商品")
-    public ResultUtil<Boolean> cancelAllocationWarehouseForOrderQueueSend(@RequestBody @NotNull(message = "订单id不能为空") List<Long> orderIds)  throws Exception{
-        return pullAllocationItemService.cancelAllocationWarehouseForOrderQueueSend(orderIds);
-    }
 
 }
