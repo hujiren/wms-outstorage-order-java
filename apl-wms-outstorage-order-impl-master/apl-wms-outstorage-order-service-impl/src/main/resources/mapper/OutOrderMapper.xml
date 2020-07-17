@@ -46,10 +46,10 @@
 
     <select id="selectOrderByIds" resultType="com.apl.wms.outstorage.order.pojo.vo.OrderItemListVo">
         SELECT
-          oo.id,
-          oo.order_sn
+        oo.id,
+        oo.order_sn
         FROM
-          out_order oo
+        out_order oo
         where
         order_status = #{orderStatus}
         <foreach open=" and id in (" collection="ids" item="id" close=")" separator=",">
@@ -60,26 +60,26 @@
 
     <select id="listWrongOrder" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderListVo">
         SELECT
-            oo.id,
-            oo.customer_id,
-            oo.order_sn,
-            oo.order_status,
-            oo.pull_status,
-            oo.order_from,
-            oo.ec_platform_code,
-            oo.reference_sn,
-            oo.store_id,
-            oo.wh_id,
-            oo.pull_operator_id,
-            oo.pack_operator_id,
-            oo.out_gw,
-            oo.out_volume,
-            oo.remark,
-            oo.is_wrong,
-            oo.cr_time,
-            oo.inner_org_id
+        oo.id,
+        oo.customer_id,
+        oo.order_sn,
+        oo.order_status,
+        oo.pull_status,
+        oo.order_from,
+        oo.ec_platform_code,
+        oo.reference_sn,
+        oo.store_id,
+        oo.wh_id,
+        oo.pull_operator_id,
+        oo.pack_operator_id,
+        oo.out_gw,
+        oo.out_volume,
+        oo.remark,
+        oo.is_wrong,
+        oo.cr_time,
+        oo.inner_org_id
         FROM
-            out_order as oo
+        out_order as oo
         LEFT JOIN out_order_commodity_item ooci ON oo.id = ooci.order_id
         <where>
             oo.is_wrong = #{isWrong}
@@ -108,28 +108,29 @@
         order by oo.id desc
     </select>
 
+
     <select id="pageOrderPull" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderInfoVo">
         SELECT
-            DISTINCT
-            oo.id,
-            oo.customer_id,
-            oo.order_sn,
-            oo.order_status,
-            oo.pull_status,
-            oo.order_from,
-            oo.ec_platform_code,
-            oo.reference_sn,
-            oo.store_id,
-            oo.wh_id,
-            oo.pull_operator_id,
-            oo.pack_operator_id,
-            oo.out_gw,
-            oo.out_volume,
-            oo.remark,
-            oo.is_wrong,
-            oo.cr_time
+        DISTINCT
+        oo.id,
+        oo.customer_id,
+        oo.order_sn,
+        oo.order_status,
+        oo.pull_status,
+        oo.order_from,
+        oo.ec_platform_code,
+        oo.reference_sn,
+        oo.store_id,
+        oo.wh_id,
+        oo.pull_operator_id,
+        oo.pack_operator_id,
+        oo.out_gw,
+        oo.out_volume,
+        oo.remark,
+        oo.is_wrong,
+        oo.cr_time
         FROM
-            out_order as oo
+        out_order as oo
         LEFT JOIN out_order_commodity_item ooci ON oo.id = ooci.order_id
         <where>
             <!--<if test="kd.startStamp != null and kd.endStamp != null">
@@ -194,21 +195,21 @@
     <!-- 分页查找订单列表, 适合查询条件 sku和商品名称为空的情况 -->
     <select id="getList" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderListVo">
         SELECT
-            o.id,
-            o.customer_id,
-            o.order_sn,
-            o.order_status,
-            o.order_from,
-            o.ec_platform_code,
-            o.reference_sn,
-            o.store_id,
-            o.wh_id,
-            o.remark,
-            o.cr_time,
-            ooa.dest_contact,
-            ooa.dest_country_code
-            FROM
-            out_order as o left join out_order_attachment ooa on o.id = ooa.order_id
+        o.id,
+        o.customer_id,
+        o.order_sn,
+        o.order_status,
+        o.order_from,
+        o.ec_platform_code,
+        o.reference_sn,
+        o.store_id,
+        o.wh_id,
+        o.remark,
+        o.cr_time,
+        ooa.dest_contact,
+        ooa.dest_country_code
+        FROM
+        out_order as o left join out_order_attachment ooa on o.id = ooa.order_id
         where
         <include refid="getListWhere" />
         order by o.id desc
@@ -257,15 +258,6 @@
     </select>
 
 
-    <!-- 更新状态 2019-12-25-->
-    <update id="updOrderStatus">
-        update  out_order  set order_status=#{status}
-        where id in ${ids}
-        <if test="customerId != null and customerId>0">
-            and customer_id =  #{customerId}
-        </if>
-    </update>
-
 
     <update id="batchUpdateOrderPullStatus">
         update  out_order  set pull_status=#{status}
@@ -278,16 +270,36 @@
         </if>
     </update>
 
+
+    <!--修改订单状态为取消-->
+    <update id="updateOrderStatus">
+        update
+            out_order
+        set
+            order_status = #{status}
+        where
+            id in(
+        <foreach collection="ids" separator="," item="row" open="" close="" index="">
+            #{row}
+        </foreach>
+        )
+        <if test="customerId != null and customerId != 0">
+            and customer_id = #{customerId}
+        </if>
+    </update>
+
+
+
     <select id="exists" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderInfoVo">
         select
-            id
+        id
         from
-            out_order
+        out_order
         where
-            id = #{orderId}
-            <if test="customerId!=null and customerId != 0">
-                and customer_id = #{customerId}
-            </if>
+        id = #{orderId}
+        <if test="customerId!=null and customerId != 0">
+            and customer_id = #{customerId}
+        </if>
     </select>
 
 
@@ -333,6 +345,20 @@
         </if>
         AND o.id in (${ids})
         order by o.id desc
+    </select>
+
+
+    <select id="queryList" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderInfoVo">
+
+        select
+            id,
+            order_status,
+            pull_status
+        from
+            out_order
+        where
+            id in (${ids})
+
     </select>
 
 

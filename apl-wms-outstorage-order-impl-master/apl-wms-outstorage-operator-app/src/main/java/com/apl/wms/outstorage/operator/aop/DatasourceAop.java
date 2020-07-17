@@ -39,6 +39,7 @@ public class DatasourceAop {
 
             // 安全用户上下文
             SecurityUser securityUser = CommonContextHolder.getSecurityUser(redisTemplate, token);
+
             CommonContextHolder.securityUserContextHolder.set(securityUser);
 
             // 多数据源切换信息

@@ -74,7 +74,7 @@ public interface SyncOutOrderService extends IService<SyncOutOrderPo> {
          * @author arran
          * @since 2020-01-07
          */
-        ResultUtil<Boolean> bootTask(Long id, Long customerId);
+        ResultUtil<Boolean> bootTask(Long id, Long customerId) throws Exception;
 
 
         /**

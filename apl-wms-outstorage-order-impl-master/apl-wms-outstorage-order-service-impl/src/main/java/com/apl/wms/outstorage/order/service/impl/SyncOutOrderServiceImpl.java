@@ -1,5 +1,6 @@
 package com.apl.wms.outstorage.order.service.impl;
 
+import com.apl.amqp.RabbitMqUtil;
 import com.apl.amqp.RabbitSender;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
@@ -28,11 +29,13 @@ import com.apl.wms.warehouse.lib.cache.StoreCacheBo;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.sql.Timestamp;
@@ -83,6 +86,9 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
 
     @Autowired
     RabbitSender rabbitSender;
+
+    @Autowired
+    RabbitMqUtil rabbitMqUtil;
 
     static JoinFieldInfo joinCustomerFieldInfo = null; //缓存联客户表反射字段
     static JoinFieldInfo joinStoreInfo = null; //跨项目跨库关联 店铺表 反射字段缓存
@@ -256,7 +262,8 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
         }
     }
 
-    public ResultUtil<Boolean> bootTask(Long id, Long customerId){
+    @Transactional
+    public ResultUtil<Boolean> bootTask(Long id, Long customerId) throws Exception {
 
         SyncOutOrderTaskBo byncOutOrderTaskBo = baseMapper.bootTask(id, customerId);
         if (null==byncOutOrderTaskBo) {
@@ -276,11 +283,14 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
         byncOutOrderTaskBo.setApiConfig(apiConfigByFeign.getData());
 
         if(byncOutOrderTaskBo.getStatus()==1) {
-            rabbitSender.send("apl.ec.api.syncOrderShopifyExchange", "syncOrderShopifyQueue", byncOutOrderTaskBo);
 
             // 状态  1等待同步  2正在同步  3已完成同步   4同步异常   5暂停同步   6作废
             // 标识状态为 2正在同步
             baseMapper.updStatus(id, 2, customerId);
+
+            //rabbitSender.send("apl.ec.api.syncOrderShopifyExchange", "syncOrderShopifyQueue", byncOutOrderTaskBo);
+            Channel channel = rabbitMqUtil.createChannel("1", false);
+            rabbitMqUtil.send(channel, "syncOrderShopifyQueue", byncOutOrderTaskBo);
 
             String key = "TASK_STATUS:" + securityUser.getInnerOrgId().toString() + "_" + id.toString();
             redisTemplate.opsForValue().set(key, 2);

@@ -30,5 +30,5 @@ public interface OutStorageOrderOperatorFeign {
     ResultUtil<Integer>  AllocOutOrderStockCallBack(@RequestParam("tranId")String tranId, @RequestParam("outOrderId")Long outOrderId, @RequestParam("pullStatus")Integer pullStatus, @RequestBody List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos);
 
     @PostMapping(value = "/pull-allocation-item/delete")
-    ResultUtil<Integer>  deleteOrderAllocationItem(@RequestParam("outOrderId") Long outOrderId);
+    ResultUtil<Integer>  deleteOrderAllocationItem(@RequestParam("outOrderId") Long outOrderId,  @RequestParam("tranId") String tranId);
 }

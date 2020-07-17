@@ -29,7 +29,7 @@ public interface PullAllocationItemService extends IService<PullAllocationItemPo
      * @param outOrderId
      * @return
      */
-    ResultUtil<Integer> deleteOrderAllocationItem(Long outOrderId);
+    ResultUtil<Integer> deleteOrderAllocationItem(Long outOrderId, String tranId);
 
 
     /**

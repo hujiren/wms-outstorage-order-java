@@ -5,24 +5,63 @@
 
     <!-- 分页查找 第2步, 根据ids查找订单列表-->
     <select id="getListByOrderSns" parameterType="java.util.List"
-            resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderListVo">
+            resultType="com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo">
         SELECT
-        id,
+        id as orderId,
         order_sn,
         order_status,
         pull_status,
-        wh_id,
-        pull_operator_id
+        cr_time
         FROM
         out_order
         where
         order_sn in (
             <foreach collection="orderSns" open="" separator="," close="" item="row">
-                #{row}
+                ${row}
             </foreach>
         )
     </select>
 
+
+    <select id="queryOrderPickInfoByPage" resultType="com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo">
+
+        SELECT
+            id as orderId,
+            order_sn,
+            order_status,
+            pull_status,
+            cr_time,
+            customer_id,
+            pull_operator_id,
+            order_from
+        FROM
+            out_order
+        <where>
+            1=1
+            and
+            order_status = 3
+            <if test="kd.whId != null and kd.whId != 0">
+                and wh_id = #{kd.whId}
+            </if>
+            <if test="kd.pullStatus != null and kd.pullStatus > 2">
+                and pull_status = #{kd.pullStatus}
+            </if>
+            <if test="kd.customerId != null and kd.customerId !=''">
+                and customer_id = #{kd.customerId}
+            </if>
+            <if test="kd.pullOperatorId != null and kd.pullOperatorId != ''">
+                and pull_operator_id = #{kd.pullOperatorId}
+            </if>
+            <if test="kd.orderSn != null and kd.orderSn != ''">
+                and locate(#{kd.orderSn} , order_sn) > 0
+            </if>
+            <!--<if test="kd.startTime != null and kd.endTime != null">
+                and cr_time between #{kd.startTime} and #{kd.endTime}
+            </if>-->
+
+        </where>
+
+    </select>
 
     <update id="updateOrderPickingMember">
         update out_order

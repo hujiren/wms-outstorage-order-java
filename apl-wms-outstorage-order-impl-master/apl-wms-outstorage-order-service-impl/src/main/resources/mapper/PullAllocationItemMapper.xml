@@ -140,6 +140,6 @@
 
 
     <delete id="deleteByOrderId">
-        delete from pull_allocation_item where out_order_id = #{id}
+        delete from pull_allocation_item where out_order_id = #{outOrderId}
     </delete>
 </mapper>
