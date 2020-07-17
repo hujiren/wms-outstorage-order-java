@@ -108,36 +108,6 @@
         order by oo.id desc
     </select>
 
-    <select id="queryOrderPickInfoByPage" resultType="com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo">
-
-        SELECT
-        oo.id as orderId,
-        oo.order_sn,
-        oo.order_status,
-        oo.pull_status,
-        oo.cr_time,
-        oo.customer_id
-        FROM
-        out_order as oo
-        <where>
-            oo.order_status = 3
-            <if test="kd.pullStatus != null and kd.pullStatus != 0">
-                and oo.pull_status = #{kd.pullStatus}
-            </if>
-            <if test="kd.customerId != null and kd.customerId !=''">
-                and oo.customer_id = #{kd.customerId}
-            </if>
-            <if test="kd.orderSn != null and kd.orderSn != ''">
-                and locate(#{kd.orderSn} , oo.order_sn) > 0
-            </if>
-            <if test="kd.startTime != null and kd.endTime != null">
-                and oo.cr_time between #{kd.startTime} and #{kd.endTime}
-            </if>
-
-        </where>
-
-    </select>
-
 
     <select id="pageOrderPull" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderInfoVo">
         SELECT

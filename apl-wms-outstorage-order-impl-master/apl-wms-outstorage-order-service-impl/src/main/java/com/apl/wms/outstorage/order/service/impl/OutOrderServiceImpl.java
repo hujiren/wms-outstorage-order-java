@@ -3,10 +3,7 @@ package com.apl.wms.outstorage.order.service.impl;
 import com.apl.amqp.RabbitSender;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
-import com.apl.lib.join.JoinBase;
-import com.apl.lib.join.JoinFieldInfo;
-import com.apl.lib.join.JoinKeyValues;
-import com.apl.lib.join.JoinUtil;
+import com.apl.lib.join.*;
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.*;
@@ -708,52 +705,6 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
         return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, outOrderInfoVos);
 
-    }
-
-
-    @Override
-    public ResultUtil<Page<OutOrderPickListVo>> queryOrderPickInfoByPage(PageDto pageDto, PullOrderKeyDto keyDto) throws Exception {
-
-        List<OutOrderPickListVo> outOrderInfo;
-
-        Page page = null;
-        if (pageDto != null) {
-            page = new Page();
-            page.setCurrent(pageDto.getPageIndex());
-            page.setSize(pageDto.getPageSize());
-        }
-
-        outOrderInfo = baseMapper.queryOrderPickInfoByPage(page, keyDto);
-
-        //跨项目跨库关联表数组
-        List<JoinBase> joinTabs = new ArrayList<>();
-
-        //关联客户表字段信息
-        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, redisTemplate);
-
-        if (null != joinCustomerFieldInfo) {
-
-            joinCustomer.setJoinFieldInfo(joinCustomerFieldInfo);
-
-        } else {
-
-            joinCustomer.addField("customerId", Long.class, "customerName", String.class);
-
-            joinCustomerFieldInfo = joinCustomer.getJoinFieldInfo();
-
-        }
-        joinTabs.add(joinCustomer);
-
-        //执行跨项目跨库关联
-        JoinUtil.join(outOrderInfo, joinTabs);
-        //填充仓库
-//        fullOutOrderMsg(outOrderInfo);
-
-        page.setRecords(outOrderInfo);
-
-        ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, page);
-
-        return result;
     }
 
 

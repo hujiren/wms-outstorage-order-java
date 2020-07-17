@@ -131,16 +131,6 @@ public interface OutOrderService extends IService<OutOrderPo> {
         ResultUtil<List<OutOrderInfoVo>> listOperatorOrders() throws Exception;
 
 
-
-        /**
-         * @Desc: 分页获取订单捡货信息
-         * @Author: CY
-         * @Date: 2020/6/1 11:39
-         */
-        ResultUtil<Page<OutOrderPickListVo>> queryOrderPickInfoByPage(PageDto pageDto, PullOrderKeyDto keyDto) throws Exception;
-
-
-
         /**
          * @Desc: 统计订单信息，包括订单类型 -- > 对应数量
          * @Author: CY

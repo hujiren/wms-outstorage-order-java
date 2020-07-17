@@ -1,7 +1,6 @@
 package com.apl.wms.outstorage.operator.pojo.vo;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModel;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -39,5 +38,11 @@ public class OutOrderPickListVo implements Serializable {
     @ApiModelProperty(value = "客户姓名", notes = "客户姓名")
     private String customerName;
 
+    @ApiModelProperty(value = "拣货员id", notes = "拣货员id")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    private Long pullOperatorId;
+
+    @ApiModelProperty(value = "订单来源", notes = "订单来源")
+    private Integer orderFrom;
 
 }

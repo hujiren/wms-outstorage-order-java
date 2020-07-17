@@ -77,12 +77,6 @@ public interface OutOrderMapper extends BaseMapper<OutOrderPo> {
      */
     List<OutOrderInfoVo> listOrderByOrderStatusPullStatusAndPullId(@Param("orderStatus" )Integer orderStatus, @Param("pullStatus" )Integer pullStatus,@Param("memberId" ) Long memberId);
 
-    /**
-     * @Desc: 根据商品/sku 获取订单分拣信息
-     * @Author: CY
-     * @Date: 2020/6/2 10:16
-     */
-    List<OutOrderPickListVo> queryOrderPickInfoByPage(Page page , @Param("kd") PullOrderKeyDto keyDto);
 
     /**
      * @Desc: 查找订单，返回ids
