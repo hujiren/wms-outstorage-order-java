@@ -23,5 +23,5 @@ public interface PickService extends IService<OutOrderListVo> {
      * @Author: hjr
      * @Date: 2020.7.17
      */
-    ResultUtil<Page<OutOrderPickListVo>> pickManage(PageDto pageDto, PullOrderKeyDto keyDto) throws Exception;
+    ResultUtil<OutOrderPickListVo> pickManage(PageDto pageDto, PullOrderKeyDto keyDto) throws Exception;
 }

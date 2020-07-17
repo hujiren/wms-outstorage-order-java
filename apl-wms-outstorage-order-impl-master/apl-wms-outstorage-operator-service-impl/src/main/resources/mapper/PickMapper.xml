@@ -26,36 +26,38 @@
     <select id="queryOrderPickInfoByPage" resultType="com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo">
 
         SELECT
-        oo.id as orderId,
-        oo.order_sn,
-        oo.order_status,
-        oo.pull_status,
-        oo.cr_time,
-        oo.customer_id,
-        oo.pull_operator_id,
-        oo.order_from
+            id as orderId,
+            order_sn,
+            order_status,
+            pull_status,
+            cr_time,
+            customer_id,
+            pull_operator_id,
+            order_from
         FROM
-        out_order as oo
+            out_order
         <where>
-            oo.order_status = 3
+            1=1
+            and
+            order_status = 3
             <if test="kd.whId != null and kd.whId != 0">
-            and oo.wh_id = #{kd.whId}
+                and wh_id = #{kd.whId}
             </if>
             <if test="kd.pullStatus != null and kd.pullStatus > 2">
-                and oo.pull_status = #{kd.pullStatus}
+                and pull_status = #{kd.pullStatus}
             </if>
             <if test="kd.customerId != null and kd.customerId !=''">
-                and oo.customer_id = #{kd.customerId}
+                and customer_id = #{kd.customerId}
             </if>
             <if test="kd.pullOperatorId != null and kd.pullOperatorId != ''">
-                and oo.pull_operator_id = #{kd.pullOperatorId}
+                and pull_operator_id = #{kd.pullOperatorId}
             </if>
             <if test="kd.orderSn != null and kd.orderSn != ''">
-                and locate(#{kd.orderSn} , oo.order_sn) > 0
+                and locate(#{kd.orderSn} , order_sn) > 0
             </if>
-            <if test="kd.startTime != null and kd.endTime != null">
-                and oo.cr_time between #{kd.startTime} and #{kd.endTime}
-            </if>
+            <!--<if test="kd.startTime != null and kd.endTime != null">
+                and cr_time between #{kd.startTime} and #{kd.endTime}
+            </if>-->
 
         </where>
 

@@ -1,4 +1,5 @@
 package com.apl.wms.outstorage.operator.service.impl;
+
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinBase;
@@ -37,7 +38,7 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
 
     //状态code枚举
     enum AllocationWarehouseServiceCode {
-        ORDER_STATUS_IS_CANCEL("ORDER_STATUS_IS_CANCEL" ,"该订单状态为取消状态"),
+        ORDER_STATUS_IS_CANCEL("ORDER_STATUS_IS_CANCEL", "该订单状态为取消状态"),
         ORDER_STATUS_IS_NOT_COMMIT("ORDER_STATUS_IS_NOT_COMMIT", "该订单不是已提交状态"),
         ORDER_INFO_IS_NULL_BY_QUERY("ORDER_INFO_IS_NULL_BY_QUERY", "查询出来的订单信息为空"),
         ORDER_STATUS_IS_WRONG("ORDER_STATUS_IS_WRONG", "该订单尚未被分配"),
@@ -71,7 +72,7 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
 
         List<OutOrderPickListVo> outOrderPickListVo = baseMapper.getListByOrderSns(orderSns);
 
-        if(outOrderPickListVo.isEmpty()){
+        if (outOrderPickListVo.isEmpty()) {
 
             return ResultUtil.APPRESULT(AllocationWarehouseServiceCode.ORDER_INFO_IS_NULL_BY_QUERY.code,
                     AllocationWarehouseServiceCode.ORDER_INFO_IS_NULL_BY_QUERY.msg, null);
@@ -83,14 +84,14 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
 
         for (OutOrderPickListVo vo : outOrderPickListVo) {
 
-            if(vo.getOrderStatus() == 6){
+            if (vo.getOrderStatus() == 6) {
 
                 // 订单已取消状态
                 return ResultUtil.APPRESULT(AllocationWarehouseServiceCode.ORDER_STATUS_IS_CANCEL.code,
                         AllocationWarehouseServiceCode.ORDER_STATUS_IS_CANCEL.msg
                                 + ", orderSn:" + vo.getOrderSn(), null);
 
-            }else if(vo.getOrderStatus() != 3){
+            } else if (vo.getOrderStatus() != 3) {
 
                 // 订单不是已提交状态
                 return ResultUtil.APPRESULT(AllocationWarehouseServiceCode.ORDER_STATUS_IS_NOT_COMMIT.code,
@@ -104,9 +105,9 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
         }
 
         //批量更新订单拣货员信息和订单状态
-        Integer integer =  baseMapper.updateOrderPickingMember(operatorCacheBo.getId(), orderIds);
+        Integer integer = baseMapper.updateOrderPickingMember(operatorCacheBo.getId(), orderIds);
 
-        if(integer == 0){
+        if (integer == 0) {
 
             throw new AplException(CommonStatusCode.SAVE_FAIL.code, CommonStatusCode.SAVE_FAIL.msg, integer);
         }
@@ -138,28 +139,27 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
     }
 
 
-
     @Override
-    public ResultUtil<Page<OutOrderPickListVo>> pickManage(PageDto pageDto, PullOrderKeyDto keyDto) throws Exception {
+    public ResultUtil<OutOrderPickListVo> pickManage(PageDto pageDto, PullOrderKeyDto keyDto) throws Exception {
 
-        if(keyDto.getPullStatus() < 3){
+        if (null == keyDto.getPullStatus()) {
+
+            keyDto.setPullStatus(3);
+
+        } else if (keyDto.getPullStatus() < 3) {
 
             return ResultUtil.APPRESULT(AllocationWarehouseServiceCode.ORDER_STATUS_IS_WRONG.code,
                     AllocationWarehouseServiceCode.ORDER_STATUS_IS_WRONG.msg, null);
 
-        }else if(null == keyDto.getPullStatus()){
-
-            keyDto.setPullStatus(3);
         }
 
         OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
 
         Long whId = operatorCacheBo.getWhId();
 
-        if(null != whId && whId != 0){
+        if (null != whId && whId != 0) {
             keyDto.setWhId(whId);
         }
-
 
         List<OutOrderPickListVo> outOrderInfo;
 
@@ -171,6 +171,9 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
         }
 
         outOrderInfo = baseMapper.queryOrderPickInfoByPage(page, keyDto);
+
+        page.setRecords(outOrderInfo);
+
 
         //跨项目跨库关联表数组
         List<JoinBase> joinTabs = new ArrayList<>();
@@ -197,9 +200,7 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
         //填充仓库
 //        fullOutOrderMsg(outOrderInfo);
 
-        page.setRecords(outOrderInfo);
-
-        ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, page);
+        ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, outOrderInfo);
 
         return result;
     }
