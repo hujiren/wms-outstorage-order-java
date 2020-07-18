@@ -1,8 +1,13 @@
 package com.apl.wms.outstorage.operator.controller;
+import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.utils.ResultUtil;
+import com.apl.wms.outstorage.operator.pojo.dto.PullOrderKeyDto;
+import com.apl.wms.outstorage.operator.pojo.dto.StockManageKeyDto;
+import com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo;
 import com.apl.wms.outstorage.order.service.PullAllocationItemService;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
 import com.apl.wms.warehouse.lib.pojo.bo.CompareStorageLocalStocksBo;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiModel;
@@ -81,5 +86,12 @@ public class PullAllocationItemController {
         return pullAllocationItemService.deleteOrderAllocationItem(outOrderId, tranId);
     }
 
+
+    @PostMapping("/stock-manage")
+    @ApiOperation(value =  "分页获取分配库位信息" , notes = "分页获取分配库位信息")
+    public ResultUtil<Page<OutOrderPickListVo>> pickManage(PageDto pageDto, @Validated StockManageKeyDto keyDto) throws Exception{
+
+        return pullAllocationItemService.stockManage(pageDto , keyDto);
+    }
 
 }

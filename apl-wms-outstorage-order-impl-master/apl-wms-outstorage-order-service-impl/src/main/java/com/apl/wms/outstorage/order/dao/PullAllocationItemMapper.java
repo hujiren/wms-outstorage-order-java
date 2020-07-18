@@ -1,6 +1,8 @@
 package com.apl.wms.outstorage.order.dao;
 import com.apl.wms.outstorage.operator.pojo.dto.PullAllocationItemKeyDto;
+import com.apl.wms.outstorage.operator.pojo.dto.StockManageKeyDto;
 import com.apl.wms.outstorage.operator.pojo.po.PullAllocationItemPo;
+import com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PullAllocationItemInfoVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PullAllocationItemListVo;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOrderCommodityBo;
@@ -117,4 +119,6 @@ public interface PullAllocationItemMapper extends BaseMapper<PullAllocationItemP
      * @return
      */
     Integer deleteByOrderId(@Param("outOrderId") Long outOrderId);
+
+    List<OutOrderPickListVo> queryOrderPickInfoByPage(Page<OutOrderPickListVo> page, StockManageKeyDto keyDto);
 }

@@ -42,6 +42,9 @@ public class OutOrderPickListVo implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long pullOperatorId;
 
+    @ApiModelProperty(value = "拣货员姓名", notes = "拣货员姓名")
+    private String memberName;
+
     @ApiModelProperty(value = "订单来源", notes = "订单来源")
     private Integer orderFrom;
 

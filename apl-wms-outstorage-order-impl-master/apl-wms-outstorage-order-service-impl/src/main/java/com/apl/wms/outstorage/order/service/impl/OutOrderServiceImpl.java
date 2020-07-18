@@ -11,7 +11,6 @@ import com.apl.sys.lib.cache.CustomerCacheBo;
 import com.apl.sys.lib.cache.JoinCustomer;
 import com.apl.sys.lib.feign.InnerFeign;
 import com.apl.sys.lib.utils.CheckCacheUtils;
-import com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo;
 import com.apl.wms.outstorage.order.lib.enumwms.OutStorageOrderStatusEnum;
 import com.apl.wms.outstorage.order.lib.enumwms.PullStatusType;
 import com.apl.wms.outstorage.order.service.*;
@@ -538,6 +537,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
             joinCustomerFieldInfo = joinCustomer.getJoinFieldInfo();
         }
         joinTabs.add(joinCustomer);
+
 
         //关联仓库表字段信息
         JoinWarehouse joinWarehouse = new JoinWarehouse(1, warehouseFeign, redisTemplate);

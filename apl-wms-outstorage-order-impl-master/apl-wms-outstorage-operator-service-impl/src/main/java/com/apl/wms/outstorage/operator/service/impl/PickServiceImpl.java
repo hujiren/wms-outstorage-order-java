@@ -14,6 +14,7 @@ import com.apl.wms.outstorage.operator.pojo.dto.PullOrderKeyDto;
 import com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo;
 import com.apl.wms.outstorage.operator.service.PickService;
 import com.apl.wms.outstorage.order.pojo.vo.OutOrderListVo;
+import com.apl.wms.outstorage.order.pojo.vo.SyncOutOrderListVo;
 import com.apl.wms.warehouse.lib.cache.OperatorCacheBo;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.apl.wms.warehouse.lib.utils.WmsWarehouseUtils;
@@ -37,17 +38,18 @@ import java.util.List;
 public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> implements PickService {
 
     //状态code枚举
-    enum AllocationWarehouseServiceCode {
+    enum PickServiceCode {
         ORDER_STATUS_IS_CANCEL("ORDER_STATUS_IS_CANCEL", "该订单状态为取消状态"),
         ORDER_STATUS_IS_NOT_COMMIT("ORDER_STATUS_IS_NOT_COMMIT", "该订单不是已提交状态"),
         ORDER_INFO_IS_NULL_BY_QUERY("ORDER_INFO_IS_NULL_BY_QUERY", "查询出来的订单信息为空"),
         ORDER_STATUS_IS_WRONG("ORDER_STATUS_IS_WRONG", "该订单尚未被分配"),
+        PULL_STATUS_IS_WRONG("PULL_STATUS_IS_WRONG", "拣货状态错误")
         ;
 
         private String code;
         private String msg;
 
-        AllocationWarehouseServiceCode(String code, String msg) {
+        PickServiceCode(String code, String msg) {
             this.code = code;
             this.msg = msg;
         }
@@ -74,8 +76,8 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
 
         if (outOrderPickListVo.isEmpty()) {
 
-            return ResultUtil.APPRESULT(AllocationWarehouseServiceCode.ORDER_INFO_IS_NULL_BY_QUERY.code,
-                    AllocationWarehouseServiceCode.ORDER_INFO_IS_NULL_BY_QUERY.msg, null);
+            return ResultUtil.APPRESULT(PickServiceCode.ORDER_INFO_IS_NULL_BY_QUERY.code,
+                    PickServiceCode.ORDER_INFO_IS_NULL_BY_QUERY.msg, null);
 
         }
 
@@ -87,15 +89,15 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
             if (vo.getOrderStatus() == 6) {
 
                 // 订单已取消状态
-                return ResultUtil.APPRESULT(AllocationWarehouseServiceCode.ORDER_STATUS_IS_CANCEL.code,
-                        AllocationWarehouseServiceCode.ORDER_STATUS_IS_CANCEL.msg
+                return ResultUtil.APPRESULT(PickServiceCode.ORDER_STATUS_IS_CANCEL.code,
+                        PickServiceCode.ORDER_STATUS_IS_CANCEL.msg
                                 + ", orderSn:" + vo.getOrderSn(), null);
 
             } else if (vo.getOrderStatus() != 3) {
 
                 // 订单不是已提交状态
-                return ResultUtil.APPRESULT(AllocationWarehouseServiceCode.ORDER_STATUS_IS_NOT_COMMIT.code,
-                        AllocationWarehouseServiceCode.ORDER_STATUS_IS_NOT_COMMIT.msg
+                return ResultUtil.APPRESULT(PickServiceCode.ORDER_STATUS_IS_NOT_COMMIT.code,
+                        PickServiceCode.ORDER_STATUS_IS_NOT_COMMIT.msg
                                 + ", orderSn:" + vo.getOrderSn(), null);
 
             }
@@ -125,7 +127,6 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
         } else {
 
             joinCustomer.addField("customerId", Long.class, "customerName", String.class);
-
             joinCustomerFieldInfo = joinCustomer.getJoinFieldInfo();
 
         }
@@ -140,16 +141,12 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
 
 
     @Override
-    public ResultUtil<OutOrderPickListVo> pickManage(PageDto pageDto, PullOrderKeyDto keyDto) throws Exception {
+    public ResultUtil<Page<OutOrderPickListVo>> pickManage(PageDto pageDto, PullOrderKeyDto keyDto) throws Exception {
 
-        if (null == keyDto.getPullStatus()) {
+        if(keyDto.getPullStatus() == 1 || keyDto.getPullStatus() == 2){
 
-            keyDto.setPullStatus(3);
-
-        } else if (keyDto.getPullStatus() < 3) {
-
-            return ResultUtil.APPRESULT(AllocationWarehouseServiceCode.ORDER_STATUS_IS_WRONG.code,
-                    AllocationWarehouseServiceCode.ORDER_STATUS_IS_WRONG.msg, null);
+            return ResultUtil.APPRESULT(PickServiceCode.PULL_STATUS_IS_WRONG.code,
+                    PickServiceCode.PULL_STATUS_IS_WRONG.msg, null);
 
         }
 
@@ -161,14 +158,14 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
             keyDto.setWhId(whId);
         }
 
+
+
         List<OutOrderPickListVo> outOrderInfo;
 
-        Page page = null;
-        if (pageDto != null) {
-            page = new Page();
-            page.setCurrent(pageDto.getPageIndex());
-            page.setSize(pageDto.getPageSize());
-        }
+        Page<OutOrderPickListVo> page = new Page();
+        page.setCurrent(pageDto.getPageIndex());
+        page.setSize(pageDto.getPageSize());
+
 
         outOrderInfo = baseMapper.queryOrderPickInfoByPage(page, keyDto);
 
@@ -200,7 +197,7 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
         //填充仓库
 //        fullOutOrderMsg(outOrderInfo);
 
-        ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, outOrderInfo);
+        ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, page);
 
         return result;
     }
