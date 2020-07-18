@@ -46,18 +46,33 @@
             <if test="kd.pullStatus != null and kd.pullStatus > 2">
                 and pull_status = #{kd.pullStatus}
             </if>
+
+            <if test="kd.pullStatus != null and kd.pullStatus == 0">
+                and pull_status != 1
+                and pull_status != 2
+            </if>
+
             <if test="kd.customerId != null and kd.customerId !=''">
                 and customer_id = #{kd.customerId}
             </if>
-            <if test="kd.pullOperatorId != null and kd.pullOperatorId != ''">
+
+            /*如果拣货状态等于3 表示未分配拣货员 查询拣货员id为0的所有信息*/
+            <if test="kd.pullStatus != null and kd.pullStatus == 3 ">
+                and pull_operator_id = 0
+            </if>
+
+            /*如果拣货状态等于4 表示已分配拣货员 查询拣货员Id大于0的所有信息*/
+            <if test="kd.pullStatus != null and kd.pullStatus == 4 ">
+                and pull_operator_id > 0
+            </if>
+
+            <if test="kd.pullStatus > 3 and kd.pullOperatorId != null and kd.pullOperatorId > 0">
                 and pull_operator_id = #{kd.pullOperatorId}
             </if>
+
             <if test="kd.orderSn != null and kd.orderSn != ''">
                 and locate(#{kd.orderSn} , order_sn) > 0
             </if>
-            <!--<if test="kd.startTime != null and kd.endTime != null">
-                and cr_time between #{kd.startTime} and #{kd.endTime}
-            </if>-->
 
         </where>
 

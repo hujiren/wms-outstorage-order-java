@@ -132,6 +132,46 @@
         </if>
         and id in (${orderIds})
     </select>
+    <select id="queryOrderPickInfoByPage"
+            resultType="com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo">
+        SELECT
+        id as orderId,
+        order_sn,
+        order_status,
+        pull_status,
+        cr_time,
+        customer_id,
+        pull_operator_id,
+        order_from
+        FROM
+        out_order
+        <where>
+            1=1
+            and
+            order_status = 3
+            <if test="kd.whId != null and kd.whId != 0">
+                and wh_id = #{kd.whId}
+            </if>
+
+            <if test="kd.pullStatus != null and kd.pullStatus > 0">
+                and pull_status = #{kd.pullStatus}
+            </if>
+
+            <if test="kd.customerId != null and kd.customerId !=''">
+                and customer_id = #{kd.customerId}
+            </if>
+
+            <if test="kd.pullOperatorId != null">
+                and pull_operator_id = #{kd.pullOperatorId}
+            </if>
+
+            <if test="kd.orderSn != null and kd.orderSn != ''">
+                and locate(#{kd.orderSn} , order_sn) > 0
+            </if>
+
+        </where>
+
+    </select>
 
 
     <update id="updatePullStatus">

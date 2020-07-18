@@ -1,9 +1,13 @@
 package com.apl.wms.outstorage.order.service;
 
+import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.utils.ResultUtil;
+import com.apl.wms.outstorage.operator.pojo.dto.StockManageKeyDto;
 import com.apl.wms.outstorage.operator.pojo.po.PullAllocationItemPo;
+import com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
 import com.apl.wms.warehouse.lib.pojo.bo.CompareStorageLocalStocksBo;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
@@ -65,4 +69,14 @@ public interface PullAllocationItemService extends IService<PullAllocationItemPo
      * @return
      */
     ResultUtil<Boolean> cancelAllocationWarehouseForOrderQueueSend(List<Long> orderIds) throws Exception;
+
+
+    /**
+     * 库位管理
+     * @param pageDto
+     * @param keyDto
+     * @return
+     * @throws Exception
+     */
+    ResultUtil<Page<OutOrderPickListVo>> stockManage(PageDto pageDto, StockManageKeyDto keyDto) throws Exception;
 }

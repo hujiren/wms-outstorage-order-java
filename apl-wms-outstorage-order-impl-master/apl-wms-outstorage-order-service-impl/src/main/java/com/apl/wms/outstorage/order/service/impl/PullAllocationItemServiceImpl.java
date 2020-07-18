@@ -5,21 +5,31 @@ import com.apl.amqp.RabbitMqUtil;
 import com.apl.amqp.RabbitSender;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
+import com.apl.lib.join.JoinBase;
+import com.apl.lib.join.JoinFieldInfo;
 import com.apl.lib.join.JoinKeyValues;
 import com.apl.lib.join.JoinUtil;
+import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.CommonContextHolder;
 import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
+import com.apl.sys.lib.cache.JoinCustomer;
+import com.apl.sys.lib.feign.InnerFeign;
+import com.apl.wms.outstorage.operator.pojo.dto.StockManageKeyDto;
 import com.apl.wms.outstorage.operator.pojo.po.PullAllocationItemPo;
+import com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo;
 import com.apl.wms.outstorage.order.dao.PullAllocationItemMapper;
 import com.apl.wms.outstorage.order.service.PullAllocationItemService;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOrderCommodityBo;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
+import com.apl.wms.warehouse.lib.cache.OperatorCacheBo;
+import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.apl.wms.warehouse.lib.pojo.bo.CompareStorageLocalStocksBo;
+import com.apl.wms.warehouse.lib.utils.WmsWarehouseUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rabbitmq.client.Channel;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -66,7 +76,13 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
     @Autowired
     RedisTemplate redisTemplate;
 
+    static JoinFieldInfo joinCustomerFieldInfo = null; //跨项目跨库关联 客户表 反射字段缓存
 
+    @Autowired
+    WarehouseFeign warehouseFeign;
+
+    @Autowired
+    InnerFeign innerFeign;
     /**
      * 获取商品id和下单数量以及订单id和仓库id
      *
@@ -342,5 +358,62 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
         }
         redisTemplate.opsForValue().set(tranId, 1);
         return ResultUtil.APPRESULT(CommonStatusCode.DEL_SUCCESS,  1);
+    }
+
+
+    @Override
+    public ResultUtil<Page<OutOrderPickListVo>> stockManage(PageDto pageDto, StockManageKeyDto keyDto) throws Exception {
+
+
+        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
+
+        Long whId = operatorCacheBo.getWhId();
+
+        if (null != whId && whId != 0) {
+            keyDto.setWhId(whId);
+        }
+
+
+
+        List<OutOrderPickListVo> outOrderInfo;
+
+        Page<OutOrderPickListVo> page = new Page();
+        page.setCurrent(pageDto.getPageIndex());
+        page.setSize(pageDto.getPageSize());
+
+
+        outOrderInfo = baseMapper.queryOrderPickInfoByPage(page, keyDto);
+
+        page.setRecords(outOrderInfo);
+
+
+        //跨项目跨库关联表数组
+        List<JoinBase> joinTabs = new ArrayList<>();
+
+        //关联客户表字段信息
+        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, redisTemplate);
+
+        if (null != joinCustomerFieldInfo) {
+
+            joinCustomer.setJoinFieldInfo(joinCustomerFieldInfo);
+
+        } else {
+
+            joinCustomer.addField("customerId", Long.class, "customerName", String.class);
+
+            joinCustomerFieldInfo = joinCustomer.getJoinFieldInfo();
+
+        }
+
+        joinTabs.add(joinCustomer);
+
+        //执行跨项目跨库关联
+        JoinUtil.join(outOrderInfo, joinTabs);
+        //填充仓库
+//        fullOutOrderMsg(outOrderInfo);
+
+        ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, page);
+
+        return result;
     }
 }
