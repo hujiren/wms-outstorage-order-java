@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -31,11 +32,13 @@ public class PullPackItemPo extends Model<PullPackItemPo> {
 
 
     @TableId(value = "id", type = IdType.INPUT)
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
 
     @ApiModelProperty(name = "outOrderId" , value = "出库订单id" , required = true)
     @NotNull(message = "出库订单id不能为空")
     @Min(value = 0 , message = "出库订单id不不合法")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long outOrderId;
 
     @ApiModelProperty(name = "subSn" , value = "子单号" , required = true)

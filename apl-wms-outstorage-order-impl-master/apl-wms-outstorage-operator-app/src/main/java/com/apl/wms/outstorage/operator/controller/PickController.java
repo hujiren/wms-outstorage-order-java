@@ -52,7 +52,7 @@ public class PickController {
     PickService pickService;
 
     @PostMapping("/pick-manage")
-    @ApiOperation(value =  "分页获取订单拣货信息" , notes = "分页获取订单拣货信息")
+    @ApiOperation(value =  "分页获取订单拣货列表" , notes = "分页获取订单拣货列表")
     public ResultUtil<Page<OutOrderPickListVo>> pickManage(PageDto pageDto, @Validated PullOrderKeyDto keyDto) throws Exception{
 
         return pickService.pickManage(pageDto , keyDto);

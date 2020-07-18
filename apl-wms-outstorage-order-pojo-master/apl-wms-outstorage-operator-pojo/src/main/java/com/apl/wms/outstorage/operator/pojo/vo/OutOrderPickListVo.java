@@ -18,6 +18,7 @@ public class OutOrderPickListVo implements Serializable {
 
 
     @ApiModelProperty(value = "订单Id", notes = "订单id")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long orderId;
 
     @ApiModelProperty(value = "订单号", notes = "订单号")
@@ -33,6 +34,7 @@ public class OutOrderPickListVo implements Serializable {
     private Integer pullStatus;
 
     @ApiModelProperty(value = "客户id", notes = "客户id")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long customerId;
 
     @ApiModelProperty(value = "客户姓名", notes = "客户姓名")
@@ -43,9 +45,15 @@ public class OutOrderPickListVo implements Serializable {
     private Long pullOperatorId;
 
     @ApiModelProperty(value = "拣货员姓名", notes = "拣货员姓名")
-    private String memberName;
+    private String pullOperatorName;
 
     @ApiModelProperty(value = "订单来源", notes = "订单来源")
     private Integer orderFrom;
+
+    @ApiModelProperty(value = "仓库id", notes = "仓库id")
+    private Long whId;
+
+    @ApiModelProperty(value = "仓库名称", notes = "仓库名称")
+    private String whName;
 
 }

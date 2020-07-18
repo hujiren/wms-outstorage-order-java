@@ -2,6 +2,7 @@ package com.apl.wms.outstorage.operator.pojo.vo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -21,10 +22,11 @@ public class PullMaterialsListVo implements Serializable {
 
 
     @TableId(value = "id", type = IdType.UUID)
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
-
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long outOrderId;
-
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long materialsId;
 
     private Integer qty;

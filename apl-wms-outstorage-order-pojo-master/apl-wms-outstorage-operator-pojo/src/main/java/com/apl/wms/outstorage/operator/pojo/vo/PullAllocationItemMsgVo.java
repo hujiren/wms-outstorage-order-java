@@ -1,5 +1,6 @@
 package com.apl.wms.outstorage.operator.pojo.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.util.List;
@@ -7,7 +8,7 @@ import java.util.List;
 @Data
 public class PullAllocationItemMsgVo {
 
-
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long commodityId;
 
     private String commodityName;

@@ -9,9 +9,9 @@ import java.util.List;
 @Data
 public class PackOrderItemListVo {
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
 
     @ApiModelProperty("批次id")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long batchId;
 
     @ApiModelProperty("拣货状态")

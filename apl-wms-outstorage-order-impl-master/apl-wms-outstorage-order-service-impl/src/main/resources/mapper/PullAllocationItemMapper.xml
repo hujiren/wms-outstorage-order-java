@@ -141,7 +141,7 @@
         pull_status,
         cr_time,
         customer_id,
-        pull_operator_id,
+        wh_Id,
         order_from
         FROM
         out_order
@@ -159,10 +159,6 @@
 
             <if test="kd.customerId != null and kd.customerId !=''">
                 and customer_id = #{kd.customerId}
-            </if>
-
-            <if test="kd.pullOperatorId != null">
-                and pull_operator_id = #{kd.pullOperatorId}
             </if>
 
             <if test="kd.orderSn != null and kd.orderSn != ''">

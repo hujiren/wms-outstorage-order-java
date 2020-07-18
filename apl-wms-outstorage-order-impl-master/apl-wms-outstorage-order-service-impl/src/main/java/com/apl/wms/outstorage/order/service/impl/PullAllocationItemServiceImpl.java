@@ -23,6 +23,7 @@ import com.apl.wms.outstorage.order.dao.PullAllocationItemMapper;
 import com.apl.wms.outstorage.order.service.PullAllocationItemService;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOrderCommodityBo;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
+import com.apl.wms.warehouse.lib.cache.JoinWarehouse;
 import com.apl.wms.warehouse.lib.cache.OperatorCacheBo;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.apl.wms.warehouse.lib.pojo.bo.CompareStorageLocalStocksBo;
@@ -77,6 +78,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
     RedisTemplate redisTemplate;
 
     static JoinFieldInfo joinCustomerFieldInfo = null; //跨项目跨库关联 客户表 反射字段缓存
+    static JoinFieldInfo joinWareHouseFieldInfo = null;
 
     @Autowired
     WarehouseFeign warehouseFeign;
@@ -260,12 +262,12 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
                     if (outOrderBo.getPullStatus() == 2) {
 
-                        //rabbitSender.send("allocationWarehouseForOrderQueueExchange", "allocationWarehouseForOrderQueue", outOrderBo);
+                        rabbitSender.send("allocationWarehouseForOrderQueueExchange", "allocationWarehouseForOrderQueue", outOrderBo);
                         rabbitMqUtil.send(channel, "allocationWarehouseForOrderQueue", outOrderBo);
 
                     } else if (outOrderBo.getPullStatus() == 1) {
 
-                        //rabbitSender.send("cancelAllocWarehouseForOrderQueueExchange", "cancelAllocWarehouseForOrderQueue", outOrderBo);
+                        rabbitSender.send("cancelAllocWarehouseForOrderQueueExchange", "cancelAllocWarehouseForOrderQueue", outOrderBo);
                         rabbitMqUtil.send(channel, "cancelAllocWarehouseForOrderQueue", outOrderBo);
                     }
                 }
@@ -373,18 +375,14 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
             keyDto.setWhId(whId);
         }
 
-
-
-        List<OutOrderPickListVo> outOrderInfo;
-
         Page<OutOrderPickListVo> page = new Page();
         page.setCurrent(pageDto.getPageIndex());
         page.setSize(pageDto.getPageSize());
 
 
-        outOrderInfo = baseMapper.queryOrderPickInfoByPage(page, keyDto);
+        List<OutOrderPickListVo> outOrderInfoList = baseMapper.queryOrderPickInfoByPage(page, keyDto);
 
-        page.setRecords(outOrderInfo);
+        page.setRecords(outOrderInfoList);
 
 
         //跨项目跨库关联表数组
@@ -407,10 +405,20 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
         joinTabs.add(joinCustomer);
 
+
+        //关联仓库表字段信息
+        JoinWarehouse joinWarehouse = new JoinWarehouse(1, warehouseFeign, redisTemplate);
+        if (null != joinWareHouseFieldInfo) {
+            joinWarehouse.setJoinFieldInfo(joinWareHouseFieldInfo);
+        } else {
+            joinWarehouse.addField("whId", Long.class, "whName", "whName", String.class);
+            joinWareHouseFieldInfo = joinWarehouse.getJoinFieldInfo();
+        }
+        joinTabs.add(joinWarehouse);
+
         //执行跨项目跨库关联
-        JoinUtil.join(outOrderInfo, joinTabs);
-        //填充仓库
-//        fullOutOrderMsg(outOrderInfo);
+        JoinUtil.join(outOrderInfoList, joinTabs);
+
 
         ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, page);
 
