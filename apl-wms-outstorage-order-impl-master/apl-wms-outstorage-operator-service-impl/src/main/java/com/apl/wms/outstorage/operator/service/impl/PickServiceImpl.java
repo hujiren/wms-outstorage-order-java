@@ -14,7 +14,7 @@ import com.apl.wms.outstorage.operator.pojo.dto.PullOrderKeyDto;
 import com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo;
 import com.apl.wms.outstorage.operator.service.PickService;
 import com.apl.wms.outstorage.order.pojo.vo.OutOrderListVo;
-import com.apl.wms.outstorage.order.pojo.vo.SyncOutOrderListVo;
+import com.apl.wms.warehouse.lib.cache.JoinOperator;
 import com.apl.wms.warehouse.lib.cache.OperatorCacheBo;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.apl.wms.warehouse.lib.utils.WmsWarehouseUtils;
@@ -23,9 +23,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.jdbc.core.SqlReturnUpdateCount;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +54,8 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
     }
 
     static JoinFieldInfo joinCustomerFieldInfo = null; //跨项目跨库关联 客户表 反射字段缓存
+
+    static JoinFieldInfo joinOperatorFieldInfo = null;//跨项目关联  拣货员表 反射字段缓存
 
     @Autowired
     RedisTemplate redisTemplate;
@@ -107,7 +107,7 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
         }
 
         //批量更新订单拣货员信息和订单状态
-        Integer integer = baseMapper.updateOrderPickingMember(operatorCacheBo.getId(), orderIds);
+        Integer integer = baseMapper.updateOrderPickingMember(operatorCacheBo.getMemberId(), orderIds);
 
         if (integer == 0) {
 
@@ -140,6 +140,13 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
     }
 
 
+    /**
+     * 拣货管理
+     * @param pageDto
+     * @param keyDto
+     * @return
+     * @throws Exception
+     */
     @Override
     public ResultUtil<Page<OutOrderPickListVo>> pickManage(PageDto pageDto, PullOrderKeyDto keyDto) throws Exception {
 
@@ -154,48 +161,47 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
 
         Long whId = operatorCacheBo.getWhId();
 
+
         if (null != whId && whId != 0) {
             keyDto.setWhId(whId);
         }
 
-
-
-        List<OutOrderPickListVo> outOrderInfo;
 
         Page<OutOrderPickListVo> page = new Page();
         page.setCurrent(pageDto.getPageIndex());
         page.setSize(pageDto.getPageSize());
 
 
-        outOrderInfo = baseMapper.queryOrderPickInfoByPage(page, keyDto);
+        List<OutOrderPickListVo> list = baseMapper.queryOrderPickInfoByPage(page, keyDto);
 
-        page.setRecords(outOrderInfo);
+        page.setRecords(list);
 
 
         //跨项目跨库关联表数组
         List<JoinBase> joinTabs = new ArrayList<>();
 
+        JoinOperator joinOperator = new JoinOperator(1, warehouseFeign, redisTemplate);
+        if(null != joinOperatorFieldInfo) {
+            joinOperator.setJoinFieldInfo(joinOperatorFieldInfo);
+
+        } else {//memberName
+            joinOperator.addField("pullOperatorId", Long.class, "memberName", "pullOperatorName", String.class);
+            joinOperatorFieldInfo = joinOperator.getJoinFieldInfo();
+        }
+
+        joinTabs.add(joinOperator);
+
         //关联客户表字段信息
         JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, redisTemplate);
-
         if (null != joinCustomerFieldInfo) {
-
             joinCustomer.setJoinFieldInfo(joinCustomerFieldInfo);
-
         } else {
-
-            joinCustomer.addField("customerId", Long.class, "customerName", String.class);
-
+            joinCustomer.addField("customerId", Long.class, "customerName",  String.class);
             joinCustomerFieldInfo = joinCustomer.getJoinFieldInfo();
-
         }
 
         joinTabs.add(joinCustomer);
-
-        //执行跨项目跨库关联
-        JoinUtil.join(outOrderInfo, joinTabs);
-        //填充仓库
-//        fullOutOrderMsg(outOrderInfo);
+        JoinUtil.join(list, joinTabs);
 
         ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, page);
 

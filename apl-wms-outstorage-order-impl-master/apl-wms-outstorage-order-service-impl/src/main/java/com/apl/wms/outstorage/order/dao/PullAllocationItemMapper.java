@@ -120,5 +120,5 @@ public interface PullAllocationItemMapper extends BaseMapper<PullAllocationItemP
      */
     Integer deleteByOrderId(@Param("outOrderId") Long outOrderId);
 
-    List<OutOrderPickListVo> queryOrderPickInfoByPage(Page<OutOrderPickListVo> page, StockManageKeyDto keyDto);
+    List<OutOrderPickListVo> queryOrderPickInfoByPage(Page<OutOrderPickListVo> page, @Param("kd") StockManageKeyDto keyDto);
 }

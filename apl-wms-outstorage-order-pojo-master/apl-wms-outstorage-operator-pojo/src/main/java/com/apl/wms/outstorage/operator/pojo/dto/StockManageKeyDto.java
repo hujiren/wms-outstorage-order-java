@@ -15,7 +15,7 @@ public class StockManageKeyDto implements Serializable {
     //拣货状态  1库存未锁定 2库存已锁定   4已分配拣货员  5开始拣货  7已分拣   8已打包
 
     @ApiModelProperty(name = "pullStatus", value = "捡货状态")
-    @TypeValidator(value = {"1","2","3"} , message = "捡货状态错误")
+    @TypeValidator(value = {"0","1","2","3"} , message = "捡货状态错误")
     private Integer pullStatus;
 
     @ApiModelProperty(name = "customerId", value = "客户id")

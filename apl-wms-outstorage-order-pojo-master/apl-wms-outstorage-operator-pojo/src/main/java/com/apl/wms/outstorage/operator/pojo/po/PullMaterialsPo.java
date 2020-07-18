@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -26,10 +27,11 @@ public class PullMaterialsPo extends Model<PullMaterialsPo> {
 
 
     @TableId(value = "id", type = IdType.UUID)
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
-
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long outOrderId;
-
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long materialsId;
 
     private Integer qty;

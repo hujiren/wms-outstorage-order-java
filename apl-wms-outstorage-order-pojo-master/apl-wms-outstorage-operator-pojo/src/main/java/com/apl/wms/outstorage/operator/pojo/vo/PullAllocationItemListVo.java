@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.Min;
@@ -33,21 +34,25 @@ public class PullAllocationItemListVo implements Serializable {
     @ApiModelProperty(name = "batchId", value = "拣货批次id", required = true)
     @NotNull(message = "拣货批次id不能为空")
     @Min(value = 0, message = "拣货批次id不不合法")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long batchId;
 
     @ApiModelProperty(name = "outOrderId", value = "出库订单id", required = true)
     @NotNull(message = "出库订单id不能为空")
     @Min(value = 0, message = "出库订单id不不合法")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long outOrderId;
 
     @ApiModelProperty(name = "commodityId", value = "商品id", required = true)
     @NotNull(message = "商品id不能为空")
     @Min(value = 0, message = "商品id不不合法")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long commodityId;
 
     @ApiModelProperty(name = "storageLocalId", value = "库位id", required = true)
     @NotNull(message = "库位id不能为空")
     @Min(value = 0, message = "库位id不不合法")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long storageLocalId;
 
     @ApiModelProperty(name = "pullQty", value = "拣货数量", required = true)

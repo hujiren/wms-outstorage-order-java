@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotEmpty;
@@ -31,6 +32,7 @@ public class PullBatchListVo implements Serializable {
 
 
     @TableId(value = "id", type = IdType.UUID)
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
 
     @ApiModelProperty(name = "batchSn", value = "批次号", required = true)
@@ -40,6 +42,7 @@ public class PullBatchListVo implements Serializable {
     @ApiModelProperty(name = "pullOperatorId", value = "拣货员id", required = true)
     @NotNull(message = "拣货员id不能为空")
     @Min(value = 0, message = "拣货员id不不合法")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long pullOperatorId;
 
     @ApiModelProperty(name = "pullFinishTime", value = "拣货完成时间", required = true)
@@ -48,6 +51,7 @@ public class PullBatchListVo implements Serializable {
     @ApiModelProperty(name = "sortingOperatorId", value = "分拣员id", required = true)
     @NotNull(message = "分拣员id不能为空")
     @Min(value = 0, message = "分拣员id不不合法")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long sortingOperatorId;
 
     @ApiModelProperty(name = "sortingFinishTime", value = "分拣完成时间", required = true)

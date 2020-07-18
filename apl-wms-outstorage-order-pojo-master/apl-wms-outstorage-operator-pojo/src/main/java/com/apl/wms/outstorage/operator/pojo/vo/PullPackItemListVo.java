@@ -2,6 +2,7 @@ package com.apl.wms.outstorage.operator.pojo.vo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -26,11 +27,13 @@ public class PullPackItemListVo implements Serializable {
 
 
     @TableId(value = "id", type = IdType.UUID)
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
 
     @ApiModelProperty(name = "outOrderId", value = "出库订单id", required = true)
     @NotNull(message = "出库订单id不能为空")
     @Min(value = 0, message = "出库订单id不不合法")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long outOrderId;
 
     @ApiModelProperty(name = "subSn", value = "子单号", required = true)
