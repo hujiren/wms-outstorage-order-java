@@ -2,6 +2,7 @@ package com.apl.wms.outstorage.operator.service.impl;
 
 import com.apl.amqp.RabbitMqUtil;
 import com.apl.amqp.RabbitSender;
+import com.apl.cache.AplCacheUtil;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinUtil;
@@ -32,7 +33,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -74,9 +74,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
 
     @Autowired
-    RedisTemplate redisTemplate;
-
-
+    AplCacheUtil redisTemplate;
 
     @Autowired
     OutOrderCommodityItemService outOrderCommodityItemService;

@@ -1,5 +1,6 @@
 package com.apl.wms.outstorage.order.business.aop;
 
+import com.apl.cache.AplCacheUtil;
 import com.apl.db.datasource.DataSourceContextHolder;
 import com.apl.lib.constants.CommonAplConstants;
 import com.apl.lib.security.SecurityUser;
@@ -11,7 +12,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 
@@ -22,7 +22,7 @@ public class DatasourceAop {
 
 
     @Autowired
-    RedisTemplate redisTemplate;
+    AplCacheUtil redisTemplate;
 
     @Pointcut("execution(public * com.apl.wms.outstorage.order.business.controller.*.* (..))")
     public void datasourceAop() {

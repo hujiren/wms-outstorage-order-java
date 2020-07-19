@@ -1,12 +1,9 @@
 package com.apl.wms.outstorage.order.service.impl;
 
-import com.apl.amqp.RabbitSender;
+
+import com.apl.cache.AplCacheUtil;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
-import com.apl.lib.join.JoinKeyValues;
-import com.apl.lib.join.JoinUtil;
-import com.apl.lib.security.SecurityUser;
-import com.apl.lib.utils.CommonContextHolder;
 import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
 import com.apl.wms.outstorage.order.lib.pojo.dto.OutOrderCommodityItemUpdDto;
@@ -22,12 +19,8 @@ import com.apl.wms.warehouse.lib.pojo.bo.PullBatchOrderItemBo;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -61,7 +54,7 @@ public class OutOrderCommodityItemServiceImpl extends ServiceImpl<OutOrderCommod
 
 
     @Autowired
-    RedisTemplate redisTemplate;
+    AplCacheUtil redisTemplate;
 
     @Autowired
     WarehouseFeign warehouseFeign;

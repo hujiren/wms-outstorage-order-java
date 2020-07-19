@@ -1,5 +1,6 @@
 package com.apl.wms.outstorage.operator.queuecustomer;
 
+import com.apl.cache.AplCacheUtil;
 import com.apl.db.datasource.DataSourceContextHolder;
 
 import com.apl.lib.security.SecurityUser;
@@ -14,7 +15,6 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -25,7 +25,7 @@ public class SyncOrderSaveQueueListener {
     OutOrderService outOrderService;
 
     @Autowired
-    RedisTemplate redisTemplate;
+    AplCacheUtil redisTemplate;
 
     @RabbitHandler
     @RabbitListener(queues = "syncOrderSaveQueue")

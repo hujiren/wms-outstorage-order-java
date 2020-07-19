@@ -14,9 +14,9 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
                 "com.apl.wms.outstorage.order.*" ,
                 "com.apl.wms.warehouse.lib.*",
                 "com.apl.db.datasource",
-                "com.apl.amqp",
                 "com.apl.lib",
-                "com.apl.lib.handler"},
+                "com.apl.cache",
+                "com.apl.amqp"},
         exclude = {DataSourceAutoConfiguration.class})
 @EnableFeignClients(
         basePackages = {"com.apl.wms.outstorage.order.lib.feign",

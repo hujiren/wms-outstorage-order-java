@@ -1,4 +1,5 @@
 package com.apl.wms.outstorage.order.utils;
+import com.apl.cache.AplCacheUtil;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.utils.RedisLock;
 import com.apl.lib.utils.StringUtil;
@@ -7,11 +8,11 @@ import com.apl.sys.lib.cache.JoinCustomer;
 import com.apl.sys.lib.feign.InnerFeign;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
-
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -40,7 +41,7 @@ public class OutstorageOrderSnGenUtils {
     }
 
     @Autowired
-    RedisTemplate redisTemplate;
+    AplCacheUtil redisTemplate;
 
     @Autowired
     NamedParameterJdbcTemplate jdbc;

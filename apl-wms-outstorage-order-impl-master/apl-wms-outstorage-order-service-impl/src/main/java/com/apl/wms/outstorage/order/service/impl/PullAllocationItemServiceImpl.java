@@ -3,6 +3,7 @@ package com.apl.wms.outstorage.order.service.impl;
 
 import com.apl.amqp.RabbitMqUtil;
 import com.apl.amqp.RabbitSender;
+import com.apl.cache.AplCacheUtil;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinBase;
@@ -33,7 +34,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,7 +75,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
     RabbitMqUtil rabbitMqUtil;
 
     @Autowired
-    RedisTemplate redisTemplate;
+    AplCacheUtil redisTemplate;
 
     static JoinFieldInfo joinCustomerFieldInfo = null; //跨项目跨库关联 客户表 反射字段缓存
     static JoinFieldInfo joinWareHouseFieldInfo = null;
