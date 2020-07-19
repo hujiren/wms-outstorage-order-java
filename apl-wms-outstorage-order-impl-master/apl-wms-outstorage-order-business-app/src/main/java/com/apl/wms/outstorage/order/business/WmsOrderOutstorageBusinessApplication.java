@@ -14,7 +14,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
                 "com.apl.wms.warehouse.lib.*",
                 "com.apl.lib",
                 "com.apl.cache",
-                "com.apl.db.datasource",
+                "com.apl.db",
                 "com.apl.amqp"},
         exclude = {DataSourceAutoConfiguration.class})
 @MapperScan(basePackages = {"com.apl.wms.outstorage.order.dao"})
