@@ -1,7 +1,6 @@
 package com.apl.wms.outstorage.order.lib.cache;
 
-
-import com.apl.lib.cachebase.CacheUtil;
+import com.apl.lib.cachebase.BaseCacheUtil;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.join.JoinBase;
 import com.apl.lib.utils.ResultUtil;
@@ -13,7 +12,7 @@ public class JoinStore extends JoinBase<StoreCacheBo> {
 
     public WarehouseFeign warehouseFeign;
 
-    public JoinStore(int joinStyle, WarehouseFeign warehouseFeign, CacheUtil cacheUtil){
+    public JoinStore(int joinStyle, WarehouseFeign warehouseFeign, BaseCacheUtil cacheUtil){
         this.warehouseFeign = warehouseFeign;
         this.cacheUtil = cacheUtil;
         this.tabName = "store";
