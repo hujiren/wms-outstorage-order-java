@@ -274,6 +274,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         //rabbitSender.send("pullBatchSubmitStockReduceExchange", "pullBatchSubmitStockReduceQueue", orderStock);
         ChannelShell channel = rabbitMqUtil.createChannel("1", false);
         rabbitMqUtil.send(channel, "pullBatchSubmitStockReduceQueue", orderStock);
+        channel.close();
 
         return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS);
     }

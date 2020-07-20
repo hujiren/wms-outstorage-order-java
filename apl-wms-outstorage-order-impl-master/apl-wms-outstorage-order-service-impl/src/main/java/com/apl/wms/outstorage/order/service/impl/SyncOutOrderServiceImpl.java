@@ -294,6 +294,8 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
 
             String key = "TASK_STATUS:" + securityUser.getInnerOrgId().toString() + "_" + id.toString();
             redisTemplate.opsForValue().set(key, 2);
+
+            channel.close();
         }
 
         return ResultUtil.APPRESULT(SyncOrderServiceCode.TASK_ALREADY_BOOT.code, SyncOrderServiceCode.TASK_ALREADY_BOOT.msg, true);
