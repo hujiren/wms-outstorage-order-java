@@ -20,7 +20,6 @@ public class JoinStore extends JoinBase<StoreCacheBo> {
         this.tabName = "store";
         this.joinStyle = joinStyle;
 
-
         this.innerOrgId = MyBatisPlusConfig.tenantIdContextHolder.get();
         this.cacheKeyNamePrefix = "JOIN_CACHE:"+this.tabName+"_"+this.innerOrgId.toString()+"_";
     }
