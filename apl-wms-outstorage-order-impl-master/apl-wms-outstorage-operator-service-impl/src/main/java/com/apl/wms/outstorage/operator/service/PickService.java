@@ -15,13 +15,15 @@ import java.util.List;
  */
 public interface PickService extends IService<OutOrderListVo> {
 
-    ResultUtil<OutOrderPickListVo> allocationPickingMember(List<String> orderSns) throws Exception;
-
-
     /**
      * @Desc: 拣货管理
      * @Author: hjr
      * @Date: 2020.7.17
      */
     ResultUtil<Page<OutOrderPickListVo>> pickManage(PageDto pageDto, PullOrderKeyDto keyDto) throws Exception;
+
+
+    ResultUtil<OutOrderPickListVo> allocationPickingMember(List<String> orderSns) throws Exception;
+
+
 }

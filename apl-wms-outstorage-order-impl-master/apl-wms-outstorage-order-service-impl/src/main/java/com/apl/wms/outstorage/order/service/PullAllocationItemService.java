@@ -36,6 +36,15 @@ public interface PullAllocationItemService extends IService<PullAllocationItemPo
     ResultUtil<Integer> deleteOrderAllocationItem(Long outOrderId, String tranId);
 
 
+
+    /**
+     * 查询订单分配明细
+     * @param outOrderId
+     * @return
+     */
+    ResultUtil<Integer> selectOrderAllocationItem(Long outOrderId, String tranId);
+
+
     /**
      * 获取单一订单商品id和下单数量
      * @param: 多个订单id

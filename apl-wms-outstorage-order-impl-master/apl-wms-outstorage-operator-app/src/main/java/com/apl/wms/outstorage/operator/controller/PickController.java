@@ -77,19 +77,6 @@ public class PickController {
     }
 
 
-//    @PostMapping("/allocation-operator")
-//    @ApiOperation(value =  "为订单分配拣货员" , notes = "为订单分配拣货员")
-//    @ApiImplicitParams({
-//            @ApiImplicitParam(name = "memberId",value = "拣货员id",required = true  , paramType = "query"),
-//            @ApiImplicitParam(name = "orderIdList",value = "订单id 列表",required = true  , paramType = "query")
-//    })
-//    public ResultUtil<Boolean> allocationOperator(@NotNull(message = "memberId 不能为空") @Min(value = 1 , message = "memberId 不能小于1")Long memberId ,
-//                                                  @NotNull(message = "orderIdList 不能为空")String orderIdList){
-//
-//        return outOrderService.allocationOperator(memberId , orderIdList);
-//    }
-
-
     @PostMapping("/cancel-allocation-operator")
     @ApiOperation(value =  "订单拣货分配取消" , notes = "订单拣货分配取消")
     @ApiImplicitParams({
@@ -116,7 +103,6 @@ public class PickController {
 
         return pullBatchService.submitPullBatch(pullBatchSubmit);
     }
-
 
 
     @PostMapping(value = "/allocation-picking-member")

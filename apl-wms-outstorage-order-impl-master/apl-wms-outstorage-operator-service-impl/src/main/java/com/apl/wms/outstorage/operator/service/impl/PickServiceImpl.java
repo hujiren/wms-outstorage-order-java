@@ -70,8 +70,6 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
     @Override
     public ResultUtil<OutOrderPickListVo> allocationPickingMember(List<String> orderSns) throws Exception {
 
-        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
-
         List<OutOrderPickListVo> outOrderPickListVo = baseMapper.getListByOrderSns(orderSns);
 
         if (outOrderPickListVo.isEmpty()) {
@@ -80,6 +78,7 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
                     PickServiceCode.ORDER_INFO_IS_NULL_BY_QUERY.msg, null);
 
         }
+
 
         //订单列表
         List<Long> orderIds = new ArrayList<>();
@@ -105,6 +104,8 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
             orderIds.add(vo.getOrderId());
 
         }
+
+        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
 
         //批量更新订单拣货员信息和订单状态
         Integer integer = baseMapper.updateOrderPickingMember(operatorCacheBo.getMemberId(), orderIds);
@@ -156,16 +157,17 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
                     PickServiceCode.PULL_STATUS_IS_WRONG.msg, null);
 
         }
+        //com.apl.lib.config.SwaggerConfig;
+        //com.apl.db.utils.DBUtil
 
-        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
+        //OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
 
-        Long whId = operatorCacheBo.getWhId();
-
+        //Long whId = operatorCacheBo.getWhId();
+        Long whId = null;
 
         if (null != whId && whId != 0) {
             keyDto.setWhId(whId);
         }
-
 
         Page<OutOrderPickListVo> page = new Page();
         page.setCurrent(pageDto.getPageIndex());

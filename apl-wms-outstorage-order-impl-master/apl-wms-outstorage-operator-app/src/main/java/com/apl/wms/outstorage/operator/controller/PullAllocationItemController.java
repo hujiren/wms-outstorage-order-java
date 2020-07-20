@@ -87,6 +87,15 @@ public class PullAllocationItemController {
     }
 
 
+    @PostMapping(value = "/select")
+    @ApiOperation(value =  "查询分配明细" , notes = "查询分配明细")
+    @ApiImplicitParam(name = "outOrderId",value = "订单id",required = true  , paramType = "query")
+    public ResultUtil<Integer> selectOrderAllocationItem(@NotNull(message = "订单id不能为空")Long outOrderId,
+                                                         @NotNull(message = "tranId不能为空") String tranId){
+        return pullAllocationItemService.selectOrderAllocationItem(outOrderId, tranId);
+    }
+
+
     @PostMapping("/stock-manage")
     @ApiOperation(value =  "分页获取分配库位信息" , notes = "分页获取分配库位信息")
     public ResultUtil<Page<OutOrderPickListVo>> pickManage(PageDto pageDto, @Validated StockManageKeyDto keyDto) throws Exception{

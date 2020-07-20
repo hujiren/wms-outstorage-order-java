@@ -1,5 +1,6 @@
 package com.apl.wms.outstorage.order.service.impl;
 
+import com.apl.amqp.ChannelShell;
 import com.apl.amqp.RabbitMqUtil;
 import com.apl.amqp.RabbitSender;
 import com.apl.cache.AplCacheUtil;
@@ -30,7 +31,6 @@ import com.apl.wms.warehouse.lib.cache.StoreCacheBo;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -289,7 +289,7 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
             baseMapper.updStatus(id, 2, customerId);
 
             //rabbitSender.send("apl.ec.api.syncOrderShopifyExchange", "syncOrderShopifyQueue", byncOutOrderTaskBo);
-            Channel channel = rabbitMqUtil.createChannel("1", false);
+            ChannelShell channel = rabbitMqUtil.createChannel("1", false);
             rabbitMqUtil.send(channel, "syncOrderShopifyQueue", byncOutOrderTaskBo);
 
             String key = "TASK_STATUS:" + securityUser.getInnerOrgId().toString() + "_" + id.toString();

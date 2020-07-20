@@ -1,6 +1,6 @@
 package com.apl.wms.outstorage.order.service.impl;
 
-
+import com.apl.amqp.ChannelShell;
 import com.apl.amqp.RabbitMqUtil;
 import com.apl.amqp.RabbitSender;
 import com.apl.cache.AplCacheUtil;
@@ -31,12 +31,10 @@ import com.apl.wms.warehouse.lib.pojo.bo.CompareStorageLocalStocksBo;
 import com.apl.wms.warehouse.lib.utils.WmsWarehouseUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +55,9 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
         ORDER_IS_ALLOCATED_STORAGE("ORDER_IS_ALLOCATED_STORAGE", "订单已经分配库位"),
         PULL_STATUS_IS_WRONG("PULL_STATUS_IS_WRONG", "该订单拣货状态错误"),
         YOUR_ORDER_NOT_YET_ALLOCATED("YOUR_ORDER_NOT_YET_ALLOCATED", "您的订单尚未被分配, 请稍后再试"),
-        YOUR_ORDER_HAS_BEEN_ALLOCATED_PICKING_MEMBER("YOUR_ORDER_HAS_BEEN_ALLOCATED_PICKING_MEMBER", "您的订单已经分配拣货员, 无法取消分配");
+        YOUR_ORDER_HAS_BEEN_ALLOCATED_PICKING_MEMBER("YOUR_ORDER_HAS_BEEN_ALLOCATED_PICKING_MEMBER", "您的订单已经分配拣货员, 无法取消分配"),
+        MESSAGE_QUEUE_SEND_SUCCESS("MESSAGE_QUEUE_SEND_SUCCESS", "消息发送成功")
+        ;
 
         private String code;
         private String msg;
@@ -245,7 +245,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
         SecurityUser securityUser = CommonContextHolder.getSecurityUser();
 
-        Channel channel = rabbitMqUtil.createChannel("1", true);
+        ChannelShell channel = rabbitMqUtil.createChannel("1", true);
 
         try {
             //遍历订单信息对象, 并将每个商品信息对象组合到订单信息对象中
@@ -286,7 +286,8 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
             channel.txRollback(); // 回滚amqp事务
         }
 
-        ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, true);
+        ResultUtil result = ResultUtil.APPRESULT(PullAllocationItemServiceCode.MESSAGE_QUEUE_SEND_SUCCESS.code,
+                PullAllocationItemServiceCode.MESSAGE_QUEUE_SEND_SUCCESS.msg, true);
 
         return result;
     }
@@ -361,6 +362,30 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
         redisTemplate.opsForValue().set(tranId, 1);
         return ResultUtil.APPRESULT(CommonStatusCode.DEL_SUCCESS,  1);
     }
+
+
+
+    /**
+     * 查询订单分配明细
+     *
+     * @param outOrderId
+     * @return
+     */
+    @Override
+    public ResultUtil<Integer> selectOrderAllocationItem(Long outOrderId, String tranId) {
+
+        Integer integer = baseMapper.selectByOrderId(outOrderId);
+
+        redisTemplate.opsForValue().set(tranId, 1);
+
+        if(integer == 0) {
+            return ResultUtil.APPRESULT(CommonStatusCode.DEL_SUCCESS, 0);
+        }else{
+            return ResultUtil.APPRESULT(CommonStatusCode.DEL_SUCCESS, 1);
+        }
+    }
+
+
 
 
     @Override

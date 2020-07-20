@@ -1,5 +1,6 @@
 package com.apl.wms.outstorage.operator.service.impl;
 
+import com.apl.amqp.ChannelShell;
 import com.apl.amqp.RabbitMqUtil;
 import com.apl.amqp.RabbitSender;
 import com.apl.cache.AplCacheUtil;
@@ -30,7 +31,6 @@ import com.apl.wms.warehouse.lib.pojo.bo.PullBatchOrderItemBo;
 import com.apl.wms.warehouse.lib.utils.WmsWarehouseUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -242,6 +242,14 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         return pullBatch.getId();
     }
 
+
+
+    /**
+     * 提交拣货数据
+     * @param pullBatchSubmit
+     * @return
+     * @throws Exception
+     */
     @Override
     @Transactional
     public ResultUtil submitPullBatch(PullBatchSubmitDto pullBatchSubmit) throws Exception {
@@ -264,7 +272,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
         //进行库存减扣 （仓库库存 / 库位库存)
         //rabbitSender.send("pullBatchSubmitStockReduceExchange", "pullBatchSubmitStockReduceQueue", orderStock);
-        Channel channel = rabbitMqUtil.createChannel("1", false);
+        ChannelShell channel = rabbitMqUtil.createChannel("1", false);
         rabbitMqUtil.send(channel, "pullBatchSubmitStockReduceQueue", orderStock);
 
         return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS);
