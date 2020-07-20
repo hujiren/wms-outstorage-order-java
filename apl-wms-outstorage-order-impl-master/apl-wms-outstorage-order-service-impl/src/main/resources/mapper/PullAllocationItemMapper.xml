@@ -168,17 +168,5 @@
         </where>
 
     </select>
-    <select id="selectByOrderId" resultType="java.lang.Integer">
-        select count(commodity_id) from pull_allocation_item where out_order_id = #{outOrderId}
-    </select>
 
-
-    <update id="updatePullStatus">
-        update out_order set pull_status = #{pullStatus} where id = #{outOrderId}
-    </update>
-
-
-    <delete id="deleteByOrderId">
-        delete from pull_allocation_item where out_order_id = #{outOrderId}
-    </delete>
 </mapper>

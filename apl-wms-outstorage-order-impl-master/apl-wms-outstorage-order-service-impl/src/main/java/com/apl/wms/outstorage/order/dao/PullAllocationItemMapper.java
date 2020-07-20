@@ -121,14 +121,6 @@ public interface PullAllocationItemMapper extends BaseMapper<PullAllocationItemP
     Integer deleteByOrderId(@Param("outOrderId") Long outOrderId);
 
 
-    /**
-     * 查询订单分配明细
-     * @param outOrderId
-     * @return
-     */
-    Integer selectByOrderId(@Param("outOrderId") Long outOrderId);
-
-
 
     List<OutOrderPickListVo> queryOrderPickInfoByPage(Page<OutOrderPickListVo> page, @Param("kd") StockManageKeyDto keyDto);
 }

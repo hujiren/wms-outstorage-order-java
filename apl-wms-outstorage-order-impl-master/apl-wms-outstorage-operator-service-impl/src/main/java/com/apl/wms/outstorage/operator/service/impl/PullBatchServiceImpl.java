@@ -272,7 +272,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
         //进行库存减扣 （仓库库存 / 库位库存)
         //rabbitSender.send("pullBatchSubmitStockReduceExchange", "pullBatchSubmitStockReduceQueue", orderStock);
-        ChannelShell channel = rabbitMqUtil.createChannel("1", false);
+        ChannelShell channel = rabbitMqUtil.createChannel("first", false);
         rabbitMqUtil.send(channel, "pullBatchSubmitStockReduceQueue", orderStock);
         channel.close();
 

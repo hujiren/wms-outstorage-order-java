@@ -289,7 +289,7 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
             baseMapper.updStatus(id, 2, customerId);
 
             //rabbitSender.send("apl.ec.api.syncOrderShopifyExchange", "syncOrderShopifyQueue", byncOutOrderTaskBo);
-            ChannelShell channel = rabbitMqUtil.createChannel("1", false);
+            ChannelShell channel = rabbitMqUtil.createChannel("first", false);
             rabbitMqUtil.send(channel, "syncOrderShopifyQueue", byncOutOrderTaskBo);
 
             String key = "TASK_STATUS:" + securityUser.getInnerOrgId().toString() + "_" + id.toString();

@@ -39,8 +39,7 @@ import java.util.List;
 public class PickController {
 
 
-    @Autowired
-    public OutOrderService outOrderService;
+
 
     @Autowired
     PullBatchService pullBatchService;
@@ -52,8 +51,26 @@ public class PickController {
     PickService pickService;
 
     @PostMapping("/pick-manage")
-    @ApiOperation(value =  "分页获取订单拣货列表" , notes = "分页获取订单拣货列表")
+    @ApiOperation(value =  "PC分页获取订单拣货列表" , notes = "PC分页获取订单拣货列表")
     public ResultUtil<Page<OutOrderPickListVo>> pickManage(PageDto pageDto, @Validated PullOrderKeyDto keyDto) throws Exception{
+        keyDto.setTerminal(1);
+
+        return pickService.pickManage(pageDto , keyDto);
+    }
+
+
+    @PostMapping("/pick-manage-pda")
+    @ApiOperation(value =  "pda分页获取订单拣货列表" , notes = "pda分页获取订单拣货列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "pullStatus", value = "捡货状态", required = true)
+    })
+    public ResultUtil<Page<OutOrderPickListVo>> pickManagePad(PageDto pageDto, @NotNull(message = "状态不能为空")  Integer pullStatus) throws Exception{
+        if(pullStatus!=6)
+            pullStatus=4;
+
+        PullOrderKeyDto keyDto = new PullOrderKeyDto();
+        keyDto.setTerminal(2);
+        keyDto.setPullStatus(pullStatus);
 
         return pickService.pickManage(pageDto , keyDto);
     }
@@ -77,24 +94,12 @@ public class PickController {
     }
 
 
-    @PostMapping("/cancel-allocation-operator")
-    @ApiOperation(value =  "订单拣货分配取消" , notes = "订单拣货分配取消")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "memberId",value = "拣货员id",required = true  , paramType = "query"),
-            @ApiImplicitParam(name = "orderIdList",value = "订单id 列表",required = true  , paramType = "query")
-    })
-    public ResultUtil<Boolean> cancelAllocationOperator(@NotNull(message = "memberId 不能为空") @Min(value = 1 , message = "memberId 不能小于1")Long memberId ,
-                                                                @NotNull(message = "orderIdList 不能为空")String orderIdList){
-
-        return outOrderService.cancelAllocationOperator(memberId , orderIdList);
-}
-
-    @PostMapping("/list-operator-order")
+    /*@PostMapping("/list-operator-order")
     @ApiOperation(value =  "获取拣货员对应的订单列表" , notes = "获取分配给某个拣货员的订单列表")
     public ResultUtil<List<OutOrderInfoVo>> listOperatorOrders() throws Exception {
 
         return outOrderService.listOperatorOrders();
-    }
+    }*/
 
 
     @PostMapping(value = "/submit-pick")
@@ -108,6 +113,7 @@ public class PickController {
     @PostMapping(value = "/allocation-picking-member")
     @ApiOperation(value = "分配拣货员", notes = "分配拣货员")
     public ResultUtil<OutOrderPickListVo> allocationPickingMember(@RequestBody @NotNull(message = "订单号不能为空")List<String> orderSns) throws Exception {
+
         return pickService.allocationPickingMember(orderSns);
     }
 }

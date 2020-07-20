@@ -79,7 +79,6 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
 
         }
 
-
         //订单列表
         List<Long> orderIds = new ArrayList<>();
 
@@ -102,7 +101,6 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
             }
 
             orderIds.add(vo.getOrderId());
-
         }
 
         OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
@@ -120,23 +118,18 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
 
         //关联客户表字段信息
         JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, redisTemplate);
-
         if (null != joinCustomerFieldInfo) {
-
             joinCustomer.setJoinFieldInfo(joinCustomerFieldInfo);
-
         } else {
-
             joinCustomer.addField("customerId", Long.class, "customerName", String.class);
             joinCustomerFieldInfo = joinCustomer.getJoinFieldInfo();
-
         }
         joinTabs.add(joinCustomer);
 
         //执行跨项目跨库关联
         JoinUtil.join(outOrderPickListVo, joinTabs);
 
-        return ResultUtil.APPRESULT(CommonStatusCode.SYSTEM_SUCCESS.code, CommonStatusCode.SYSTEM_SUCCESS.msg, outOrderPickListVo);
+        return ResultUtil.APPRESULT(CommonStatusCode.SYSTEM_SUCCESS, outOrderPickListVo);
 
     }
 
@@ -160,24 +153,18 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
         //com.apl.lib.config.SwaggerConfig;
         //com.apl.db.utils.DBUtil
 
-        //OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
+        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
+        Long whId = operatorCacheBo.getWhId();
 
-        //Long whId = operatorCacheBo.getWhId();
-        Long whId = null;
-
-        if (null != whId && whId != 0) {
-            keyDto.setWhId(whId);
-        }
+        keyDto.setWhId(whId);
 
         Page<OutOrderPickListVo> page = new Page();
         page.setCurrent(pageDto.getPageIndex());
         page.setSize(pageDto.getPageSize());
 
-
         List<OutOrderPickListVo> list = baseMapper.queryOrderPickInfoByPage(page, keyDto);
 
         page.setRecords(list);
-
 
         //跨项目跨库关联表数组
         List<JoinBase> joinTabs = new ArrayList<>();

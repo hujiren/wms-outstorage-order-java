@@ -32,6 +32,4 @@ public interface OutStorageOrderOperatorFeign {
     @PostMapping(value = "/pull-allocation-item/delete")
     ResultUtil<Integer>  deleteOrderAllocationItem(@RequestParam("outOrderId") Long outOrderId,  @RequestParam("tranId") String tranId);
 
-    @PostMapping(value = "/pull-allocation-item/select")
-    ResultUtil<Integer>  selectOrderAllocationItem(@RequestParam("outOrderId") Long outOrderId,  @RequestParam("tranId") String tranId);
 }

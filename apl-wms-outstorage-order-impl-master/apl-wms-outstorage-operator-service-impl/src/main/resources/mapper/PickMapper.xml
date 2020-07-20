@@ -4,16 +4,18 @@
 
 
     <!-- 分页查找 第2步, 根据ids查找订单列表-->
-    <select id="getListByOrderSns" parameterType="java.util.List"
-            resultType="com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo">
+    <select id="getListByOrderSns" parameterType="java.util.List"  resultType="com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo">
         SELECT
-        id as orderId,
-        order_sn,
-        order_status,
-        pull_status,
-        cr_time
+            id as orderId,
+            order_sn,
+            order_status,
+            pull_status,
+            cr_time,
+            customer_id,
+            pull_operator_id,
+            order_from
         FROM
-        out_order
+            out_order
         where
         order_sn in (
             <foreach collection="orderSns" open="" separator="," close="" item="row">
@@ -24,7 +26,6 @@
 
 
     <select id="queryOrderPickInfoByPage" resultType="com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo">
-
         SELECT
             id as orderId,
             order_sn,
@@ -37,41 +38,54 @@
         FROM
             out_order
         <where>
-            1=1
-            and
-            order_status = 3
-            <if test="kd.whId != null and kd.whId != 0">
-                and wh_id = #{kd.whId}
-            </if>
-            <if test="kd.pullStatus != null and kd.pullStatus > 2">
-                and pull_status = #{kd.pullStatus}
-            </if>
+            order_status = 3  and pull_status >=3  and wh_id = ${kd.whId}
 
-            <if test="kd.pullStatus != null and kd.pullStatus == 0">
-                and pull_status != 1
-                and pull_status != 2
-            </if>
-
-            <if test="kd.customerId != null and kd.customerId !=''">
-                and customer_id = #{kd.customerId}
-            </if>
-
-            /*如果拣货状态等于3 表示未分配拣货员 查询拣货员id为0的所有信息*/
-            <if test="kd.pullStatus != null and kd.pullStatus == 3 ">
-                and pull_operator_id = 0
-            </if>
-
-            /*如果拣货状态等于4 表示已分配拣货员 查询拣货员Id大于0的所有信息*/
-            <if test="kd.pullStatus != null and kd.pullStatus == 4 ">
-                and pull_operator_id > 0
-            </if>
-
-            <if test="kd.pullStatus > 3 and kd.pullOperatorId != null and kd.pullOperatorId > 0">
-                and pull_operator_id = #{kd.pullOperatorId}
-            </if>
-
+            <!-- 模糊搜索订单号 -->
             <if test="kd.orderSn != null and kd.orderSn != ''">
                 and locate(#{kd.orderSn} , order_sn) > 0
+            </if>
+
+            <if test="kd.terminal==1">
+                <!-- 从PC查询 -->
+                <if test="kd.customerId != null and kd.customerId>0">
+                    and customer_id = #{kd.customerId}
+                </if>
+
+                <!--指定拣货员-->
+                <if test="kd.pullStatus != 3 and (kd.pullOperatorId != null and kd.pullOperatorId > 0)">
+                    and pull_operator_id = #{kd.pullOperatorId}
+                </if>
+
+                <!--如果拣货状态等于3 表示未分配拣货员 查询拣货员id为0的所有信息-->
+                <if test="kd.pullStatus == 3 ">
+                    and pull_operator_id = 0
+                </if>
+
+                <!--如果拣货状态等于4 表示已分配拣货员 查询拣货员Id大于0的所有信息-->
+                <if test="kd.pullStatus == 4 ">
+                    and pull_operator_id > 0
+                </if>
+
+                <if test="kd.pullStatus > 4 ">
+                    and pull_status = #{kd.pullStatus}
+                </if>
+            </if>
+
+            <if test="kd.terminal==2">
+                <!-- 从PDA查询 -->
+
+                and pull_operator_id = #{kd.pullOperatorId}
+
+                <!--未拣货-->
+                <if test="kd.pullStatus == 4 ">
+                    and pull_status &lt; 6
+                </if>
+
+                <!--已拣货-->
+                <if test="kd.pullStatus == 6 ">
+                    and pull_status &gt;= 6
+                </if>
+
             </if>
 
         </where>
