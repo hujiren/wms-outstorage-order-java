@@ -1,5 +1,6 @@
 package com.apl.wms.outstorage.order.service.impl;
 
+import com.apl.amqp.ChannelShell;
 import com.apl.amqp.RabbitMqUtil;
 import com.apl.amqp.RabbitSender;
 import com.apl.cache.AplCacheUtil;
@@ -289,11 +290,13 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
             baseMapper.updStatus(id, 2, customerId);
 
             //rabbitSender.send("apl.ec.api.syncOrderShopifyExchange", "syncOrderShopifyQueue", byncOutOrderTaskBo);
-            Channel channel = rabbitMqUtil.createChannel("1", false);
+            ChannelShell channel = rabbitMqUtil.createChannel("1", false);
             rabbitMqUtil.send(channel, "syncOrderShopifyQueue", byncOutOrderTaskBo);
 
             String key = "TASK_STATUS:" + securityUser.getInnerOrgId().toString() + "_" + id.toString();
             redisTemplate.opsForValue().set(key, 2);
+
+            channel.close();
         }
 
         return ResultUtil.APPRESULT(SyncOrderServiceCode.TASK_ALREADY_BOOT.code, SyncOrderServiceCode.TASK_ALREADY_BOOT.msg, true);

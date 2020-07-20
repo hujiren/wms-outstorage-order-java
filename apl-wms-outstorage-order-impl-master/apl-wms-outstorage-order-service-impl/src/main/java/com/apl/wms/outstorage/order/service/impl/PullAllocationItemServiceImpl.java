@@ -1,6 +1,7 @@
 package com.apl.wms.outstorage.order.service.impl;
 
 
+import com.apl.amqp.ChannelShell;
 import com.apl.amqp.RabbitMqUtil;
 import com.apl.amqp.RabbitSender;
 import com.apl.cache.AplCacheUtil;
@@ -31,7 +32,6 @@ import com.apl.wms.warehouse.lib.pojo.bo.CompareStorageLocalStocksBo;
 import com.apl.wms.warehouse.lib.utils.WmsWarehouseUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -245,7 +245,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
         SecurityUser securityUser = CommonContextHolder.getSecurityUser();
 
-        Channel channel = rabbitMqUtil.createChannel("1", true);
+        ChannelShell channel = rabbitMqUtil.createChannel("1", true);
 
         try {
             //遍历订单信息对象, 并将每个商品信息对象组合到订单信息对象中
@@ -284,6 +284,8 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
         catch (Exception e){
             e.printStackTrace();
             channel.txRollback(); // 回滚amqp事务
+
+            channel.close();
         }
 
         ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, true);
