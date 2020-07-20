@@ -31,7 +31,6 @@ import com.apl.wms.warehouse.lib.cache.StoreCacheBo;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
