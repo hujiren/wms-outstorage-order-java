@@ -13,7 +13,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
         scanBasePackages = {"com.apl.wms.outstorage.operator.*" ,
                 "com.apl.wms.outstorage.order.*" ,
                 "com.apl.wms.warehouse.lib.*",
-                "com.apl.db.datasource",
+                "com.apl.db",
                 "com.apl.lib",
                 "com.apl.cache",
                 "com.apl.amqp"},
