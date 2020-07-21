@@ -162,35 +162,7 @@
         order by oo.id desc
     </select>
 
-    <!-- 获取拣货员对应的订单 -->
-    <select id="listOrderByOrderStatusPullStatusAndPullId" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderInfoVo">
-        SELECT
-            oo.id,
-            oo.customer_id,
-            oo.order_sn,
-            oo.order_status,
-            oo.pull_status,
-            oo.order_from,
-            oo.ec_platform_code,
-            oo.reference_sn,
-            oo.store_id,
-            oo.wh_id,
-            oo.pull_operator_id,
-            oo.pack_operator_id,
-            oo.out_gw,
-            oo.out_volume,
-            oo.remark,
-            oo.is_wrong,
-            oo.cr_time
-        FROM
-            out_order as oo
-        where
-            is_wrong = 1
-            and order_status = #{orderStatus}
-            and pull_status = #{pullStatus}
-            and pull_operator_id = #{memberId}
 
-    </select>
 
     <!-- 分页查找订单列表, 适合查询条件 sku和商品名称为空的情况 -->
     <select id="getList" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderListVo">

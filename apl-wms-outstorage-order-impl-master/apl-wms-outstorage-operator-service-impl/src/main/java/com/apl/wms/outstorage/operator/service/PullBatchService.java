@@ -60,7 +60,7 @@ public interface PullBatchService extends IService<PullBatchPo> {
          * @Author: CY
          * @Date: 2020/6/8 18:18
          */
-        ResultUtil<String> createPullBatch(String ids);
+        ResultUtil<String> createPullBatch(List<Long> ids);
 
         /**
          * @Desc: 根据id 查找一个PullBatchPo 实体
@@ -76,13 +76,6 @@ public interface PullBatchService extends IService<PullBatchPo> {
          * @since 2020-06-08
          */
         ResultUtil<Page<PullBatchListVo>>getList(PageDto pageDto, PullBatchKeyDto keyDto);
-
-        /**
-         * @Desc: 创建一个捡货批次，返回批次号
-         * @Author: CY
-         * @Date: 2020/6/9 9:25
-         */
-        Long createBatch();
 
 
         /**

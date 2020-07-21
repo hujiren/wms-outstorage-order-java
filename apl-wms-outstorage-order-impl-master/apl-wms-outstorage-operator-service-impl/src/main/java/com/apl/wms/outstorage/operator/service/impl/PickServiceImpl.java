@@ -150,8 +150,6 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
                     PickServiceCode.PULL_STATUS_IS_WRONG.msg, null);
 
         }
-        //com.apl.lib.config.SwaggerConfig;
-        //com.apl.db.utils.DBUtil
 
         OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
         Long whId = operatorCacheBo.getWhId();

@@ -6,6 +6,7 @@ import com.apl.amqp.RabbitSender;
 import com.apl.cache.AplCacheUtil;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
+import com.apl.lib.join.JoinKeyValues;
 import com.apl.lib.join.JoinUtil;
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.security.SecurityUser;
@@ -31,6 +32,7 @@ import com.apl.wms.warehouse.lib.pojo.bo.PullBatchOrderItemBo;
 import com.apl.wms.warehouse.lib.utils.WmsWarehouseUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import jdk.nashorn.internal.ir.ReturnNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -178,23 +181,40 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
     @Override
     @Transactional
-    public ResultUtil<String> createPullBatch(String ids) {
+    public ResultUtil<String> createPullBatch(List<Long> ids) {
 
         RedisLock.repeatSubmit(CommonContextHolder.getHeader("token"), redisTemplate);
 
-        List<Long> orderIds = StringUtil.stringToLongList(ids);
+        JoinKeyValues longKeys = JoinUtil.getLongKeys(ids);
+
+        Integer pullStatus = 5;
+
+        //批量更改订单状态
+        Integer integer = baseMapper.updateOrderStatus(longKeys.getSbKeys().toString(), pullStatus, longKeys.getMinKey(), longKeys.getMaxKey());
+
+        SecurityUser securityUser = CommonContextHolder.getSecurityUser(redisTemplate);
+
+        //创建批次信息
+        PullBatchPo pullBatchPo = new PullBatchPo();
+        pullBatchPo.setPullOperatorId(securityUser.getMemberId());
+        pullBatchPo.setCrTime(new Timestamp(System.currentTimeMillis()));
+        pullBatchPo.setId(SnowflakeIdWorker.generateId());
+        pullBatchPo.setBatchSn(UUID.randomUUID().toString());
+        pullBatchPo.setPullStatus(PullStatusType.START_PICKING.getStatus());
+
+        baseMapper.insert(pullBatchPo);
+
+        ResultUtil appresult = ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, pullBatchPo.getId().toString());
+
+        return appresult;
+
+
         //获取订单出库数量信息
-        List<PullBatchOrderItemBo> pullBatchOrderItems = outOrderCommodityItemService.getPullBatchOrderItem(orderIds);
+//        List<PullBatchOrderItemBo> pullBatchOrderItems = outOrderCommodityItemService.getPullBatchOrderItem(orderIds);
 
-        //创建批次
-        Long batchId = createBatch();
-
-        //更改出库订单状态
-        outOrderService.batchUpdateOrderPullStatus(orderIds, PullStatusType.START_PICKING.getStatus(), null);
         //商品下架
-        pullItemService.pullCommodity(batchId, pullBatchOrderItems);
+//        pullItemService.pullCommodity(batchId, pullBatchOrderItems);
 
-        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, batchId.toString());
     }
 
 
@@ -223,24 +243,6 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, page);
     }
 
-    @Override
-    public Long createBatch() {
-
-        SecurityUser securityUser = CommonContextHolder.getSecurityUser(redisTemplate);
-
-        PullBatchPo pullBatch = new PullBatchPo();
-        pullBatch.setId(SnowflakeIdWorker.generateId());
-
-        //需要修改，按照什么规则进行生成彼此编码
-        pullBatch.setBatchSn(UUID.randomUUID().toString());
-
-        pullBatch.setPullOperatorId(securityUser.getMemberId());
-        pullBatch.setPullStatus(PullStatusType.START_PICKING.getStatus());
-
-        baseMapper.insert(pullBatch);
-
-        return pullBatch.getId();
-    }
 
 
 

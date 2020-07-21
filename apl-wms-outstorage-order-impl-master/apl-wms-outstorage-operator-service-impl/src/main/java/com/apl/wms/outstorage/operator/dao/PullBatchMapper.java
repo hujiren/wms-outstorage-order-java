@@ -67,4 +67,13 @@ public interface PullBatchMapper extends BaseMapper<PullBatchPo> {
      */
     List<Long> getBatchOrderList(@Param("batchId") Long batchId);
 
+    /**
+     * 批量更新订单状态
+     * @param ids
+     * @param pullStatus
+     * @param minKey
+     * @param maxKey
+     * @return
+     */
+    Integer updateOrderStatus(@Param("ids") String ids, @Param("pullStatus")Integer pullStatus, @Param("minKey")Long minKey, @Param("maxKey")Long maxKey);
 }

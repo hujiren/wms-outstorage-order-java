@@ -70,13 +70,6 @@ public interface OutOrderMapper extends BaseMapper<OutOrderPo> {
     List<OutOrderListVo> listWrongOrder(Page page, @Param("kd" ) OutOrderKeyDto keyDto , @Param("isWrong") Integer isWrong);
 
 
-    /**
-     * @Desc: 获取拣货员对应的订单
-     * @Author: CY
-     * @Date: 2020/6/8 15:44
-     */
-    List<OutOrderInfoVo> listOrderByOrderStatusPullStatusAndPullId(@Param("orderStatus" )Integer orderStatus, @Param("pullStatus" )Integer pullStatus,@Param("memberId" ) Long memberId);
-
 
     /**
      * @Desc: 查找订单，返回ids

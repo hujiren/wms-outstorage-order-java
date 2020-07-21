@@ -49,9 +49,9 @@ public class BatchController {
 
 
     @PostMapping(value = "/create-pull-batch")
-    @ApiOperation(value =  "创建收货批次" , notes = "保存收货批次，并且完成库位库存锁定")
+    @ApiOperation(value =  "创建收货批次" , notes = "创建收货批次")
     @ApiImplicitParam(name = "ids",value = "订单列表",required = true  , paramType = "query")
-    public ResultUtil<String> createPullBatch(@NotNull(message = "ids 不能为空")String ids){
+    public ResultUtil<String> createPullBatch(@NotNull(message = "ids 不能为空")List<Long> ids){
 
         return pullBatchService.createPullBatch(ids);
     }

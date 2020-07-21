@@ -94,14 +94,6 @@ public class PickController {
     }
 
 
-    /*@PostMapping("/list-operator-order")
-    @ApiOperation(value =  "获取拣货员对应的订单列表" , notes = "获取分配给某个拣货员的订单列表")
-    public ResultUtil<List<OutOrderInfoVo>> listOperatorOrders() throws Exception {
-
-        return outOrderService.listOperatorOrders();
-    }*/
-
-
     @PostMapping(value = "/submit-pick")
     @ApiOperation(value =  "提交拣货数据" , notes = "提交拣货数据 ， 进行库存减扣")
     public ResultUtil submitPick(@RequestBody PullBatchSubmitDto pullBatchSubmit) throws Exception {
