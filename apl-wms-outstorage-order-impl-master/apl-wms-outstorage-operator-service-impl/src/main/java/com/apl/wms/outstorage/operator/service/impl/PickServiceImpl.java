@@ -40,8 +40,9 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
         ORDER_STATUS_IS_CANCEL("ORDER_STATUS_IS_CANCEL", "该订单状态为取消状态"),
         ORDER_STATUS_IS_NOT_COMMIT("ORDER_STATUS_IS_NOT_COMMIT", "该订单不是已提交状态"),
         ORDER_INFO_IS_NULL_BY_QUERY("ORDER_INFO_IS_NULL_BY_QUERY", "查询出来的订单信息为空"),
-        ORDER_STATUS_IS_WRONG("ORDER_STATUS_IS_WRONG", "该订单尚未被分配"),
-        PULL_STATUS_IS_WRONG("PULL_STATUS_IS_WRONG", "拣货状态错误")
+        PULL_STATUS_IS_WRONG("PULL_STATUS_IS_WRONG", "拣货状态错误"),
+        THE_ORDER_HAS_BEEN_ALLOCATION_PICKING_MEMBER("THE_ORDER_HAS_BEEN_ALLOCATION_PICKING_MEMBER", "该订单已经分配拣货员"),
+        THE_ORDER_DOES_NOT_ALLOCATION_STOCK("THE_ORDER_DOES_NOT_ALLOCATION_STOCK", "该订单尚未分配库存")
         ;
 
         private String code;
@@ -97,6 +98,18 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
                 return ResultUtil.APPRESULT(PickServiceCode.ORDER_STATUS_IS_NOT_COMMIT.code,
                         PickServiceCode.ORDER_STATUS_IS_NOT_COMMIT.msg
                                 + ", orderSn:" + vo.getOrderSn(), null);
+
+            }
+
+            if(vo.getPullStatus() >= 4){
+
+                return ResultUtil.APPRESULT(PickServiceCode.THE_ORDER_HAS_BEEN_ALLOCATION_PICKING_MEMBER.code,
+                        PickServiceCode.THE_ORDER_HAS_BEEN_ALLOCATION_PICKING_MEMBER.msg, vo.getOrderSn());
+
+            }else if(vo.getPullStatus() < 3){
+
+                return ResultUtil.APPRESULT(PickServiceCode.THE_ORDER_DOES_NOT_ALLOCATION_STOCK.code,
+                        PickServiceCode.THE_ORDER_DOES_NOT_ALLOCATION_STOCK.msg, vo.getOrderSn());
 
             }
 
@@ -160,7 +173,9 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
         page.setCurrent(pageDto.getPageIndex());
         page.setSize(pageDto.getPageSize());
 
-        List<OutOrderPickListVo> list = baseMapper.queryOrderPickInfoByPage(page, keyDto);
+
+        List<OutOrderPickListVo>  list = baseMapper.queryOrderPickInfoByPage(page, keyDto);
+
 
         page.setRecords(list);
 

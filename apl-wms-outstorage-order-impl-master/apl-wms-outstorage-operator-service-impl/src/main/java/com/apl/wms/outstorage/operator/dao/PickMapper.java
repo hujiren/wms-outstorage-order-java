@@ -25,4 +25,6 @@ public interface PickMapper extends BaseMapper<OutOrderListVo> {
      * @Date: 2020/6/2 10:16
      */
     List<OutOrderPickListVo> queryOrderPickInfoByPage(Page page , @Param("kd") PullOrderKeyDto keyDto);
+
+
 }

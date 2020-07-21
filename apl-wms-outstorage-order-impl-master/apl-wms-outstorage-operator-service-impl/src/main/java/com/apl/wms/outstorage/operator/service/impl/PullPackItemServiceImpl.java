@@ -1,5 +1,4 @@
 package com.apl.wms.outstorage.operator.service.impl;
-
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.utils.ResultUtil;
@@ -17,7 +16,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 
@@ -33,19 +31,6 @@ import java.util.List;
 @Slf4j
 public class PullPackItemServiceImpl extends ServiceImpl<PullPackItemMapper, PullPackItemPo> implements PullPackItemService {
 
-//状态code枚举
-/*enum PullPackItemServiceCode {
-
-        ;
-
-        private String code;
-        private String msg;
-
-        PullPackItemServiceCode(String code, String msg) {
-             this.code = code;
-             this.msg = msg;
-        }
-    }*/
 
 
    @Autowired

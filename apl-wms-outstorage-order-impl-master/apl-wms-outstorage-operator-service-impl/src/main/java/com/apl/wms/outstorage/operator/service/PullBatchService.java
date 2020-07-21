@@ -26,6 +26,7 @@ import java.util.List;
 public interface PullBatchService extends IService<PullBatchPo> {
 
 
+
         /**
          * @Desc: 根据订单id 获取打包信息
          * @Author: CY
@@ -60,7 +61,7 @@ public interface PullBatchService extends IService<PullBatchPo> {
          * @Author: CY
          * @Date: 2020/6/8 18:18
          */
-        ResultUtil<String> createPullBatch(List<Long> ids);
+        ResultUtil<String> createPullBatch(List<Long> ids) throws Exception;
 
         /**
          * @Desc: 根据id 查找一个PullBatchPo 实体

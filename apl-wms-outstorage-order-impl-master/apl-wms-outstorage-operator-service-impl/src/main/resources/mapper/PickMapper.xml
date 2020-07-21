@@ -11,6 +11,7 @@
             order_status,
             pull_status,
             cr_time,
+            wh_id,
             customer_id,
             pull_operator_id,
             order_from
@@ -38,17 +39,19 @@
         FROM
             out_order
         <where>
-            order_status = 3  and pull_status >=3  and wh_id = ${kd.whId}
 
-            <!-- 模糊搜索订单号 -->
-            <if test="kd.orderSn != null and kd.orderSn != ''">
-                and locate(#{kd.orderSn} , order_sn) > 0
-            </if>
+            order_status = 3  and pull_status >= 3  and wh_id = ${kd.whId}
 
             <if test="kd.terminal==1">
+
                 <!-- 从PC查询 -->
                 <if test="kd.customerId != null and kd.customerId>0">
                     and customer_id = #{kd.customerId}
+                </if>
+
+                <!-- 模糊搜索订单号 -->
+                <if test="kd.orderSn != null and kd.orderSn != ''">
+                    and locate(#{kd.orderSn} , order_sn) > 0
                 </if>
 
                 <!--指定拣货员-->
@@ -92,7 +95,10 @@
 
     </select>
 
+
+
     <update id="updateOrderPickingMember">
+
         update out_order
             set pull_status = 4, pull_operator_id = ${pullOperatorId}
         where
@@ -103,4 +109,5 @@
             )
 
     </update>
+
 </mapper>

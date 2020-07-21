@@ -1,22 +1,22 @@
 package com.apl.wms.outstorage.operator.controller;
 
 
+import com.apl.cache.AplCacheUtil;
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.utils.ResultUtil;
-import com.apl.lib.utils.StringUtil;
 import com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo;
 import com.apl.wms.outstorage.operator.service.PickService;
-import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
 import com.apl.wms.outstorage.order.service.OutOrderCommodityItemService;
-import com.apl.wms.outstorage.order.service.OutOrderService;
 import com.apl.wms.outstorage.operator.service.PullBatchService;
 import com.apl.wms.outstorage.order.pojo.vo.OrderItemListVo;
-import com.apl.wms.outstorage.order.pojo.vo.OutOrderInfoVo;
 import com.apl.wms.outstorage.operator.pojo.dto.PullBatchSubmitDto;
 import com.apl.wms.outstorage.operator.pojo.dto.PullOrderKeyDto;
 import com.apl.wms.outstorage.operator.pojo.vo.PullAllocationItemMsgVo;
+import com.apl.wms.warehouse.lib.cache.JoinOperator;
+import com.apl.wms.warehouse.lib.cache.OperatorCacheBo;
+import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
+import com.apl.wms.warehouse.lib.utils.WmsWarehouseUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -27,8 +27,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -48,6 +46,12 @@ public class PickController {
     OutOrderCommodityItemService outOrderCommodityItemService;
 
     @Autowired
+    AplCacheUtil redisTemplate;
+
+    @Autowired
+    WarehouseFeign warehouseFeign;
+
+    @Autowired
     PickService pickService;
 
     @PostMapping("/pick-manage")
@@ -62,13 +66,16 @@ public class PickController {
     @PostMapping("/pick-manage-pda")
     @ApiOperation(value =  "pda分页获取订单拣货列表" , notes = "pda分页获取订单拣货列表")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "pullStatus", value = "捡货状态", required = true)
+            @ApiImplicitParam(name = "pullStatus", value = "捡货状态", required = true, paramType = "query")
     })
     public ResultUtil<Page<OutOrderPickListVo>> pickManagePad(PageDto pageDto, @NotNull(message = "状态不能为空")  Integer pullStatus) throws Exception{
-        if(pullStatus!=6)
-            pullStatus=4;
 
+        if(pullStatus != 6) {
+            pullStatus = 4;
+        }
         PullOrderKeyDto keyDto = new PullOrderKeyDto();
+        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
+        keyDto.setPullOperatorId(operatorCacheBo.getMemberId());
         keyDto.setTerminal(2);
         keyDto.setPullStatus(pullStatus);
 

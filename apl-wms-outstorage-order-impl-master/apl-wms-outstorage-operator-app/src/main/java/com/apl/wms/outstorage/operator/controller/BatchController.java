@@ -42,16 +42,15 @@ public class BatchController {
                                                             @NotNull(message = "pullStatus 不能为空") Long batchTime){
 
         ResultUtil ResultUtil = pullBatchService.listPullBatch(pullStatus, keyword, batchTime);
+
         return ResultUtil;
     }
-
-
 
 
     @PostMapping(value = "/create-pull-batch")
     @ApiOperation(value =  "创建收货批次" , notes = "创建收货批次")
     @ApiImplicitParam(name = "ids",value = "订单列表",required = true  , paramType = "query")
-    public ResultUtil<String> createPullBatch(@NotNull(message = "ids 不能为空")List<Long> ids){
+    public ResultUtil<String> createPullBatch(@NotNull(message = "ids 不能为空")List<Long> ids) throws Exception {
 
         return pullBatchService.createPullBatch(ids);
     }

@@ -54,6 +54,12 @@ public class PullBatchPo extends Model<PullBatchPo> {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long sortingOperatorId;
 
+    @ApiModelProperty(name = "批次索引" , value = "批次索引")
+    private Integer batchIndex;
+
+    @ApiModelProperty(name = "批次索引" , value = "批次索引", required = true)
+    private Long whId;
+
     @ApiModelProperty(name = "sortingFinishTime" , value = "分拣完成时间" , required = true)
     private Timestamp sortingFinishTime;
 

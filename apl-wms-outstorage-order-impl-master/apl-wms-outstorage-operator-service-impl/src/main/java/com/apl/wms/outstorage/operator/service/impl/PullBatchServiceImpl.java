@@ -1,8 +1,7 @@
 package com.apl.wms.outstorage.operator.service.impl;
 
-import com.apl.amqp.ChannelShell;
-import com.apl.amqp.RabbitMqUtil;
-import com.apl.amqp.RabbitSender;
+import com.apl.amqp.AmqpConnection;
+import com.apl.amqp.MqChannel;
 import com.apl.cache.AplCacheUtil;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
@@ -28,19 +27,16 @@ import com.apl.wms.outstorage.order.lib.enumwms.PullStatusType;
 import com.apl.wms.warehouse.lib.cache.*;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.apl.wms.warehouse.lib.pojo.bo.PlatformOutOrderStockBo;
-import com.apl.wms.warehouse.lib.pojo.bo.PullBatchOrderItemBo;
 import com.apl.wms.warehouse.lib.utils.WmsWarehouseUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import jdk.nashorn.internal.ir.ReturnNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -60,7 +56,6 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
     //状态code枚举
     enum PullBatchServiceCode {
-        CREATE_PULL_BATCH_FAIL("CREATE_PULL_BATCH_FAIL", "创建拣货批次失败"),
         SUBMIT_DATA_ERROR("SUBMIT_DATA_ERROR", "提交数据有误"),
         PULL_BATCH_NOT_EXIST("PULL_BATCH_NOT_EXIST", "拣货批次不存在"),
         SORT_COUNT_ERROR("SORT_COUNT_ERROR", "分拣数量错误"),
@@ -77,7 +72,10 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
 
     @Autowired
-    AplCacheUtil redisTemplate;
+    AplCacheUtil aplCacheUtil;
+
+    @Autowired
+    AmqpConnection amqpConnection;
 
     @Autowired
     OutOrderCommodityItemService outOrderCommodityItemService;
@@ -91,12 +89,32 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
     @Autowired
     WarehouseFeign warehouseFeign;
 
-    @Autowired
-    RabbitSender rabbitSender;
 
-    @Autowired
-    RabbitMqUtil rabbitMqUtil;
+    @Value("${apl.wms.pick.batchSnSuffix:PB}")
+    public String batchSnSuffix;
 
+    Integer createBatchIndex(WarehouseCacheBo warehouseCacheBo) throws Exception {
+
+
+        String lockKey = "SN:"+batchSnSuffix+"-"+warehouseCacheBo.getWhCode().toUpperCase();
+        RedisLock.lock(aplCacheUtil, lockKey, 2);
+
+        String cacheKey = lockKey;
+        Integer batchIndex = (Integer)aplCacheUtil.opsForValue().get(cacheKey);
+        if(null==batchIndex){
+            // select max(batch_index) from pull_batch where wh_id=#{whId}
+            if(null==batchIndex || batchIndex<1){
+                batchIndex =1;
+            }
+        }
+
+        batchIndex++;
+        aplCacheUtil.opsForValue().set(cacheKey, batchIndex);
+
+        RedisLock.unlock(aplCacheUtil, lockKey);
+
+        return batchIndex;
+    }
 
     // 根据订单id 获取打包信息
     @Override
@@ -124,7 +142,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
     public ResultUtil<List<PullBatchInfoVo>> listPullBatch(Integer pullStatus , String keyword , Long batchTime) {
 
         //缓存中操作对象
-        OperatorCacheBo operator = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
+        OperatorCacheBo operator = WmsWarehouseUtils.checkOperator(warehouseFeign, aplCacheUtil);
 
         List<PullBatchInfoVo> pullBatchInfoVos = baseMapper.listOperatorBatchByStatus(operator.getMemberId(), pullStatus, keyword, new Timestamp(batchTime));
 
@@ -158,8 +176,8 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         }
 
         //缓存对象
-        JoinCommodity joinCommodity = new JoinCommodity(1, warehouseFeign, redisTemplate);
-        JoinStorageLocal joinStorageLocal = new JoinStorageLocal(1, warehouseFeign, redisTemplate);
+        JoinCommodity joinCommodity = new JoinCommodity(1, warehouseFeign, aplCacheUtil);
+        JoinStorageLocal joinStorageLocal = new JoinStorageLocal(1, warehouseFeign, aplCacheUtil);
 
         for (Map.Entry<String, List<PullAllocationItemInfoVo>> pullItemInfoEntry : pullItemInfoVos.entrySet()) {
 
@@ -181,9 +199,9 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
     @Override
     @Transactional
-    public ResultUtil<String> createPullBatch(List<Long> ids) {
+    public ResultUtil<String> createPullBatch(List<Long> ids) throws Exception {
 
-        RedisLock.repeatSubmit(CommonContextHolder.getHeader("token"), redisTemplate);
+        RedisLock.repeatSubmit(CommonContextHolder.getHeader("token"), aplCacheUtil);
 
         JoinKeyValues longKeys = JoinUtil.getLongKeys(ids);
 
@@ -192,28 +210,34 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         //批量更改订单状态
         Integer integer = baseMapper.updateOrderStatus(longKeys.getSbKeys().toString(), pullStatus, longKeys.getMinKey(), longKeys.getMaxKey());
 
-        SecurityUser securityUser = CommonContextHolder.getSecurityUser(redisTemplate);
+        SecurityUser securityUser = CommonContextHolder.getSecurityUser(aplCacheUtil);
+
+        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, aplCacheUtil);
+        Long whId = operatorCacheBo.getWhId();
+
+        JoinWarehouse joinWarehouse = new JoinWarehouse(1, warehouseFeign, aplCacheUtil);
+        WarehouseCacheBo warehouseCacheBo = joinWarehouse.getEntity(operatorCacheBo.getWhId());
+
 
         //创建批次信息
+        Integer batchIndex = this.createBatchIndex(warehouseCacheBo);
+        String batchSn = batchSnSuffix+"-"+warehouseCacheBo.getWhCode()+ "-" +String.format("%03d", batchIndex);
+
         PullBatchPo pullBatchPo = new PullBatchPo();
         pullBatchPo.setPullOperatorId(securityUser.getMemberId());
         pullBatchPo.setCrTime(new Timestamp(System.currentTimeMillis()));
         pullBatchPo.setId(SnowflakeIdWorker.generateId());
-        pullBatchPo.setBatchSn(UUID.randomUUID().toString());
+        pullBatchPo.setBatchSn(batchSn);
         pullBatchPo.setPullStatus(PullStatusType.START_PICKING.getStatus());
+        pullBatchPo.setBatchIndex(batchIndex);
+        pullBatchPo.setWhId(whId);
 
         baseMapper.insert(pullBatchPo);
 
-        ResultUtil appresult = ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, pullBatchPo.getId().toString());
+        ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, pullBatchPo.getId().toString());
 
-        return appresult;
+        return result;
 
-
-        //获取订单出库数量信息
-//        List<PullBatchOrderItemBo> pullBatchOrderItems = outOrderCommodityItemService.getPullBatchOrderItem(orderIds);
-
-        //商品下架
-//        pullItemService.pullCommodity(batchId, pullBatchOrderItems);
 
     }
 
@@ -256,7 +280,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
     @Transactional
     public ResultUtil submitPullBatch(PullBatchSubmitDto pullBatchSubmit) throws Exception {
 
-        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
+        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, aplCacheUtil);
 
         PlatformOutOrderStockBo orderStock = new PlatformOutOrderStockBo();
         orderStock.setWhId(operatorCacheBo.getWhId());
@@ -273,9 +297,8 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         orderStock.setSecurityUser(CommonContextHolder.getSecurityUser());
 
         //进行库存减扣 （仓库库存 / 库位库存)
-        //rabbitSender.send("pullBatchSubmitStockReduceExchange", "pullBatchSubmitStockReduceQueue", orderStock);
-        ChannelShell channel = rabbitMqUtil.createChannel("first", false);
-        rabbitMqUtil.send(channel, "pullBatchSubmitStockReduceQueue", orderStock);
+        MqChannel channel = amqpConnection.createChannel("first", false);
+        channel.send("pullBatchSubmitStockReduceQueue", orderStock);
         channel.close();
 
         return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS);
