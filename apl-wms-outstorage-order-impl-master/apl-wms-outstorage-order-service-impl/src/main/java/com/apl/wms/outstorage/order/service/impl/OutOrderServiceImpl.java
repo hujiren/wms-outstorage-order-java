@@ -436,7 +436,6 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
             //主订单对应的子订单
             List<OutOrderCommodityItemInfoVo> orderItem = outOrderCommodityMaps.get(orderItemListVo.getId().toString());
-            //orderItem = outOrderCommodityItemService.getOrderItemsByOrderId(orderItemListVo.getId());
 
             //填充商品图片
             fullCommodityImg(orderItem);
@@ -672,35 +671,6 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, outOrderListResultVo);
     }
 
-
-    @Override
-    public ResultUtil<List<OutOrderInfoVo>> listOperatorOrders() throws Exception {
-
-        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
-
-        List<OutOrderInfoVo> outOrderInfoVos = baseMapper.listOrderByOrderStatusPullStatusAndPullId(
-                OutStorageOrderStatusEnum.CREATE.getStatus(),
-                PullStatusType.ALREADY_ALLOCATION_PICKING_MEMBER.getStatus(),
-                operatorCacheBo.getMemberId());
-
-
-        ArrayList joinTabs = new ArrayList<>();
-        //关联客户表字段信息
-        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, redisTemplate);
-        if (null != joinCustomerFieldInfo) {
-            joinCustomer.setJoinFieldInfo(joinCustomerFieldInfo);
-        } else {
-            joinCustomer.addField("customerId", Long.class, "customerName", String.class);
-            joinCustomerFieldInfo = joinCustomer.getJoinFieldInfo();
-        }
-        joinTabs.add(joinCustomer);
-
-        //执行跨项目跨库关联
-        JoinUtil.join(outOrderInfoVos, joinTabs);
-
-        return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, outOrderInfoVos);
-
-    }
 
 
     /**

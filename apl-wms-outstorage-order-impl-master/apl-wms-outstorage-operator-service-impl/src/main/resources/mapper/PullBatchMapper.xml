@@ -91,4 +91,15 @@
     </select>
 
 
+    <!--批量更新订单状态-->
+    <update id="updateOrderStatus">
+
+        update out_order set pull_status = #{pullStatus} where id in (${ids})
+        <if test="maxKey != null and minKey != null">
+            and id between #{minKey} and #{maxKey}
+
+        </if>
+    </update>
+
+
 </mapper>

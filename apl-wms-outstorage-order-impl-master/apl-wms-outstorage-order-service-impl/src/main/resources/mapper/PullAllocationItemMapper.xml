@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.apl.wms.outstorage.order.dao.PullAllocationItemMapper">
+    <delete id="deleteByOrderId">
+        delete from pull_allocation_item where out_order_id = #{outOrderId};
+    </delete>
 
 
     <!-- 查找详情 2020-06-09-->
@@ -74,6 +77,11 @@
     </update>
 
 
+    <update id="updatePullStatus">
+        update out_order set pull_status = #{pullStatus} where id = #{outOrderId}
+    </update>
+
+
     <select id="getCommodityInfoById" resultType="com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOrderCommodityBo">
         SELECT
             order_id,
@@ -141,7 +149,7 @@
         pull_status,
         cr_time,
         customer_id,
-        wh_Id,
+        wh_id,
         order_from
         FROM
         out_order
@@ -168,17 +176,5 @@
         </where>
 
     </select>
-    <select id="selectByOrderId" resultType="java.lang.Integer">
-        select count(commodity_id) from pull_allocation_item where out_order_id = #{outOrderId}
-    </select>
 
-
-    <update id="updatePullStatus">
-        update out_order set pull_status = #{pullStatus} where id = #{outOrderId}
-    </update>
-
-
-    <delete id="deleteByOrderId">
-        delete from pull_allocation_item where out_order_id = #{outOrderId}
-    </delete>
 </mapper>

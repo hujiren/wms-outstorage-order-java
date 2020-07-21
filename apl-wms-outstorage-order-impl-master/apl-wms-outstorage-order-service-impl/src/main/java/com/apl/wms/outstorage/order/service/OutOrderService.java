@@ -123,13 +123,6 @@ public interface OutOrderService extends IService<OutOrderPo> {
 
 
 
-        /**
-         * @Desc: 获取某个拣货员 的订单列表
-         * @Author: CY
-         * @Date: 2020/6/8 10:10
-         */
-        ResultUtil<List<OutOrderInfoVo>> listOperatorOrders() throws Exception;
-
 
         /**
          * @Desc: 统计订单信息，包括订单类型 -- > 对应数量

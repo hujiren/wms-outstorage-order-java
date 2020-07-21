@@ -245,7 +245,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
         SecurityUser securityUser = CommonContextHolder.getSecurityUser();
 
-        ChannelShell channel = rabbitMqUtil.createChannel("1", true);
+        ChannelShell channel = rabbitMqUtil.createChannel("first", true);
 
         try {
             //遍历订单信息对象, 并将每个商品信息对象组合到订单信息对象中
@@ -262,12 +262,12 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
                     if (outOrderBo.getPullStatus() == 2) {
 
-                        rabbitSender.send("allocationWarehouseForOrderQueueExchange", "allocationWarehouseForOrderQueue", outOrderBo);
+//                        rabbitSender.send("allocationWarehouseForOrderQueueExchange", "allocationWarehouseForOrderQueue", outOrderBo);
                         rabbitMqUtil.send(channel, "allocationWarehouseForOrderQueue", outOrderBo);
 
                     } else if (outOrderBo.getPullStatus() == 1) {
 
-                        rabbitSender.send("cancelAllocWarehouseForOrderQueueExchange", "cancelAllocWarehouseForOrderQueue", outOrderBo);
+//                        rabbitSender.send("cancelAllocWarehouseForOrderQueueExchange", "cancelAllocWarehouseForOrderQueue", outOrderBo);
                         rabbitMqUtil.send(channel, "cancelAllocWarehouseForOrderQueue", outOrderBo);
                     }
                 }
@@ -361,28 +361,6 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
         }
         redisTemplate.opsForValue().set(tranId, 1);
         return ResultUtil.APPRESULT(CommonStatusCode.DEL_SUCCESS,  1);
-    }
-
-
-
-    /**
-     * 查询订单分配明细
-     *
-     * @param outOrderId
-     * @return
-     */
-    @Override
-    public ResultUtil<Integer> selectOrderAllocationItem(Long outOrderId, String tranId) {
-
-        Integer integer = baseMapper.selectByOrderId(outOrderId);
-
-        redisTemplate.opsForValue().set(tranId, 1);
-
-        if(integer == 0) {
-            return ResultUtil.APPRESULT(CommonStatusCode.DEL_SUCCESS, 0);
-        }else{
-            return ResultUtil.APPRESULT(CommonStatusCode.DEL_SUCCESS, 1);
-        }
     }
 
 

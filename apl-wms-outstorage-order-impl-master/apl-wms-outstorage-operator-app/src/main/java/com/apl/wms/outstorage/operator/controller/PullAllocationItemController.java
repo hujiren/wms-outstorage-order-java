@@ -4,19 +4,18 @@ import com.apl.lib.utils.ResultUtil;
 import com.apl.wms.outstorage.operator.pojo.dto.PullOrderKeyDto;
 import com.apl.wms.outstorage.operator.pojo.dto.StockManageKeyDto;
 import com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo;
+import com.apl.wms.outstorage.order.service.OutOrderService;
 import com.apl.wms.outstorage.order.service.PullAllocationItemService;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
 import com.apl.wms.warehouse.lib.pojo.bo.CompareStorageLocalStocksBo;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -33,6 +32,9 @@ public class PullAllocationItemController {
 
     @Autowired
     private PullAllocationItemService pullAllocationItemService;
+
+    @Autowired
+    public OutOrderService outOrderService;
 
 
     @PostMapping(value = "/get-order-by-allocation-warehouse-manual")
@@ -87,20 +89,24 @@ public class PullAllocationItemController {
     }
 
 
-    @PostMapping(value = "/select")
-    @ApiOperation(value =  "查询分配明细" , notes = "查询分配明细")
-    @ApiImplicitParam(name = "outOrderId",value = "订单id",required = true  , paramType = "query")
-    public ResultUtil<Integer> selectOrderAllocationItem(@NotNull(message = "订单id不能为空")Long outOrderId,
-                                                         @NotNull(message = "tranId不能为空") String tranId){
-        return pullAllocationItemService.selectOrderAllocationItem(outOrderId, tranId);
-    }
-
-
     @PostMapping("/stock-manage")
     @ApiOperation(value =  "分页获取分配库位信息" , notes = "分页获取分配库位信息")
     public ResultUtil<Page<OutOrderPickListVo>> pickManage(PageDto pageDto, @Validated StockManageKeyDto keyDto) throws Exception{
 
         return pullAllocationItemService.stockManage(pageDto , keyDto);
+    }
+
+
+    @PostMapping("/cancel-allocation-operator")
+    @ApiOperation(value =  "订单拣货分配取消" , notes = "订单拣货分配取消")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "memberId",value = "拣货员id",required = true  , paramType = "query"),
+            @ApiImplicitParam(name = "orderIdList",value = "订单id 列表",required = true  , paramType = "query")
+    })
+    public ResultUtil<Boolean> cancelAllocationOperator(@NotNull(message = "memberId 不能为空") @Min(value = 1 , message = "memberId 不能小于1")Long memberId ,
+                                                        @NotNull(message = "orderIdList 不能为空")String orderIdList){
+
+        return outOrderService.cancelAllocationOperator(memberId , orderIdList);
     }
 
 }

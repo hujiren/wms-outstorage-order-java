@@ -16,6 +16,7 @@ public interface PickMapper extends BaseMapper<OutOrderListVo> {
 
     List<OutOrderPickListVo> getListByOrderSns(@Param("orderSns") List<String> orderSns);
 
+
     Integer updateOrderPickingMember(@Param("pullOperatorId") Long pullOperatorId, @Param("ids") List<Long> ids);
 
     /**
