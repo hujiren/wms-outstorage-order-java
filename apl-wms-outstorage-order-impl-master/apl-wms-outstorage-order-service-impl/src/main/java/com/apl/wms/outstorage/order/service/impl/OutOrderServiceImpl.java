@@ -64,11 +64,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
         CUSTOMER_NOT_EXIST("CUSTOMER_NOT_EXIST", "客户不存在"),
         OUT_ORDER_NOT_EXIST("IN_ORDER_NOT_EXIST", "出库订单不存在"),
-        ORDER_ALREADY_ALLOCATION("ORDER_ALREADY_ALLOCATION", "订单已经分配"),
-        ORDER_ALLOCATION_ERROR("ORDER_ALLOCATION_ERROR", "订单分配异常"),
-        STORAGE_LOCAL_NOT_LOCK("STORAGE_LOCAL_NOT_LOCK", "库位未锁定，不能分配拣货员"),
         THESE_ORDER_CAN_NOT_BE_CANCEL("THESE_ORDER_CAN_NOT_BE_CANCEL", "这些订单不能取消"),
-
         ;
 
         private String code;
@@ -748,37 +744,6 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
     }
 
 
-    //分配拣货员
-    @Override
-    public ResultUtil<Boolean> allocationOperator(Long memberId, String orderIdList) {
-
-        //查找订单 列表
-        List<OutOrderListVo> findOutOrderList = baseMapper.getListByIds(orderIdList, null, null);
-        List<OutOrderPo> orderList = new ArrayList<>();
-
-        //循环判断订单是否已经分配给了对应的 拣货员
-        for (OutOrderListVo findOutOrder : findOutOrderList) {
-
-            //库位 没有锁定，不能够进行分配拣货员
-            if (!findOutOrder.getPullStatus().equals(PullStatusType.ALREADY_ALLOCATION_STOCK.getStatus())) {
-                throw new AplException(OutOrderServiceCode.STORAGE_LOCAL_NOT_LOCK.code, OutOrderServiceCode.STORAGE_LOCAL_NOT_LOCK.msg);
-            }
-
-            if (findOutOrder.getPullOperatorId() != null && findOutOrder.getPullOperatorId() > 0L) {
-                throw new AplException(OutOrderServiceCode.ORDER_ALREADY_ALLOCATION.code, OutOrderServiceCode.ORDER_ALREADY_ALLOCATION.msg);
-            }
-            OutOrderPo outOrderPo = new OutOrderPo();
-            outOrderPo.setPullOperatorId(memberId);
-            outOrderPo.setId(findOutOrder.getId());
-            outOrderPo.setPullStatus(PullStatusType.ALREADY_ALLOCATION_PICKING_MEMBER.getStatus());
-            orderList.add(outOrderPo);
-
-        }
-
-        updateBatchById(orderList);
-
-        return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, true);
-    }
 
     @Override
     public ResultUtil<Boolean> cancelAllocationOperator(Long memberId, String orderIdList) {
@@ -877,40 +842,6 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
     }
 
-
-//    private void fullOutOrderMsg(List<OutOrderPickListVo> outOrderInfo) {
-//
-//        for (OutOrderPickListVo outOrderInfoVo : outOrderInfo) {
-//
-//            fullWh(outOrderInfoVo);
-//            fullCustomer(outOrderInfoVo);
-//            fullPullOperator(outOrderInfoVo);
-//
-//        }
-//
-//    }
-
-//    private void fullWh(OutOrderPickListVo outOrderInfoVo) {
-//        JoinWarehouse joinWarehouse = new JoinWarehouse(1, warehouseFeign, redisTemplate);
-//        WarehouseCacheBo entity = joinWarehouse.getEntity(outOrderInfoVo.getWhId());
-//        outOrderInfoVo.setWhName(entity.getWhName());
-//    }
-//
-//    private void fullPullOperator(OutOrderPickListVo outOrderInfoVo) {
-//        JoinOperator joinOperator = new JoinOperator(1, warehouseFeign, redisTemplate);
-//        OperatorCacheBo entity = joinOperator.getEntity(outOrderInfoVo.getPullOperatorId());
-//        if (entity != null) {
-//            outOrderInfoVo.setPullOperatorName(entity.getMemberName());
-//        }
-//
-//    }
-//
-//    private void fullCustomer(OutOrderPickListVo outOrderInfoVo) {
-//        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, redisTemplate);
-//
-//        CustomerCacheBo entity = joinCustomer.getEntity(outOrderInfoVo.getCustomerId());
-//        outOrderInfoVo.setCustomerName(entity.getCustomerName());
-//    }
 
 
     /**

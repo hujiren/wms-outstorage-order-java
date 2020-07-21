@@ -141,15 +141,6 @@ public interface OutOrderService extends IService<OutOrderPo> {
 
 
         /**
-         * @Desc: 分配 订单给对应的拣货员
-         * @Author: CY
-         * @Date: 2020/1/13 9:54
-         */
-        ResultUtil<Boolean> allocationOperator(Long memberId, String orderIdList);
-
-
-
-        /**
          * @Desc: 订单拣货分配取消
          * @Author: CY
          * @Date: 2020/1/13 9:54

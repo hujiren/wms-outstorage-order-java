@@ -22,7 +22,7 @@ public class DatasourceAop {
 
 
     @Autowired
-    AplCacheUtil redisTemplate;
+    AplCacheUtil aplCacheUtil;
 
     @Pointcut("execution(public * com.apl.wms.outstorage.operator.controller.*.* (..))")
     public void datasourceAop() {
@@ -36,7 +36,7 @@ public class DatasourceAop {
             String token = CommonContextHolder.getHeader(CommonAplConstants.TOKEN_FLAG);
 
             // 安全用户上下文
-            SecurityUser securityUser = CommonContextHolder.getSecurityUser(redisTemplate, token);
+            SecurityUser securityUser = CommonContextHolder.getSecurityUser(aplCacheUtil, token);
 
             CommonContextHolder.securityUserContextHolder.set(securityUser);
 

@@ -1,6 +1,5 @@
 package com.apl.wms.outstorage.order.business.controller;
 
-import com.apl.amqp.RabbitMqUtil;
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.CommonContextHolder;
@@ -27,7 +26,6 @@ import org.hibernate.validator.constraints.Range;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.List;

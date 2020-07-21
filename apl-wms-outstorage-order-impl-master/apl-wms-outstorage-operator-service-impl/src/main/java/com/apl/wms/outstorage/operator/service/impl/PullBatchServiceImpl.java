@@ -241,6 +241,14 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         return pullBatch.getId();
     }
 
+
+
+    /**
+     * 提交拣货数据
+     * @param pullBatchSubmit
+     * @return
+     * @throws Exception
+     */
     @Override
     @Transactional
     public ResultUtil submitPullBatch(PullBatchSubmitDto pullBatchSubmit) throws Exception {
