@@ -2,7 +2,6 @@ package com.apl.wms.outstorage.operator.queuecustomer;
 
 import com.apl.cache.AplCacheUtil;
 import com.apl.db.datasource.DataSourceContextHolder;
-
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.CommonContextHolder;
 import com.apl.lib.utils.StringUtil;

@@ -1,9 +1,7 @@
 package com.apl.wms.outstorage.order.service.impl;
 
-
-import com.apl.amqp.ChannelShell;
-import com.apl.amqp.RabbitMqUtil;
-import com.apl.amqp.RabbitSender;
+import com.apl.amqp.AmqpConnection;
+import com.apl.amqp.MqChannel;
 import com.apl.cache.AplCacheUtil;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
@@ -68,11 +66,9 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
         }
     }
 
-    @Autowired
-    RabbitSender rabbitSender;
 
     @Autowired
-    RabbitMqUtil rabbitMqUtil;
+    AmqpConnection amqpConnection;
 
     @Autowired
     AplCacheUtil redisTemplate;
@@ -245,7 +241,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
         SecurityUser securityUser = CommonContextHolder.getSecurityUser();
 
-        ChannelShell channel = rabbitMqUtil.createChannel("1", true);
+        MqChannel channel = amqpConnection.createChannel("first", false);
 
         try {
             //遍历订单信息对象, 并将每个商品信息对象组合到订单信息对象中
@@ -262,13 +258,13 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
                     if (outOrderBo.getPullStatus() == 2) {
 
-                        rabbitSender.send("allocationWarehouseForOrderQueueExchange", "allocationWarehouseForOrderQueue", outOrderBo);
-                        rabbitMqUtil.send(channel, "allocationWarehouseForOrderQueue", outOrderBo);
+                        //rabbitSender.send("allocationWarehouseForOrderQueueExchange", "allocationWarehouseForOrderQueue", outOrderBo);
+                        channel.send("allocationWarehouseForOrderQueue", outOrderBo);
 
                     } else if (outOrderBo.getPullStatus() == 1) {
 
-                        rabbitSender.send("cancelAllocWarehouseForOrderQueueExchange", "cancelAllocWarehouseForOrderQueue", outOrderBo);
-                        rabbitMqUtil.send(channel, "cancelAllocWarehouseForOrderQueue", outOrderBo);
+                        //rabbitSender.send("cancelAllocWarehouseForOrderQueueExchange", "cancelAllocWarehouseForOrderQueue", outOrderBo);
+                        channel.send("cancelAllocWarehouseForOrderQueue", outOrderBo);
                     }
                 }
             }
@@ -279,11 +275,11 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
                 return ResultUtil.APPRESULT(CommonStatusCode.SAVE_FAIL, false);
             }
 
-            channel.txCommit(); // 提交amqp事务
+            channel.commitTrans(); // 提交amqp事务
         }
         catch (Exception e){
             e.printStackTrace();
-            channel.txRollback(); // 回滚amqp事务
+            channel.rollbackTrans(); // 回滚amqp事务
 
             channel.close();
         }
