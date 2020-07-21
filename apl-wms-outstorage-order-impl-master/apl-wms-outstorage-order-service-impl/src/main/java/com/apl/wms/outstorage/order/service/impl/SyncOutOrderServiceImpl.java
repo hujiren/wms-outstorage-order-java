@@ -1,4 +1,6 @@
 package com.apl.wms.outstorage.order.service.impl;
+
+
 import com.apl.amqp.AmqpConnection;
 import com.apl.amqp.MqChannel;
 import com.apl.amqp.RabbitSender;
@@ -36,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -288,7 +291,7 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
 
             //rabbitSender.send("apl.ec.api.syncOrderShopifyExchange", "syncOrderShopifyQueue", byncOutOrderTaskBo);
             MqChannel channel = amqpConnection.createChannel("first", false);
-            channel.send("syncOrderShopifyQueue", byncOutOrderTaskBo);
+            channel.send( "syncOrderShopifyQueue", byncOutOrderTaskBo);
 
             String key = "TASK_STATUS:" + securityUser.getInnerOrgId().toString() + "_" + id.toString();
             redisTemplate.opsForValue().set(key, 2);

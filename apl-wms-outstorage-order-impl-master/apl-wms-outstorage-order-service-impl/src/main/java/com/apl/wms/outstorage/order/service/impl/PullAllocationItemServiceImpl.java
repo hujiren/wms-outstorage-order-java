@@ -1,8 +1,8 @@
 package com.apl.wms.outstorage.order.service.impl;
 
+
 import com.apl.amqp.AmqpConnection;
 import com.apl.amqp.MqChannel;
-import com.apl.amqp.RabbitSender;
 import com.apl.cache.AplCacheUtil;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
@@ -68,8 +68,6 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
         }
     }
 
-    @Autowired
-    RabbitSender rabbitSender;
 
     @Autowired
     AmqpConnection amqpConnection;
@@ -262,11 +260,13 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
                     if (outOrderBo.getPullStatus() == 2) {
 
-                      channel.send("allocationWarehouseForOrderQueue", outOrderBo);
+//                        rabbitSender.send("allocationWarehouseForOrderQueueExchange", "allocationWarehouseForOrderQueue", outOrderBo);
+                        channel.send("allocationWarehouseForOrderQueue", outOrderBo);
 
                     } else if (outOrderBo.getPullStatus() == 1) {
 
-                      channel.send("cancelAllocWarehouseForOrderQueue", outOrderBo);
+//                        rabbitSender.send("cancelAllocWarehouseForOrderQueueExchange", "cancelAllocWarehouseForOrderQueue", outOrderBo);
+                        channel.send("cancelAllocWarehouseForOrderQueue", outOrderBo);
                     }
                 }
             }
