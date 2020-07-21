@@ -1,8 +1,8 @@
 package com.apl.wms.outstorage.operator.service.impl;
 
 
-import com.apl.amqp.AmqpConnection;
 import com.apl.amqp.MqChannel;
+import com.apl.amqp.MqConnection;
 import com.apl.amqp.RabbitSender;
 import com.apl.cache.AplCacheUtil;
 import com.apl.lib.constants.CommonStatusCode;
@@ -92,7 +92,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
     RabbitSender rabbitSender;
 
     @Autowired
-    AmqpConnection amqpConnection;
+    MqConnection mqConnection;
 
     // 根据订单id 获取打包信息
     @Override
@@ -270,7 +270,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
         //进行库存减扣 （仓库库存 / 库位库存)
         //rabbitSender.send("pullBatchSubmitStockReduceExchange", "pullBatchSubmitStockReduceQueue", orderStock);
-        MqChannel channel = amqpConnection.createChannel("first", false);
+        MqChannel channel = mqConnection.createChannel("first", false);
         channel.send("pullBatchSubmitStockReduceQueue", orderStock);
         channel.close();
 

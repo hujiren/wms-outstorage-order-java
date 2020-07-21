@@ -1,8 +1,8 @@
 package com.apl.wms.outstorage.order.service.impl;
 
 
-import com.apl.amqp.AmqpConnection;
 import com.apl.amqp.MqChannel;
+import com.apl.amqp.MqConnection;
 import com.apl.cache.AplCacheUtil;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
@@ -70,7 +70,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
 
     @Autowired
-    AmqpConnection amqpConnection;
+    MqConnection mqConnection;
 
     @Autowired
     AplCacheUtil redisTemplate;
@@ -243,7 +243,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
         SecurityUser securityUser = CommonContextHolder.getSecurityUser();
 
-        MqChannel channel = amqpConnection.createChannel("first", true);
+        MqChannel channel = mqConnection.createChannel("first", true);
 
         try {
             //遍历订单信息对象, 并将每个商品信息对象组合到订单信息对象中

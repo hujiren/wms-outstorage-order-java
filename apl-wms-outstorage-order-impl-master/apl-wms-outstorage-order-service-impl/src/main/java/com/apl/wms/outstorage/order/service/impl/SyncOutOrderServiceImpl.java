@@ -1,8 +1,8 @@
 package com.apl.wms.outstorage.order.service.impl;
 
 
-import com.apl.amqp.AmqpConnection;
 import com.apl.amqp.MqChannel;
+import com.apl.amqp.MqConnection;
 import com.apl.amqp.RabbitSender;
 import com.apl.cache.AplCacheUtil;
 import com.apl.lib.constants.CommonStatusCode;
@@ -89,7 +89,7 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
     RabbitSender rabbitSender;
 
     @Autowired
-    AmqpConnection amqpConnection;
+    MqConnection mqConnection;
 
     static JoinFieldInfo joinCustomerFieldInfo = null; //缓存联客户表反射字段
     static JoinFieldInfo joinStoreInfo = null; //跨项目跨库关联 店铺表 反射字段缓存
@@ -290,7 +290,7 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
             baseMapper.updStatus(id, 2, customerId);
 
             //rabbitSender.send("apl.ec.api.syncOrderShopifyExchange", "syncOrderShopifyQueue", byncOutOrderTaskBo);
-            MqChannel channel = amqpConnection.createChannel("first", false);
+            MqChannel channel = mqConnection.createChannel("first", false);
             channel.send( "syncOrderShopifyQueue", byncOutOrderTaskBo);
 
             String key = "TASK_STATUS:" + securityUser.getInnerOrgId().toString() + "_" + id.toString();
