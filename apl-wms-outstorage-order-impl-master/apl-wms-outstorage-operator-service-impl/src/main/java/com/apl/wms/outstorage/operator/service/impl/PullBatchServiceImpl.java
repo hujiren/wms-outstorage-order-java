@@ -1,7 +1,8 @@
 package com.apl.wms.outstorage.operator.service.impl;
 
-import com.apl.amqp.ChannelShell;
-import com.apl.amqp.RabbitMqUtil;
+
+import com.apl.amqp.AmqpConnection;
+import com.apl.amqp.MqChannel;
 import com.apl.amqp.RabbitSender;
 import com.apl.cache.AplCacheUtil;
 import com.apl.lib.constants.CommonStatusCode;
@@ -28,19 +29,15 @@ import com.apl.wms.outstorage.order.lib.enumwms.PullStatusType;
 import com.apl.wms.warehouse.lib.cache.*;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.apl.wms.warehouse.lib.pojo.bo.PlatformOutOrderStockBo;
-import com.apl.wms.warehouse.lib.pojo.bo.PullBatchOrderItemBo;
 import com.apl.wms.warehouse.lib.utils.WmsWarehouseUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import jdk.nashorn.internal.ir.ReturnNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -95,8 +92,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
     RabbitSender rabbitSender;
 
     @Autowired
-    RabbitMqUtil rabbitMqUtil;
-
+    AmqpConnection amqpConnection;
 
     // 根据订单id 获取打包信息
     @Override
@@ -274,8 +270,8 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
         //进行库存减扣 （仓库库存 / 库位库存)
         //rabbitSender.send("pullBatchSubmitStockReduceExchange", "pullBatchSubmitStockReduceQueue", orderStock);
-        ChannelShell channel = rabbitMqUtil.createChannel("first", false);
-        rabbitMqUtil.send(channel, "pullBatchSubmitStockReduceQueue", orderStock);
+        MqChannel channel = amqpConnection.createChannel("first", false);
+        channel.send("pullBatchSubmitStockReduceQueue", orderStock);
         channel.close();
 
         return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS);
