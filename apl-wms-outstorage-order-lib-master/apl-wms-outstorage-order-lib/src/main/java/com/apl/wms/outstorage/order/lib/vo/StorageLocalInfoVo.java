@@ -26,7 +26,7 @@ private static final long serialVersionUID=1L;
     private Long id;
 
     // 库位编号（条形码）
-    private String storageSn;
+    private String storageLocalSn;
 
     // 库位全称
     private String storageLocalName;
