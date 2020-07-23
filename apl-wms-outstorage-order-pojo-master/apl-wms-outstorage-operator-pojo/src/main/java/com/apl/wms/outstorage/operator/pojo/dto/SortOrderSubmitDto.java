@@ -4,13 +4,17 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Data
 @ApiModel(value = "提交分拣信息实体" , description = "提交分拣信息实体")
 public class SortOrderSubmitDto {
 
-    @ApiModelProperty(name = "batchId", value = "批次id")
+    @ApiModelProperty(name = "batchId", value = "批次id", required = true)
+    @NotNull(message = "批次id不能为空")
+    @Min(value = 0, message = "批次id不能小于0")
     private Long batchId;
 
     List<Order> orders;

@@ -4,7 +4,7 @@ import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.utils.ResultUtil;
 import com.apl.wms.outstorage.order.pojo.vo.OrderItemListVo;
 import com.apl.wms.outstorage.operator.pojo.dto.PullBatchKeyDto;
-import com.apl.wms.outstorage.operator.pojo.dto.PullBatchSubmitDto;
+import com.apl.wms.outstorage.operator.pojo.dto.SubmitPickItemDto;
 import com.apl.wms.outstorage.operator.pojo.dto.SortOrderSubmitDto;
 import com.apl.wms.outstorage.operator.pojo.po.PullBatchPo;
 import com.apl.wms.outstorage.operator.pojo.vo.PackOrderItemListVo;
@@ -84,7 +84,7 @@ public interface PullBatchService extends IService<PullBatchPo> {
          * @Author: CY
          * @Date: 2020/6/10 16:42
          */
-        ResultUtil submitPullBatch(PullBatchSubmitDto pullBatchSubmit) throws Exception;
+        ResultUtil<Boolean> submitPullBatch(SubmitPickItemDto pullBatchSubmit) throws Exception;
 
 
         /**

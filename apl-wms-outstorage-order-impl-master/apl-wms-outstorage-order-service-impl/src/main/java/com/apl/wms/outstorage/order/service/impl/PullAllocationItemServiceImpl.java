@@ -56,11 +56,13 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
         PULL_STATUS_IS_WRONG("PULL_STATUS_IS_WRONG", "该订单拣货状态错误"),
         YOUR_ORDER_NOT_YET_ALLOCATED("YOUR_ORDER_NOT_YET_ALLOCATED", "您的订单尚未被分配, 请稍后再试"),
         YOUR_ORDER_HAS_BEEN_ALLOCATED_PICKING_MEMBER("YOUR_ORDER_HAS_BEEN_ALLOCATED_PICKING_MEMBER", "您的订单已经分配拣货员, 无法取消分配"),
-        MESSAGE_QUEUE_SEND_SUCCESS("MESSAGE_QUEUE_SEND_SUCCESS", "消息发送成功")
+        MESSAGE_QUEUE_SEND_SUCCESS("MESSAGE_QUEUE_SEND_SUCCESS", "消息发送成功"),
+        ALLOCATION_ORDER_SUCCESS("ALLOCATION_ORDER_SUCCESS", "订单分配成功"),
+        CANCEL_ALLOCATION_ORDER_SUCCESS("CANCEL_ALLOCATION_ORDER_SUCCESS", "取消订单分配成功")
         ;
 
-        private String code;
-        private String msg;
+        public String code;
+        public String msg;
 
         PullAllocationItemServiceCode(String code, String msg) {
             this.code = code;
@@ -73,7 +75,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
     MqConnection mqConnection;
 
     @Autowired
-    AplCacheUtil redisTemplate;
+    AplCacheUtil aplCacheUtil;
 
     static JoinFieldInfo joinCustomerFieldInfo = null; //跨项目跨库关联 客户表 反射字段缓存
     static JoinFieldInfo joinWareHouseFieldInfo = null;
@@ -213,6 +215,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
     public ResultUtil<Boolean> buildOutOrderBoForAllocStocks(List<Long> orderIds, Integer setPullStatus, Integer getPullStatus) throws Exception {
 
+        Integer status = null;
 
         JoinKeyValues joinKeyValues = JoinUtil.getLongKeys(orderIds);
 
@@ -259,13 +262,11 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
                     outOrderBo.setSecurityUser(securityUser);
 
                     if (outOrderBo.getPullStatus() == 2) {
-
-//                        rabbitSender.send("allocationWarehouseForOrderQueueExchange", "allocationWarehouseForOrderQueue", outOrderBo);
+                        status = 2;
                         channel.send("allocationWarehouseForOrderQueue", outOrderBo);
 
                     } else if (outOrderBo.getPullStatus() == 1) {
-
-//                        rabbitSender.send("cancelAllocWarehouseForOrderQueueExchange", "cancelAllocWarehouseForOrderQueue", outOrderBo);
+                        status = 1;
                         channel.send("cancelAllocWarehouseForOrderQueue", outOrderBo);
                     }
                 }
@@ -284,9 +285,17 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
             channel.rollbackTrans(); // 回滚amqp事务
         }
 
-        ResultUtil result = ResultUtil.APPRESULT(PullAllocationItemServiceCode.MESSAGE_QUEUE_SEND_SUCCESS.code,
-                PullAllocationItemServiceCode.MESSAGE_QUEUE_SEND_SUCCESS.msg, true);
+        ResultUtil result = null;
 
+        if(status == 2) {
+             result = ResultUtil.APPRESULT(PullAllocationItemServiceCode.ALLOCATION_ORDER_SUCCESS.code,
+                    PullAllocationItemServiceCode.ALLOCATION_ORDER_SUCCESS.msg, true);
+        }else if(status == 1) {
+            result = ResultUtil.APPRESULT(PullAllocationItemServiceCode.CANCEL_ALLOCATION_ORDER_SUCCESS.code,
+                    PullAllocationItemServiceCode.CANCEL_ALLOCATION_ORDER_SUCCESS.msg, true);
+        }else{
+            result = ResultUtil.APPRESULT(CommonStatusCode.SYSTEM_FAIL, false);
+        }
         return result;
     }
 
@@ -306,7 +315,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
         if (null == compareStorageLocalStocksBos || compareStorageLocalStocksBos.size() == 0) {
             //分配的库位为空, 代表库存不足, 恢复订单拣货状态为1(未分配库存)
             baseMapper.updateOrderStatus(outOrderId, 1);
-            redisTemplate.opsForValue().set(tranId, 1);
+            aplCacheUtil.opsForValue().set(tranId, 1);
             return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, 0);
         }
 
@@ -337,7 +346,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
             throw new AplException(CommonStatusCode.SAVE_FAIL);
         }
 
-        redisTemplate.opsForValue().set(tranId, 1);
+        aplCacheUtil.opsForValue().set(tranId, 1);
 
         return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, 1);
     }
@@ -357,7 +366,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
         if (integer == 0) {
             return ResultUtil.APPRESULT(CommonStatusCode.DEL_FAIL, CommonStatusCode.DEL_FAIL);
         }
-        redisTemplate.opsForValue().set(tranId, 1);
+        aplCacheUtil.opsForValue().set(tranId, 1);
         return ResultUtil.APPRESULT(CommonStatusCode.DEL_SUCCESS,  1);
     }
 
@@ -368,7 +377,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
     public ResultUtil<Page<OutOrderPickListVo>> stockManage(PageDto pageDto, StockManageKeyDto keyDto) throws Exception {
 
 
-        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
+        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, aplCacheUtil);
 
         Long whId = operatorCacheBo.getWhId();
 
@@ -390,7 +399,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
         List<JoinBase> joinTabs = new ArrayList<>();
 
         //关联客户表字段信息
-        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, redisTemplate);
+        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, aplCacheUtil);
 
         if (null != joinCustomerFieldInfo) {
 
@@ -408,7 +417,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
 
         //关联仓库表字段信息
-        JoinWarehouse joinWarehouse = new JoinWarehouse(1, warehouseFeign, redisTemplate);
+        JoinWarehouse joinWarehouse = new JoinWarehouse(1, warehouseFeign, aplCacheUtil);
         if (null != joinWareHouseFieldInfo) {
             joinWarehouse.setJoinFieldInfo(joinWareHouseFieldInfo);
         } else {

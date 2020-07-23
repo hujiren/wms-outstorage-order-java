@@ -19,7 +19,7 @@
             out_order
         where
         order_sn in (
-            <foreach collection="orderSns" open="" separator="," close="" item="row">
+            <foreach collection="orderSns" open="'" separator="," close="'" item="row">
                 ${row}
             </foreach>
         )

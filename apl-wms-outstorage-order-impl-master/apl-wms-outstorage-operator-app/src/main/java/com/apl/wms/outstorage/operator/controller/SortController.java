@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
 @RestController
 @RequestMapping("/order-sort")
 @Validated
@@ -25,7 +28,7 @@ public class SortController {
 
     @PostMapping("/get-sort-msg")
     @ApiOperation(value =  "获取分拣信息" , notes = "根据订单id 获取分拣信息，包含批次信息，订单信息，以及订单子项下单数量")
-        public ResultUtil<PackOrderItemListVo> getSortMsg(Long orderId) throws Exception {
+        public ResultUtil<PackOrderItemListVo> getSortMsg(@NotNull(message = "订单id不能为空") @Min(value = 0, message = "订单id不能小于0") Long orderId) throws Exception {
 
         return pullBatchService.getSortMsg(orderId);
     }

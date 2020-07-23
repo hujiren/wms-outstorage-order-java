@@ -16,6 +16,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -40,7 +41,8 @@ public class PullAllocationItemController {
     @PostMapping(value = "/get-order-by-allocation-warehouse-manual")
     @ApiOperation(value =  "查询分配仓库时的订单与商品" , notes = "查询分配仓库时的订单与商品", hidden = true)
     @ApiImplicitParam(name = "outOrderId",value = "订单id",required = true  , paramType = "query")
-    public ResultUtil<AllocationWarehouseOutOrderBo> getOrderForAllocationWarehouseManual(@NotNull(message = "订单id不能为空") Long outOrderId)  throws Exception{
+    public ResultUtil<AllocationWarehouseOutOrderBo> getOrderForAllocationWarehouseManual(
+            @NotNull(message = "订单id不能为空") @Min(value = 0, message = "订单id不能小于0") Long outOrderId)  throws Exception{
 
         return pullAllocationItemService.getOrderForAllocationWarehouseManual(outOrderId);
     }
@@ -83,8 +85,9 @@ public class PullAllocationItemController {
     @PostMapping(value = "/delete")
     @ApiOperation(value =  "删除分配明细" , notes = "删除分配明细")
     @ApiImplicitParam(name = "outOrderId",value = "订单id",required = true  , paramType = "query")
-    public ResultUtil<Integer> deleteOrderAllocationItem(@NotNull(message = "订单id不能为空")Long outOrderId,
-                                                         @NotNull(message = "tranId不能为空") String tranId){
+    public ResultUtil<Integer> deleteOrderAllocationItem(
+            @NotNull(message = "订单id不能为空") @Min(value = 0, message = "订单id不能小于0") Long outOrderId,
+                                                         @NotEmpty(message = "tranId不能为空") String tranId){
         return pullAllocationItemService.deleteOrderAllocationItem(outOrderId, tranId);
     }
 

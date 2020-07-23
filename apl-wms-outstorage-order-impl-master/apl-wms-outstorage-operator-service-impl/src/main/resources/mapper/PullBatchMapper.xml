@@ -2,8 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.apl.wms.outstorage.operator.dao.PullBatchMapper">
 
-
-    <!-- 查找详情 2020-06-08-->
+    <!-- 根据批次id查找批次信息详情 2020-06-08-->
     <select id="getById" resultType="com.apl.wms.outstorage.operator.pojo.vo.PullBatchInfoVo">
         SELECT
           id, 
@@ -37,6 +36,7 @@
         1 = 1
         order by id desc
     </select>
+
     <select id="listOperatorBatchByStatus" resultType="com.apl.wms.outstorage.operator.pojo.vo.PullBatchInfoVo">
         SELECT DISTINCT
             pb.id id,
@@ -68,6 +68,8 @@
         WHERE
             pi.out_order_id = #{orderId}
     </select>
+
+
     <select id="getBatchOrderListByOrderId" resultType="long">
         SELECT
             pi1.out_order_id orderId
@@ -101,5 +103,11 @@
         </if>
     </update>
 
-
+    <insert id="insertBatchOrderIds">
+        insert into pull_batch_order (batch_id, order_id) values (#{batchId},
+        <foreach collection="ids" index="" close="" open="" item="row" separator=",">
+            #{row}
+        </foreach>
+        )
+    </insert>
 </mapper>

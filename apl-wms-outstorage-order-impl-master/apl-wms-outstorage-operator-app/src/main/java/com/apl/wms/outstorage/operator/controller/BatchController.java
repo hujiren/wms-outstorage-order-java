@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -49,8 +50,7 @@ public class BatchController {
 
     @PostMapping(value = "/create-pull-batch")
     @ApiOperation(value =  "创建收货批次" , notes = "创建收货批次")
-    @ApiImplicitParam(name = "ids",value = "订单列表",required = true  , paramType = "query")
-    public ResultUtil<String> createPullBatch(@NotNull(message = "ids 不能为空")List<Long> ids) throws Exception {
+    public ResultUtil<String> createPullBatch(@RequestBody @NotNull(message = "ids 不能为空") List<Long> ids) throws Exception {
 
         return pullBatchService.createPullBatch(ids);
     }

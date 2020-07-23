@@ -1,6 +1,4 @@
 package com.apl.wms.outstorage.operator.dao;
-
-
 import com.apl.wms.outstorage.operator.pojo.dto.PullBatchKeyDto;
 import com.apl.wms.outstorage.operator.pojo.po.PullBatchPo;
 import com.apl.wms.outstorage.operator.pojo.vo.PackOrderItemListVo;
@@ -9,7 +7,6 @@ import com.apl.wms.outstorage.operator.pojo.vo.PullBatchListVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
-
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -23,12 +20,14 @@ import java.util.List;
  */
 public interface PullBatchMapper extends BaseMapper<PullBatchPo> {
 
+
     /**
      * @Desc: 根据id 查找详情
      * @Author: ${cfg.author}
      * @Date: 2020-06-08
      */
      PullBatchInfoVo getById(@Param("id") Long id);
+
 
     /**
      * @Desc: 查找列表
@@ -53,6 +52,7 @@ public interface PullBatchMapper extends BaseMapper<PullBatchPo> {
      */
     PackOrderItemListVo getPullBatchMsg(@Param("orderId") Long orderId);
 
+
     /**
      * @Desc:
      * @Author: CY
@@ -60,12 +60,14 @@ public interface PullBatchMapper extends BaseMapper<PullBatchPo> {
      */
     List<Long> getBatchOrderListByOrderId(@Param("orderId") Long orderId);
 
+
     /**
      * @Desc: 根据批次id 获取订单id 列表
      * @Author: CY
      * @Date: 2020/6/12 17:34
      */
     List<Long> getBatchOrderList(@Param("batchId") Long batchId);
+
 
     /**
      * 批量更新订单状态
@@ -76,4 +78,14 @@ public interface PullBatchMapper extends BaseMapper<PullBatchPo> {
      * @return
      */
     Integer updateOrderStatus(@Param("ids") String ids, @Param("pullStatus")Integer pullStatus, @Param("minKey")Long minKey, @Param("maxKey")Long maxKey);
+
+
+    /**
+     * 批量插入批次订单id和批次号
+     * @param batchId
+     * @param ids
+     * @return
+     */
+    Integer insertBatchOrderIds(@Param("batchId") Long batchId, @Param("ids") List<Long> ids);
+
 }

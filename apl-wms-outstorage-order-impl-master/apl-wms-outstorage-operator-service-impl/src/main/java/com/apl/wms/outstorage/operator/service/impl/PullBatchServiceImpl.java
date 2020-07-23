@@ -1,6 +1,4 @@
 package com.apl.wms.outstorage.operator.service.impl;
-
-
 import com.apl.amqp.MqChannel;
 import com.apl.amqp.MqConnection;
 import com.apl.amqp.RabbitSender;
@@ -12,13 +10,16 @@ import com.apl.lib.join.JoinUtil;
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.*;
+import com.apl.wms.outstorage.operator.pojo.po.PullBatchCommodityPo;
+import com.apl.wms.outstorage.operator.pojo.po.StocksPo;
+import com.apl.wms.outstorage.operator.pojo.po.StorageLocalPo;
 import com.apl.wms.outstorage.order.service.OutOrderCommodityItemService;
 import com.apl.wms.outstorage.order.service.OutOrderService;
 import com.apl.wms.outstorage.order.pojo.vo.OrderItemListVo;
 import com.apl.wms.outstorage.order.pojo.vo.OutOrderCommodityItemInfoVo;
 import com.apl.wms.outstorage.operator.dao.PullBatchMapper;
 import com.apl.wms.outstorage.operator.pojo.dto.PullBatchKeyDto;
-import com.apl.wms.outstorage.operator.pojo.dto.PullBatchSubmitDto;
+import com.apl.wms.outstorage.operator.pojo.dto.SubmitPickItemDto;
 import com.apl.wms.outstorage.operator.pojo.dto.SortOrderSubmitDto;
 import com.apl.wms.outstorage.operator.pojo.po.PullBatchPo;
 import com.apl.wms.outstorage.operator.pojo.vo.*;
@@ -33,6 +34,7 @@ import com.apl.wms.warehouse.lib.utils.WmsWarehouseUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.validator.internal.util.privilegedactions.NewSchema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,10 +59,14 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
     //状态code枚举
     enum PullBatchServiceCode {
-        CREATE_PULL_BATCH_FAIL("CREATE_PULL_BATCH_FAIL", "创建拣货批次失败"),
+        ORDER_ID_IS_NULL("ORDER_ID_IS_NULL", "没有接收到订单id, 创建失败"),
         SUBMIT_DATA_ERROR("SUBMIT_DATA_ERROR", "提交数据有误"),
         PULL_BATCH_NOT_EXIST("PULL_BATCH_NOT_EXIST", "拣货批次不存在"),
         SORT_COUNT_ERROR("SORT_COUNT_ERROR", "分拣数量错误"),
+        UPDATE_ORDER_STATUS_FAILED("UPDATE_ORDER_STATUS_FAILED", "修改订单状态失败"),
+        INSERT_BATCH_INFO_FAILED("INSERT_BATCH_INFO_FAILED", "插入批次信息失败"),
+        GET_COMMODITY_INFO_FAILED("GET_COMMODITY_INFO_FAILED", "获取批次商品信息失败"),
+        GET_STORAGE_LOCAL_ID_FAILED("GET_STORAGE_LOCAL_ID_FAILED", "批次库位id为空")
         ;
 
         private String code;
@@ -175,9 +181,18 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
     }
 
 
+    /**
+     * 创建批次
+     * @param ids
+     * @return
+     */
     @Override
     @Transactional
     public ResultUtil<String> createPullBatch(List<Long> ids) {
+
+        if(ids.size() == 0){
+            return ResultUtil.APPRESULT(PullBatchServiceCode.ORDER_ID_IS_NULL.code, PullBatchServiceCode.ORDER_ID_IS_NULL.msg, null);
+        }
 
         RedisLock.repeatSubmit(CommonContextHolder.getHeader("token"), redisTemplate);
 
@@ -187,6 +202,11 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
         //批量更改订单状态
         Integer integer = baseMapper.updateOrderStatus(longKeys.getSbKeys().toString(), pullStatus, longKeys.getMinKey(), longKeys.getMaxKey());
+
+        if(integer == 0){
+            return ResultUtil.APPRESULT(PullBatchServiceCode.UPDATE_ORDER_STATUS_FAILED.code,
+                    PullBatchServiceCode.UPDATE_ORDER_STATUS_FAILED.msg, null);
+        }
 
         SecurityUser securityUser = CommonContextHolder.getSecurityUser(redisTemplate);
 
@@ -198,18 +218,25 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         pullBatchPo.setBatchSn(UUID.randomUUID().toString());
         pullBatchPo.setPullStatus(PullStatusType.START_PICKING.getStatus());
 
-        baseMapper.insert(pullBatchPo);
+        //插入批次信息
+        Integer integer1 = baseMapper.insert(pullBatchPo);
 
-        ResultUtil appresult = ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, pullBatchPo.getId().toString());
+        if(integer1 == 0){
+            return ResultUtil.APPRESULT(PullBatchServiceCode.INSERT_BATCH_INFO_FAILED.code,
+                    PullBatchServiceCode.INSERT_BATCH_INFO_FAILED.msg, null);
+        }
 
-        return appresult;
+        //插入批次中所有订单id
+        Integer integer2 = baseMapper.insertBatchOrderIds(pullBatchPo.getId(), ids);
 
+        if(integer2 == 0){
+            return ResultUtil.APPRESULT(PullBatchServiceCode.INSERT_BATCH_INFO_FAILED.code,
+                    PullBatchServiceCode.INSERT_BATCH_INFO_FAILED.msg, null);
+        }
 
-        //获取订单出库数量信息
-//        List<PullBatchOrderItemBo> pullBatchOrderItems = outOrderCommodityItemService.getPullBatchOrderItem(orderIds);
+        ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, pullBatchPo.getId().toString());
 
-        //商品下架
-//        pullItemService.pullCommodity(batchId, pullBatchOrderItems);
+        return result;
 
     }
 
@@ -250,9 +277,145 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
      */
     @Override
     @Transactional
-    public ResultUtil submitPullBatch(PullBatchSubmitDto pullBatchSubmit) throws Exception {
+    public ResultUtil<Boolean> submitPullBatch(SubmitPickItemDto pullBatchSubmit) throws Exception {
 
+        //Session
         OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
+
+        //构建批次商品信息持久化对象列表
+        List<PullBatchCommodityPo> pullBatchCommodityPoList  = new ArrayList<>();
+
+        //构建批次商品信息持久化对象列表
+        List<StocksPo> stocksPoList = new ArrayList<>();
+
+        //获取前端传来的批次商品信息对象
+        List<SubmitPickItemDto.PullBatchCommodityDto> pullBatchCommodityDto = pullBatchSubmit.getPullBatchCommodityDto();
+
+        //构建库位库存对象列表
+        List<StorageLocalPo> storageLocalPoList = new ArrayList<>();
+
+        //构建去重和累加商品出库数量功能的HashMap
+        Map<Long, Integer> commodityQtyMap = new HashMap<>();
+
+        //构建商品id列表集合
+        List<Long> commodityIdList = new ArrayList<>();
+
+        //如果获取不到前端的批次商品信息对象, 直接返回false
+        if(pullBatchCommodityDto.size() == 0){
+            return ResultUtil.APPRESULT(PullBatchServiceCode.GET_COMMODITY_INFO_FAILED.code, PullBatchServiceCode.GET_COMMODITY_INFO_FAILED.msg, false);
+        }
+
+        for (SubmitPickItemDto.PullBatchCommodityDto batchCommodityDto : pullBatchCommodityDto) {
+
+            //获取批次商品的多个库位id
+            List<Long> storageLocalIdList = batchCommodityDto.getStorageLocalIds();
+
+            if(storageLocalIdList.size() == 0){
+
+                return ResultUtil.APPRESULT(PullBatchServiceCode.GET_STORAGE_LOCAL_ID_FAILED.code, PullBatchServiceCode.GET_STORAGE_LOCAL_ID_FAILED.msg, false);
+            }
+
+            //一个商品信息对象有多个库位Id, 每个库位Id对应生成一个批次商品信息持久化对象
+            for (Long list : storageLocalIdList) {
+
+                if(list != null){
+
+                    //构建批次商品信息持久化对象
+                    PullBatchCommodityPo pullBatchCommodityPo = new PullBatchCommodityPo();
+                    pullBatchCommodityPo.setStorageLocalIds(list);
+                    pullBatchCommodityPo.setId(SnowflakeIdWorker.generateId());
+                    pullBatchCommodityPo.setBatchId(pullBatchSubmit.getBatchId());
+                    pullBatchCommodityPo.setCommodityId(batchCommodityDto.getCommodityId());
+                    pullBatchCommodityPo.setPullQty(batchCommodityDto.getPullQty());
+
+                    pullBatchCommodityPoList.add(pullBatchCommodityPo);
+
+                    //构建库位库存对象
+                    StorageLocalPo storageLocalPo = new StorageLocalPo();
+                    storageLocalPo.setCommodityId(batchCommodityDto.getCommodityId());
+                    storageLocalPo.set
+                }
+
+            }
+
+            //以商品id作为map的key
+            Long key = batchCommodityDto.getCommodityId();
+
+            if(commodityQtyMap.containsKey(key)){
+
+                //如果map中包含这个key, 表示是同一件商品, 将value取出来并与新的出库数量进行累加
+                Integer countQty = commodityQtyMap.get(key);
+                commodityQtyMap.put(key, countQty + batchCommodityDto.getPullQty());
+            }else{
+
+                //如果没有这个key, 直接将key和出库数量存入map
+                commodityQtyMap.put(key, batchCommodityDto.getPullQty());
+                commodityIdList.add(key);
+            }
+
+
+        }
+
+        //远程调用查询总库存的实际库存
+        Map<Long, Integer> stocksRealityCountMap = warehouseFeign.getStocksRealityCountByCommodityId(commodityIdList);
+
+        for(Map.Entry<Long, Integer> entry : stocksRealityCountMap.entrySet()){
+
+            //构建总库存对象
+            StocksPo newStocksPo = new StocksPo();
+
+            for(Map.Entry<Long, Integer> entry1 : commodityQtyMap.entrySet()){
+
+                if(entry1.getKey() == entry.getKey()){
+
+                    //遍历实际库存map和出库数量map, 并添加到总库存更新对象中
+                    newStocksPo.setCommodityId(entry1.getKey());
+                    newStocksPo.setRealityCount(entry.getValue() - entry1.getValue());
+
+                }
+            }
+            stocksPoList.add(newStocksPo);
+        }
+
+
+
+
+
+        //远程调用批量更新总库存
+        Integer integer = warehouseFeign.updateStocksByCommodityId(stocksPoList);
+
+        //批量插入批次商品信息对象
+        Integer integer1 = baseMapper.insertBatchCommodityPo(pullBatchCommodityPoList);
+
+        //通过批次id获取对应的多个订单Id
+        List<Long> orderIdList = baseMapper.getOrderIdByBatchId();
+
+        JoinKeyValues longKeys = JoinUtil.getLongKeys(orderIdList);
+
+        //批量修改订单状态为"6", 已拣货状态
+        Integer integer2 = baseMapper.updateOrderStatus(longKeys.getSbKeys().toString(), 6, null, null);
+
+        //构建批次信息对象
+        PullBatchPo pullBatchPo = new PullBatchPo();
+        pullBatchPo.setPullStatus(6);
+        pullBatchPo.setPullFinishTime(new Timestamp(System.currentTimeMillis()));
+        pullBatchPo.setId(pullBatchSubmit.getBatchId());
+
+        //更新批次拣货状态和拣货完成时间
+        Integer batchInteger = baseMapper.updatePullBatchById(pullBatchPo);
+
+        //批量更新总库存
+        Integer stocksInteger = warehouseFeign.batchUpdateStocks(stocksPoList);
+
+
+
+
+
+
+
+
+
+
 
         PlatformOutOrderStockBo orderStock = new PlatformOutOrderStockBo();
         orderStock.setWhId(operatorCacheBo.getWhId());
@@ -425,10 +588,10 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
      * @Author: CY
      * @Date: 2020/6/10 17:22
      */
-    private Set<Long> checkSubmitPullBatch(PlatformOutOrderStockBo orderStock, PullBatchSubmitDto pullBatchSubmit) throws Exception {
+    private Set<Long> checkSubmitPullBatch(PlatformOutOrderStockBo orderStock, SubmitPickItemDto pullBatchSubmit) throws Exception {
 
         //提交的拣货数量信息
-        List<PullBatchSubmitDto.CommodityCount> commodityCounts = pullBatchSubmit.getCommodityCounts();
+        List<SubmitPickItemDto.PullBatchCommodityDto> commodityCounts = pullBatchSubmit.getPullBatchCommodityDto();
 
         List<PlatformOutOrderStockBo.PlatformOutOrderStock> stockCounts = new ArrayList<>();
         orderStock.setPlatformOutOrderStocks(stockCounts);
@@ -444,12 +607,12 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         }
 
         //循环校验每一个商品数量是否一致，并且构建 商品对应数量实体，用来减扣库存
-        for (PullBatchSubmitDto.CommodityCount commodityCount : commodityCounts) {
+        for (SubmitPickItemDto.PullBatchCommodityDto pullBatchCommodityDto : commodityCounts) {
 
             //校验提交参数
-            validateCommodityCount(orderIds, pullAllocationItemInfoVoList, commodityCount);
+            validateCommodityCount(orderIds, pullAllocationItemInfoVoList, pullBatchCommodityDto);
             //构建库存数量 ， 用于减库存
-            buildStockCount(stockCounts, commodityCount);
+            buildStockCount(stockCounts, pullBatchCommodityDto);
 
         }
         return orderIds;
@@ -460,15 +623,13 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
      * @Author: CY
      * @Date: 2020/6/11 10:19
      */
-    private void validateCommodityCount(Set<Long> orderIds, List<PullAllocationItemInfoVo> pullAllocationItemInfoVos, PullBatchSubmitDto.CommodityCount commodityCount) {
+    private void validateCommodityCount(Set<Long> orderIds, List<PullAllocationItemInfoVo> pullAllocationItemInfoVos, SubmitPickItemDto.PullBatchCommodityDto commodityCount) {
 
         PullAllocationItemInfoVo pullItemInfo = null;
 
         for (PullAllocationItemInfoVo pullAllocationItemInfoVo : pullAllocationItemInfoVos) {
             //判断提交的数据 是否在数据库有保存
-            if (pullAllocationItemInfoVo.getCommodityId().equals(commodityCount.getCommodityId())
-                    && pullAllocationItemInfoVo.getStorageLocalId().equals(commodityCount.getStorageLocalId())
-                    && pullAllocationItemInfoVo.getOutOrderId().equals(commodityCount.getOrderId())) {
+            if (pullAllocationItemInfoVo.getCommodityId().equals(commodityCount.getCommodityId())) {
 
                 pullItemInfo = pullAllocationItemInfoVo;
                 orderIds.add(pullAllocationItemInfoVo.getOutOrderId());
@@ -481,10 +642,6 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
             throw new AplException(PullBatchServiceCode.SUBMIT_DATA_ERROR.code, PullBatchServiceCode.SUBMIT_DATA_ERROR.msg);
         }
 
-        //提交数量不正确，提示前端
-        if (commodityCount.getSubmitCount() - pullItemInfo.getAllocationQty() != 0) {
-            throw new AplException(PullBatchServiceCode.SUBMIT_DATA_ERROR.code, PullBatchServiceCode.SUBMIT_DATA_ERROR.msg);
-        }
 
     }
 
@@ -493,13 +650,10 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
      * @Author: CY
      * @Date: 2020/6/11 10:19
      */
-    private void buildStockCount(List<PlatformOutOrderStockBo.PlatformOutOrderStock> stockCounts, PullBatchSubmitDto.CommodityCount commodityCount) {
+    private void buildStockCount(List<PlatformOutOrderStockBo.PlatformOutOrderStock> stockCounts, SubmitPickItemDto.PullBatchCommodityDto pullBatchCommodityDto) {
 
         PlatformOutOrderStockBo.PlatformOutOrderStock stockCount = new PlatformOutOrderStockBo.PlatformOutOrderStock();
-
-        stockCount.setCommodityId(commodityCount.getCommodityId());
-        stockCount.setStorageLocalId(commodityCount.getStorageLocalId());
-        stockCount.setChangeCount(commodityCount.getTotalCount());
+        stockCount.setCommodityId(pullBatchCommodityDto.getCommodityId());
         stockCounts.add(stockCount);
 
     }
