@@ -1,9 +1,11 @@
 package com.apl.wms.outstorage.operator.dao;
+import com.apl.wms.outstorage.operator.pojo.bo.OrderCommodityInfoBo;
 import com.apl.wms.outstorage.operator.pojo.dto.PullBatchKeyDto;
 import com.apl.wms.outstorage.operator.pojo.po.PullBatchPo;
 import com.apl.wms.outstorage.operator.pojo.vo.PackOrderItemListVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PullBatchInfoVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PullBatchListVo;
+import com.apl.wms.outstorage.order.pojo.po.OutOrderPo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -88,4 +90,9 @@ public interface PullBatchMapper extends BaseMapper<PullBatchPo> {
      */
     Integer insertBatchOrderIds(@Param("batchId") Long batchId, @Param("ids") List<Long> ids);
 
+    List<OrderCommodityInfoBo> getOrderInfoByCommodityIds(@Param("ids") List<Long> commodityIdList);
+
+    List<Long> getOrderIdByBatchId(@Param("batchId") Long batchId);
+
+    List<OutOrderPo> getOrderInfoByIds(@Param("ids") List<Long> orderIdList);
 }

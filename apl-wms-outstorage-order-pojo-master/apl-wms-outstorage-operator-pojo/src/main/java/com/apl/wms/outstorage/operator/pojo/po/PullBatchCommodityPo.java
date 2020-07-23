@@ -32,7 +32,7 @@ public class PullBatchCommodityPo extends Model<PullBatchCommodityPo> {
     @ApiModelProperty(name = "storageLocalIds" , notes = "库位ids" , required = true)
     @NotNull(message = "订单id不能为空")
     @Min(value = 0, message = "订单id不能小于0")
-    private Long storageLocalIds;
+    private Long storageLocalId;
 
     @ApiModelProperty(name = "batchId" , notes = "批次Id" , required = true)
     @NotNull(message = "批次Id不能为空")
@@ -45,8 +45,8 @@ public class PullBatchCommodityPo extends Model<PullBatchCommodityPo> {
     private Long commodityId;
 
     @ApiModelProperty(name = "pullQty" , notes = "拣货数量" , required = true)
-    @NotNull(message = "订单id不能为空")
-    @Min(value = 0, message = "订单id不能小于0")
+    @NotNull(message = "拣货数量")
+    @Min(value = 0, message = "拣货数量不能小于0")
     private Integer pullQty;
 
     @Override

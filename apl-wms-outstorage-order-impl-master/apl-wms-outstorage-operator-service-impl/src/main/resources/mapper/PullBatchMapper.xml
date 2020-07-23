@@ -92,7 +92,6 @@
             pb.id = #{batchId}
     </select>
 
-
     <!--批量更新订单状态-->
     <update id="updateOrderStatus">
 
@@ -104,10 +103,35 @@
     </update>
 
     <insert id="insertBatchOrderIds">
-        insert into pull_batch_order (batch_id, order_id) values (#{batchId},
-        <foreach collection="ids" index="" close="" open="" item="row" separator=",">
-            #{row}
+
+        <foreach collection="ids" index="" close="" open="" item="row" separator=";">
+            insert into pull_batch_order (batch_id, order_id) values (#{batchId}, #{row})
         </foreach>
-        )
+
     </insert>
+
+    <select id="getOrderInfoByCommodityIds"
+            resultType="com.apl.wms.outstorage.operator.pojo.bo.OrderCommodityInfoBo">
+
+        select
+            order_id,
+            commodity_id
+        from
+            out_order_commodity_item
+        where
+            <foreach collection="ids" open="commodity_id in (" close=")" item="row" separator="," index="">
+                #{row}
+            </foreach>
+    </select>
+
+    <select id="getOrderIdByBatchId" resultType="java.lang.Long">
+        select order_id from pull_batch_order where batch_id = #{batchId}
+    </select>
+
+    <select id="getOrderInfoByIds" resultType="com.apl.wms.outstorage.order.pojo.po.OutOrderPo">
+        select id, order_sn from out_order where id in
+        <foreach collection="ids" index="" separator="," item="row" open="(" close=")">
+            #{row}
+         </foreach>
+    </select>
 </mapper>

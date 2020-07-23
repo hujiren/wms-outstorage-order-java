@@ -3,6 +3,8 @@ import com.apl.amqp.MqChannel;
 import com.apl.amqp.MqConnection;
 import com.apl.amqp.RabbitSender;
 import com.apl.cache.AplCacheUtil;
+import com.apl.db.adb.AdbContext;
+import com.apl.db.adb.AdbPersistent;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinKeyValues;
@@ -10,9 +12,9 @@ import com.apl.lib.join.JoinUtil;
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.*;
-import com.apl.wms.outstorage.operator.pojo.po.PullBatchCommodityPo;
-import com.apl.wms.outstorage.operator.pojo.po.StocksPo;
-import com.apl.wms.outstorage.operator.pojo.po.StorageLocalPo;
+import com.apl.wms.outstorage.operator.pojo.bo.OrderCommodityInfoBo;
+import com.apl.wms.outstorage.operator.pojo.po.*;
+import com.apl.wms.outstorage.order.pojo.po.OutOrderPo;
 import com.apl.wms.outstorage.order.service.OutOrderCommodityItemService;
 import com.apl.wms.outstorage.order.service.OutOrderService;
 import com.apl.wms.outstorage.order.pojo.vo.OrderItemListVo;
@@ -21,13 +23,13 @@ import com.apl.wms.outstorage.operator.dao.PullBatchMapper;
 import com.apl.wms.outstorage.operator.pojo.dto.PullBatchKeyDto;
 import com.apl.wms.outstorage.operator.pojo.dto.SubmitPickItemDto;
 import com.apl.wms.outstorage.operator.pojo.dto.SortOrderSubmitDto;
-import com.apl.wms.outstorage.operator.pojo.po.PullBatchPo;
 import com.apl.wms.outstorage.operator.pojo.vo.*;
 import com.apl.wms.outstorage.operator.service.PullBatchService;
 import com.apl.wms.outstorage.operator.service.PullItemService;
 import com.apl.wms.outstorage.order.lib.enumwms.OrderStatusEnum;
 import com.apl.wms.outstorage.order.lib.enumwms.PullStatusType;
 import com.apl.wms.warehouse.lib.cache.*;
+import com.apl.wms.warehouse.lib.feign.StocksHistoryFeign;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.apl.wms.warehouse.lib.pojo.bo.PlatformOutOrderStockBo;
 import com.apl.wms.warehouse.lib.utils.WmsWarehouseUtils;
@@ -39,7 +41,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+
+import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -66,7 +71,8 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         UPDATE_ORDER_STATUS_FAILED("UPDATE_ORDER_STATUS_FAILED", "修改订单状态失败"),
         INSERT_BATCH_INFO_FAILED("INSERT_BATCH_INFO_FAILED", "插入批次信息失败"),
         GET_COMMODITY_INFO_FAILED("GET_COMMODITY_INFO_FAILED", "获取批次商品信息失败"),
-        GET_STORAGE_LOCAL_ID_FAILED("GET_STORAGE_LOCAL_ID_FAILED", "批次库位id为空")
+        GET_STORAGE_LOCAL_ID_FAILED("GET_STORAGE_LOCAL_ID_FAILED", "批次库位id为空"),
+        UNDER_STOCK("UNDER_STOCK", "库存不足")
         ;
 
         private String code;
@@ -99,6 +105,9 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
     @Autowired
     MqConnection mqConnection;
+
+    @Autowired
+    StocksHistoryFeign stocksHistoryFeign;
 
     // 根据订单id 获取打包信息
     @Override
@@ -277,10 +286,13 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
      */
     @Override
     @Transactional
-    public ResultUtil<Boolean> submitPullBatch(SubmitPickItemDto pullBatchSubmit) throws Exception {
+    public ResultUtil<Boolean> submitPullBatch(SubmitPickItemDto pullBatchSubmit){
 
         //Session
         OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
+
+        //通过批次id获取对应的多个订单Id
+        List<Long> orderIdList = baseMapper.getOrderIdByBatchId(pullBatchSubmit.getBatchId());
 
         //构建批次商品信息持久化对象列表
         List<PullBatchCommodityPo> pullBatchCommodityPoList  = new ArrayList<>();
@@ -288,112 +300,62 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         //构建批次商品信息持久化对象列表
         List<StocksPo> stocksPoList = new ArrayList<>();
 
-        //获取前端传来的批次商品信息对象
-        List<SubmitPickItemDto.PullBatchCommodityDto> pullBatchCommodityDto = pullBatchSubmit.getPullBatchCommodityDto();
-
         //构建库位库存对象列表
         List<StorageLocalPo> storageLocalPoList = new ArrayList<>();
 
-        //构建去重和累加商品出库数量功能的HashMap
+        //构建去重和累加商品出库数量功能的总库存HashMap
         Map<Long, Integer> commodityQtyMap = new HashMap<>();
 
         //构建商品id列表集合
         List<Long> commodityIdList = new ArrayList<>();
 
-        //如果获取不到前端的批次商品信息对象, 直接返回false
-        if(pullBatchCommodityDto.size() == 0){
-            return ResultUtil.APPRESULT(PullBatchServiceCode.GET_COMMODITY_INFO_FAILED.code, PullBatchServiceCode.GET_COMMODITY_INFO_FAILED.msg, false);
-        }
+        //构建去重和累加商品出库数量的库位库存HashMap
+        Map<Long, Map<Long, Integer>> commodityStorageLocalMap = new HashMap<>();
 
-        for (SubmitPickItemDto.PullBatchCommodityDto batchCommodityDto : pullBatchCommodityDto) {
+        //构建总库存历史记录列表
+        List<StocksHistoryPo> stocksHistoryPoList = new ArrayList<>();
 
-            //获取批次商品的多个库位id
-            List<Long> storageLocalIdList = batchCommodityDto.getStorageLocalIds();
+        //构建库位库存历史记录
+        List<StorageLocalStocksHistoryPo> storageLocalStocksHistoryPoList = new ArrayList<>();
 
-            if(storageLocalIdList.size() == 0){
+        //构建商品信息存储map
+        Map<Long, Integer> commodityMap = new HashMap<>();
 
-                return ResultUtil.APPRESULT(PullBatchServiceCode.GET_STORAGE_LOCAL_ID_FAILED.code, PullBatchServiceCode.GET_STORAGE_LOCAL_ID_FAILED.msg, false);
-            }
-
-            //一个商品信息对象有多个库位Id, 每个库位Id对应生成一个批次商品信息持久化对象
-            for (Long list : storageLocalIdList) {
-
-                if(list != null){
-
-                    //构建批次商品信息持久化对象
-                    PullBatchCommodityPo pullBatchCommodityPo = new PullBatchCommodityPo();
-                    pullBatchCommodityPo.setStorageLocalIds(list);
-                    pullBatchCommodityPo.setId(SnowflakeIdWorker.generateId());
-                    pullBatchCommodityPo.setBatchId(pullBatchSubmit.getBatchId());
-                    pullBatchCommodityPo.setCommodityId(batchCommodityDto.getCommodityId());
-                    pullBatchCommodityPo.setPullQty(batchCommodityDto.getPullQty());
-
-                    pullBatchCommodityPoList.add(pullBatchCommodityPo);
-
-                    //构建库位库存对象
-                    StorageLocalPo storageLocalPo = new StorageLocalPo();
-                    storageLocalPo.setCommodityId(batchCommodityDto.getCommodityId());
-                    storageLocalPo.set
-                }
-
-            }
-
-            //以商品id作为map的key
-            Long key = batchCommodityDto.getCommodityId();
-
-            if(commodityQtyMap.containsKey(key)){
-
-                //如果map中包含这个key, 表示是同一件商品, 将value取出来并与新的出库数量进行累加
-                Integer countQty = commodityQtyMap.get(key);
-                commodityQtyMap.put(key, countQty + batchCommodityDto.getPullQty());
-            }else{
-
-                //如果没有这个key, 直接将key和出库数量存入map
-                commodityQtyMap.put(key, batchCommodityDto.getPullQty());
-                commodityIdList.add(key);
-            }
-
-
-        }
+        //构建商品批次信息
+        createBatchCommodityInfo(pullBatchSubmit, pullBatchCommodityPoList, commodityQtyMap, commodityIdList, commodityMap, commodityStorageLocalMap);
 
         //远程调用查询总库存的实际库存
-        Map<Long, Integer> stocksRealityCountMap = warehouseFeign.getStocksRealityCountByCommodityId(commodityIdList);
+        ResultUtil<List<com.apl.wms.warehouse.po.StocksPo>> stocksRealityCount = warehouseFeign.getStocksRealityCountByCommodityId(commodityIdList);
+        List<com.apl.wms.warehouse.po.StocksPo> stocksPoList1 = stocksRealityCount.getData();
 
-        for(Map.Entry<Long, Integer> entry : stocksRealityCountMap.entrySet()){
+        //关联查询订单Id, 订单号
+        List<OrderCommodityInfoBo> orderCommodityInfoBoList = baseMapper.getOrderInfoByCommodityIds(commodityIdList);
 
-            //构建总库存对象
-            StocksPo newStocksPo = new StocksPo();
+        List<OutOrderPo> outOrderPos = baseMapper.getOrderInfoByIds(orderIdList);
 
-            for(Map.Entry<Long, Integer> entry1 : commodityQtyMap.entrySet()){
+        for (OrderCommodityInfoBo bo : orderCommodityInfoBoList) {
 
-                if(entry1.getKey() == entry.getKey()){
+            for (OutOrderPo outOrderPo : outOrderPos) {
 
-                    //遍历实际库存map和出库数量map, 并添加到总库存更新对象中
-                    newStocksPo.setCommodityId(entry1.getKey());
-                    newStocksPo.setRealityCount(entry.getValue() - entry1.getValue());
+                if(bo.getOrderId() == outOrderPo.getId()){
 
+                    bo.setOrderSn(outOrderPo.getOrderSn());
                 }
             }
-            stocksPoList.add(newStocksPo);
         }
 
+        //构建总库存历史记录
+        createStocksHistory(stocksHistoryPoList, orderCommodityInfoBoList, commodityMap, operatorCacheBo);
 
+        //构建总库存对象
+        createStocks(stocksPoList1, commodityQtyMap, stocksPoList);
 
+        //远程调用查询库位库存的实际库存
+        Map<Long, Map<Long, Integer>> storageLocalRealityCountMap = warehouseFeign.getStorageLocalRealityCountByCommodityId(commodityIdList);
 
-
-        //远程调用批量更新总库存
-        Integer integer = warehouseFeign.updateStocksByCommodityId(stocksPoList);
-
-        //批量插入批次商品信息对象
-        Integer integer1 = baseMapper.insertBatchCommodityPo(pullBatchCommodityPoList);
-
-        //通过批次id获取对应的多个订单Id
-        List<Long> orderIdList = baseMapper.getOrderIdByBatchId();
-
-        JoinKeyValues longKeys = JoinUtil.getLongKeys(orderIdList);
-
-        //批量修改订单状态为"6", 已拣货状态
-        Integer integer2 = baseMapper.updateOrderStatus(longKeys.getSbKeys().toString(), 6, null, null);
+        //构建库位库存历史记录和库位库存更新对象
+        createStorageLocalHistory(storageLocalRealityCountMap, commodityStorageLocalMap, operatorCacheBo,
+                storageLocalStocksHistoryPoList, storageLocalPoList, orderCommodityInfoBoList);
 
         //构建批次信息对象
         PullBatchPo pullBatchPo = new PullBatchPo();
@@ -401,44 +363,298 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         pullBatchPo.setPullFinishTime(new Timestamp(System.currentTimeMillis()));
         pullBatchPo.setId(pullBatchSubmit.getBatchId());
 
+
+        JoinKeyValues longKeys = JoinUtil.getLongKeys(orderIdList);
+
+        //批量插入批次商品信息对象
+        Integer integer1 = baseMapper.insertBatchCommodityPo(pullBatchCommodityPoList);
+
+        //批量修改订单状态为"6", 已拣货状态
+        Integer integer2 = baseMapper.updateOrderStatus(longKeys.getSbKeys().toString(), 6, null, null);
+
         //更新批次拣货状态和拣货完成时间
         Integer batchInteger = baseMapper.updatePullBatchById(pullBatchPo);
 
-        //批量更新总库存
-        Integer stocksInteger = warehouseFeign.batchUpdateStocks(stocksPoList);
+        //远程调用批量更新总库存
+        Integer integer3 = warehouseFeign.updateStocksByCommodityId(stocksPoList);
 
+        //远程调用批量更新库位库存
+        Integer integer4 = warehouseFeign.updateStorageLocalByCommodityId(storageLocalPoList);
 
+        //批量插入总库存历史记录
+        Integer integer5 = stocksHistoryFeign.insertBatchStocksHistoryInfo(adbContext, stocksHistoryPoList);
 
-
-
-
-
-
-
-
-
-        PlatformOutOrderStockBo orderStock = new PlatformOutOrderStockBo();
-        orderStock.setWhId(operatorCacheBo.getWhId());
-
-        //校验前端提交的数据
-        Set<Long> orderIds = checkSubmitPullBatch(orderStock, pullBatchSubmit);
-
-        //更新拣货批次状态
-        updatePullBatchStatus(pullBatchSubmit.getBatchId(), PullStatusType.HAS_BEEN_PICKED.getStatus());
-
-        //更改出库订单状态
-        outOrderService.batchUpdateOrderPullStatus(new ArrayList<>(orderIds), PullStatusType.HAS_BEEN_PICKED.getStatus(), null);
-
-        orderStock.setSecurityUser(CommonContextHolder.getSecurityUser());
-
-        //进行库存减扣 （仓库库存 / 库位库存)
-        //rabbitSender.send("pullBatchSubmitStockReduceExchange", "pullBatchSubmitStockReduceQueue", orderStock);
-        MqChannel channel = mqConnection.createChannel("first", false);
-        channel.send("pullBatchSubmitStockReduceQueue", orderStock);
-        channel.close();
+        //批量插入库位库存历史记录
+        Integer integer6 = stocksHistoryFeign.insertStorageLocalHistoryInfo(adbContext, storageLocalStocksHistoryPoList);
 
         return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS);
     }
+
+
+
+    /**
+     * 构建批次商品信息
+     */
+    public void createBatchCommodityInfo(SubmitPickItemDto pullBatchSubmit, List<PullBatchCommodityPo> pullBatchCommodityPoList,
+                                         Map<Long, Integer> commodityQtyMap, List<Long> commodityIdList, Map<Long, Integer> commodityMap,
+                                         Map<Long, Map<Long, Integer>> commodityStorageLocalMap){
+
+        //获取前端传来的批次商品信息对象
+        List<SubmitPickItemDto.PullBatchCommodityDto> pullBatchCommodityDto = pullBatchSubmit.getPullBatchCommodityDto();
+
+        //如果获取不到前端的批次商品信息对象, 直接返回false
+        if(pullBatchCommodityDto.size() == 0){
+
+            throw new AplException(PullBatchServiceCode.GET_COMMODITY_INFO_FAILED.code,
+                    PullBatchServiceCode.GET_COMMODITY_INFO_FAILED.msg, null);
+
+        }
+
+        //前端传过来的商品信息对象
+        for (SubmitPickItemDto.PullBatchCommodityDto batchCommodityDto : pullBatchCommodityDto) {
+
+            Map<Long, Integer> storageLocalMap = new HashMap<>();
+
+            //获取批次商品的多个库位id及对应的库位出货数量
+            List<SubmitPickItemDto.PullBatchStorageLocalIds> storageLocalIdList = batchCommodityDto.getPullBatchStorageLocalIdsList();
+
+            if(storageLocalIdList.size() == 0){
+
+                throw new AplException(PullBatchServiceCode.GET_STORAGE_LOCAL_ID_FAILED.code,
+                        PullBatchServiceCode.GET_STORAGE_LOCAL_ID_FAILED.msg, null);
+
+            }
+
+            //一个商品信息对象有多个库位Id, 每个库位Id对应生成一个批次商品信息持久化对象
+            for (SubmitPickItemDto.PullBatchStorageLocalIds list : storageLocalIdList) {
+
+                if(list != null){
+
+                    //构建批次商品信息持久化对象pull_batch_commodity
+                    PullBatchCommodityPo pullBatchCommodityPo = new PullBatchCommodityPo();
+                    pullBatchCommodityPo.setStorageLocalId(list.getStorageLocalId());
+                    pullBatchCommodityPo.setId(SnowflakeIdWorker.generateId());
+                    pullBatchCommodityPo.setBatchId(pullBatchSubmit.getBatchId());
+                    pullBatchCommodityPo.setCommodityId(batchCommodityDto.getCommodityId());
+                    pullBatchCommodityPo.setPullQty(list.getStorageLocalPullQty());
+
+                    pullBatchCommodityPoList.add(pullBatchCommodityPo);
+
+                    storageLocalMap.put(list.getStorageLocalId(), list.getStorageLocalPullQty());
+
+                }
+
+            }
+
+            //以商品id作为map的key
+            Long key = batchCommodityDto.getCommodityId();
+
+            //key:商品Id value:多个相同的商品累加后的出库数量
+            if(commodityQtyMap.containsKey(key)){
+
+                //如果map中包含这个key, 表示是同一件商品, 将value取出来并与新的出库数量进行累加(总库存)
+                Integer countQty = commodityQtyMap.get(key);
+                commodityQtyMap.put(key, countQty + batchCommodityDto.getPullQty());
+
+
+            }else{
+
+                //如果没有这个key, 直接将key和出库数量存入map
+                commodityQtyMap.put(key, batchCommodityDto.getPullQty());
+                commodityIdList.add(key);
+                commodityMap.put(key, batchCommodityDto.getPullQty());
+
+            }
+
+            //key:商品id value:storageLocalMap key:库位id, value: 单库位商品出库数量
+            if(commodityStorageLocalMap.containsKey(key)){
+
+                //如果map中包含这个key, 循环累加库位库存(库位库存)
+                Map<Long, Integer> longIntegerMap = commodityStorageLocalMap.get(key);
+
+                //key 库位id, value 库位出库数量
+                for(Map.Entry<Long, Integer> entry : longIntegerMap.entrySet()){
+
+                    Integer value = null;
+
+                    //遍历map, 将相同的key取出来, 并将value累加放入longIntegerMap key:库位id value:单库位商品出库数量
+                    for(Map.Entry<Long, Integer> entry1 : storageLocalMap.entrySet()){
+
+                        if(entry.getKey() == entry1.getKey()){
+
+                            value = entry.getValue() + entry1.getValue();
+                        }
+                    }
+
+                    entry.setValue(value);
+                }
+
+                //最后将库位和对应库存的map在放回商品库位库存map, 覆盖掉原来的value
+                commodityStorageLocalMap.put(key, longIntegerMap);
+
+            }else{
+
+                //如果没有这个key, 将库位库存与对应的出库数量添加到map
+                commodityStorageLocalMap.put(key, storageLocalMap);
+
+            }
+
+        }
+
+    }
+
+
+    /**
+     * 构建总库存历史记录
+     * @param list
+     * @param orderCommodityInfoBoList
+     * @param commodityMap
+     * @param operatorCacheBo
+     */
+    public void createStocksHistory(List<StocksHistoryPo> list, List<OrderCommodityInfoBo> orderCommodityInfoBoList, Map<Long, Integer> commodityMap ,OperatorCacheBo operatorCacheBo){
+
+        //for:构建总库存历史记录
+        for (OrderCommodityInfoBo bo : orderCommodityInfoBoList) {
+            //构建总库存历史记录对象
+            StocksHistoryPo stocksHistoryPo = new StocksHistoryPo();
+
+            //key:商品id , value:单件商品总出库数量
+            for(Map.Entry<Long, Integer> entry : commodityMap.entrySet()){
+
+                if(bo.getCommodityId() == entry.getKey()){
+
+                    stocksHistoryPo.setOrderId(bo.getOrderId());
+                    stocksHistoryPo.setOrderType(2);
+                    stocksHistoryPo.setStocksType(2);
+                    stocksHistoryPo.setOrderSn(bo.getOrderSn());
+                    stocksHistoryPo.setWhId(operatorCacheBo.getWhId());
+                    stocksHistoryPo.setCommodityId(bo.getCommodityId());
+                    stocksHistoryPo.setInQty(0);
+                    stocksHistoryPo.setOutQty(entry.getValue());
+                    stocksHistoryPo.setOperatorTime(new Timestamp(System.currentTimeMillis()));
+
+                }
+            }
+
+            list.add(stocksHistoryPo);
+        }
+
+    }
+
+
+
+    /**
+     * 构建总库存对象
+     */
+    public void createStocks(List<com.apl.wms.warehouse.po.StocksPo> stocksPoList1, Map<Long, Integer> commodityQtyMap, List<StocksPo> stocksPoList){
+
+        //批量构建总库存对象
+        for(com.apl.wms.warehouse.po.StocksPo list : stocksPoList1){
+
+            //构建总库存对象
+            StocksPo newStocksPo = new StocksPo();
+
+            for(Map.Entry<Long, Integer> entry1 : commodityQtyMap.entrySet()){
+
+                if(entry1.getKey() == list.getCommodityId()){
+
+                    if(list.getRealityCount() > entry1.getValue()) {
+
+                        //遍历实际库存map和出库数量map, 并添加到总库存更新对象中
+                        newStocksPo.setCommodityId(entry1.getKey());
+                        newStocksPo.setRealityCount(list.getRealityCount() - entry1.getValue());
+
+                    }else{
+
+                        throw new AplException(PullBatchServiceCode.UNDER_STOCK.code, PullBatchServiceCode.UNDER_STOCK.msg, null);
+                    }
+                }
+            }
+            stocksPoList.add(newStocksPo);
+        }
+
+    }
+
+
+
+    /**
+     * 构建库位库存&库位库存历史记录
+     * @param
+     * @return
+     * @throws Exception
+     */
+    public void createStorageLocalHistory(Map<Long, Map<Long, Integer>> storageLocalRealityCountMap,
+                                          Map<Long, Map<Long, Integer>> commodityStorageLocalMap,
+                                          OperatorCacheBo operatorCacheBo,
+                                          List<StorageLocalStocksHistoryPo> storageLocalStocksHistoryPoList,
+                                          List<StorageLocalPo> storageLocalPoList,
+                                          List<OrderCommodityInfoBo> orderCommodityInfoBoList){
+
+        //for:更新库位库存    key:商品Id  value:表中库位库存的实际库存 key:库位id, value:表中单个库位实际库存
+        for(Map.Entry<Long, Map<Long, Integer>> entry : storageLocalRealityCountMap.entrySet()){
+
+            for(Map.Entry<Long, Map<Long, Integer>> entry1 : commodityStorageLocalMap.entrySet()){
+
+                if(entry.getKey() == entry1.getKey()){
+
+                    for(Map.Entry<Long, Integer> entry2 : entry.getValue().entrySet()){
+
+                        //构建库位库存对象
+                        StorageLocalPo storageLocalPo = new StorageLocalPo();
+
+                        for(Map.Entry<Long, Integer> entry3 : entry1.getValue().entrySet()){
+
+                            if(entry2.getKey() == entry3.getKey()){
+
+                                if(entry2.getValue() > entry3.getValue()) {
+
+                                    Integer realityCount = entry2.getValue() - entry3.getValue();
+                                    storageLocalPo.setRealityCount(realityCount);
+                                    storageLocalPo.setCommodityId(entry.getKey());
+
+                                    //构建库位库存历史记录对象
+                                    StorageLocalStocksHistoryPo storageLocalStocksHistoryPo = new StorageLocalStocksHistoryPo();
+                                    storageLocalStocksHistoryPo.setCommodityId(entry.getKey());
+                                    storageLocalStocksHistoryPo.setOrderType(2);
+                                    storageLocalStocksHistoryPo.setStocksType(2);
+                                    storageLocalStocksHistoryPo.setInQty(0);
+                                    storageLocalStocksHistoryPo.setOutQty(entry3.getValue());
+                                    storageLocalStocksHistoryPo.setWhId(operatorCacheBo.getWhId());
+                                    storageLocalStocksHistoryPo.setStorageLocalId(entry3.getKey());
+                                    storageLocalStocksHistoryPo.setStocksQty(storageLocalPo.getRealityCount());
+                                    storageLocalStocksHistoryPo.setOperatorTime(new Timestamp(System.currentTimeMillis()));
+                                    storageLocalStocksHistoryPoList.add(storageLocalStocksHistoryPo);
+
+                                }else{
+
+                                    throw new AplException(PullBatchServiceCode.UNDER_STOCK.code,
+                                            PullBatchServiceCode.UNDER_STOCK.msg, null);
+
+                                }
+                            }
+                        }
+
+                        storageLocalPoList.add(storageLocalPo);
+                    }
+                }
+            }
+        }
+
+        //为库位库存历史记录对象添加订单Id
+        for (OrderCommodityInfoBo bo : orderCommodityInfoBoList) {
+
+            for (StorageLocalStocksHistoryPo storageLocalPo : storageLocalStocksHistoryPoList) {
+
+                if(bo.getCommodityId() == storageLocalPo.getCommodityId()){
+
+                    storageLocalPo.setOrderId(bo.getOrderId());
+                }
+            }
+        }
+    }
+
+
+
 
     @Override
     @Transactional
@@ -583,40 +799,6 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
     }
 
 
-    /**
-     * @Desc: 校验前端提交的数据 , 并且提取出 订单id
-     * @Author: CY
-     * @Date: 2020/6/10 17:22
-     */
-    private Set<Long> checkSubmitPullBatch(PlatformOutOrderStockBo orderStock, SubmitPickItemDto pullBatchSubmit) throws Exception {
-
-        //提交的拣货数量信息
-        List<SubmitPickItemDto.PullBatchCommodityDto> commodityCounts = pullBatchSubmit.getPullBatchCommodityDto();
-
-        List<PlatformOutOrderStockBo.PlatformOutOrderStock> stockCounts = new ArrayList<>();
-        orderStock.setPlatformOutOrderStocks(stockCounts);
-
-        Set<Long> orderIds = new HashSet<>();
-
-        //根据批次 ， 获取批次项目 对应的库位信息，以及商品数量
-        List<PullAllocationItemInfoVo> pullAllocationItemInfoVoList = pullItemService.listPullItemByBatchId(pullBatchSubmit.getBatchId());
-
-        //比对提交的商品数量 与 批次对应的商品数量是否一致，不一致提示提交的数据错误
-        if (commodityCounts.size() != pullAllocationItemInfoVoList.size()) {
-            throw new AplException(PullBatchServiceCode.SUBMIT_DATA_ERROR.code, PullBatchServiceCode.SUBMIT_DATA_ERROR.msg);
-        }
-
-        //循环校验每一个商品数量是否一致，并且构建 商品对应数量实体，用来减扣库存
-        for (SubmitPickItemDto.PullBatchCommodityDto pullBatchCommodityDto : commodityCounts) {
-
-            //校验提交参数
-            validateCommodityCount(orderIds, pullAllocationItemInfoVoList, pullBatchCommodityDto);
-            //构建库存数量 ， 用于减库存
-            buildStockCount(stockCounts, pullBatchCommodityDto);
-
-        }
-        return orderIds;
-    }
 
     /**
      * @Desc: 校验每一个商品提交的数量
