@@ -65,6 +65,7 @@ public class StorageLocalStocksHistoryPo implements Serializable { //extends Mod
     private Timestamp operatorTime;
 
 
+
     //@Override
     //protected Serializable pkVal() {
      //   return this.id;
