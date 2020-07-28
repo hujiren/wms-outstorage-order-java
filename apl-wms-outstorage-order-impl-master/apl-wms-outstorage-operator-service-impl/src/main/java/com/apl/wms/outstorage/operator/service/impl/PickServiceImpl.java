@@ -245,8 +245,6 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
 
         Long whId = operatorCacheBo.getWhId();
 
-        // SqlSession sqlSession = AbatisExecutor.sqlSessionFactory.openSession("wms_stocks_history", aplCacheUtil);
-
         //根据批次id,获取订单id
         List<Long> orderIds = baseMapper.getOrderIdsByBatchId(batchId);
         JoinKeyValues longKeys = JoinUtil.getLongKeys(orderIds);

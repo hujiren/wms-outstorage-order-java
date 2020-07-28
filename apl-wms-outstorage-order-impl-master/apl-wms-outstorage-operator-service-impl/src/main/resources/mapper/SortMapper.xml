@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.apl.wms.outstorage.operator.dao.SortMapper">
+
+    <!--根据订单号获取批次id-->
+    <select id="getBatchIdByOrderSn" resultType="java.lang.Long">
+        select pbo.batch_id from out_order oo left join pull_batch_order pbo on oo.id = pbo.order_id where oo.order_sn = #{orderSn}
+    </select>
+
+    <!--根据批次号获取所有订单id-->
+    <select id="getOrderIdsByBatchId" resultType="java.lang.Long">
+        select order_id from pull_batch_order where batch_id = #{batchId}
+    </select>
+
+    <!--根据订单Ids获取所有订单信息-->
+    <select id="getOrderInfoByIds" resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderListVo">
+        select id, order_sn, pull_status from out_order where id in (${ids}) and pull_status = 6
+    </select>
+
+    <!--根据订单Ids获取所有商品信息-->
+    <select id="getCommodityInfoByIds"
+            resultType="com.apl.wms.outstorage.order.pojo.vo.OutOrderCommodityItemInfoVo">
+        select commodity_id, commodity_sku, order_qty, order_id from out_order_commodity_item where order_id in (${ids})
+    </select>
+
+    <!--根据订单Ids批量修改订单状态-->
+    <update id="batchUpdateOrderStatus">
+        update out_order set pull_status = 7 where id in
+        <foreach collection="ids" index="" separator="," item="row" open="(" close=")">
+            ${row}
+        </foreach>
+
+    </update>
+
+    <!--根据订单id获取批次id-->
+    <select id="getBatchIdByOrderId" resultType="java.lang.Long">
+        select batch_id from pull_batch_order where order_id = #{orderId}
+    </select>
+
+    <!--根据批次id修改批次信息-->
+    <update id="updateBatchInfo">
+        update pull_batch set sorting_operator_id = #{pullBatchPo.sortingOperatorId}, sorting_finish_time = #{pullBatchPo.sortingFinishTime},
+        pull_status = #{pullBatchPo.pullStatus} where id = #{pullBatchPo.id} and wh_id = #{pullBatchPo.whId}
+    </update>
+
+    <!--根据订单id查询订单拣货状态-->
+    <select id="getPullStatusByOrderIds" resultType="java.lang.Integer">
+        select pull_status from out_order where id in
+        <foreach collection="ids" open="(" close=")" item="row" separator="," index="">
+            ${row}
+        </foreach>
+    </select>
+</mapper>

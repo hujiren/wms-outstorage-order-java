@@ -33,12 +33,7 @@ public interface OutOrderMapper extends BaseMapper<OutOrderPo> {
      */
     OutOrderInfoVo getById(@Param("id") Long id, Long customerId);
 
-    /**
-     * @Desc: 根据订单id 获取打包订单信息
-     * @Author: CY
-     * @Date: 2020/6/15 9:50
-     */
-    OrderItemListVo getPackOrderMsg(@Param("orderId") Long orderId);
+
 
     /**
      * @Desc: 根据id 列表 ，获取订单信息

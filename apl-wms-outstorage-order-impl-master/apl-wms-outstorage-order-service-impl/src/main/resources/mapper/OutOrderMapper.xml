@@ -30,19 +30,7 @@
           oo.id = #{id}
     </select>
 
-    <!-- 查找详情 2020-01-07-->
-    <select id="getPackOrderMsg" resultType="com.apl.wms.outstorage.order.pojo.vo.OrderItemListVo">
-        SELECT
-        oo.id,
-        oo.order_sn,
-        oo.reference_sn,
-        ooa.to_desc_logistics
-        FROM
-        out_order oo
-        left join out_order_attachment ooa on oo.id = ooa.order_id
-        where
-        oo.id = #{orderId}
-    </select>
+
 
     <select id="selectOrderByIds" resultType="com.apl.wms.outstorage.order.pojo.vo.OrderItemListVo">
         SELECT

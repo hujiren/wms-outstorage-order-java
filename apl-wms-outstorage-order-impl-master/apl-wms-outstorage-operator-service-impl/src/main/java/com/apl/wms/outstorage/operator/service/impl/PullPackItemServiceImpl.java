@@ -96,25 +96,6 @@ public class PullPackItemServiceImpl extends ServiceImpl<PullPackItemMapper, Pul
         return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS , page);
         }
 
-    @Override
-    public void batchAddPullPackItem(Long orderId , List<PackOrderSubmitDto.PackMsg> packMsgs) {
-
-        for (PackOrderSubmitDto.PackMsg packMsg : packMsgs) {
-
-            PullPackItemPo pullPackItemPo = new PullPackItemPo();
-            pullPackItemPo.setId(SnowflakeIdWorker.generateId());
-            pullPackItemPo.setOutOrderId(orderId);
-            pullPackItemPo.setSubSn(packMsg.getSubSn());
-            pullPackItemPo.setGw(packMsg.getGw());
-            pullPackItemPo.setSizeLength(packMsg.getSizeLength());
-            pullPackItemPo.setSizeWidth(packMsg.getSizeWidth());
-            pullPackItemPo.setSizeHeight(packMsg.getSizeHeight());
-            pullPackItemPo.setVolume(packMsg.getVolume());
-
-            baseMapper.insert(pullPackItemPo);
-        }
-
-    }
 
 
 }

@@ -2,6 +2,9 @@ package com.apl.wms.outstorage.operator.controller;
 
 
 import com.apl.lib.utils.ResultUtil;
+import com.apl.wms.outstorage.operator.pojo.vo.PackingInfo;
+import com.apl.wms.outstorage.operator.service.PackService;
+import com.apl.wms.outstorage.operator.service.PullMaterialsService;
 import com.apl.wms.outstorage.order.pojo.vo.OutOrderCommodityItemInfoVo;
 import com.apl.wms.outstorage.order.service.OutOrderCommodityItemService;
 import com.apl.wms.outstorage.order.service.OutOrderService;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -27,30 +31,18 @@ import java.util.List;
 @Api(value = "打包相关",tags = "打包相关")
 public class PackController {
 
-    //@Autowired
-    //PullMaterialsService pullMaterialsService;
-
     @Autowired
-    OutOrderService outOrderService;
+    PackService packService;
 
-    @Autowired
-    OutOrderCommodityItemService outOrderCommodityItemService;
-
-    @PostMapping(value = "/get-order-pack")
+    @PostMapping(value = "/get-pack-info")
     @ApiOperation(value =  "获取订单打包详细" , notes = "获取订单打包详细")
     @ApiImplicitParam(name = "orderId",value = "订单id",required = true  , paramType = "query")
-    public ResultUtil<OrderItemListVo> getOrderPackMsg(@NotNull(message = "id不能为空") @Min(value = 1 , message = "id不能小于1") Long orderId)  throws Exception{
+    public ResultUtil<PackingInfo> getPackInfo(@NotBlank(message = "id不能为空") String orderSn)  throws Exception{
 
-        return outOrderService.getOrderPackMsg(orderId);
+        return packService.getPackInfo(orderSn);
     }
 
-    @PostMapping("/submit-pack")
-    @ApiOperation(value =  "提交打包数据" , notes = "提交打包数据")
-    public ResultUtil submitPackMsg(@RequestBody PackOrderSubmitDto packOrderSubmit) throws Exception {
 
-        //return pullMaterialsService.submitPackMsg(packOrderSubmit);
-        return  null;
-    }
 
 
 }

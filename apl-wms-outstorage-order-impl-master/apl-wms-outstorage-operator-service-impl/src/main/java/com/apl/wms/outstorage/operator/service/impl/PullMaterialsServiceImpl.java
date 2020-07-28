@@ -134,71 +134,9 @@ public class PullMaterialsServiceImpl extends ServiceImpl<PullMaterialsMapper, P
         return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS , page);
         }
 
-    @Override
-    @Transactional
-    public ResultUtil submitPackMsg(PackOrderSubmitDto packOrderSubmit) throws Exception {
 
-        //判断订单状态
-        OutOrderPo outOrderPo = outOrderService.getById(packOrderSubmit.getOrderId());
-        if(outOrderPo == null){
-            throw new AplException(PullMaterialsServiceCode.OUT_ORDER_NOT_EXIST.code , PullMaterialsServiceCode.OUT_ORDER_NOT_EXIST.msg);
-        }
-        if(!outOrderPo.getOrderStatus().equals(OutStorageOrderStatusEnum.CREATE.getStatus()) || !outOrderPo.getPullStatus().equals(PullStatusType.HAS_BEEN_SORTED.getStatus())){
-            throw new AplException(PullMaterialsServiceCode.OUT_ORDER_NOT_ALLOW_PACK.code , PullMaterialsServiceCode.OUT_ORDER_NOT_ALLOW_PACK.msg);
-        }
 
-        validatePackMsg(packOrderSubmit);
 
-        for (PackOrderSubmitDto.PackCount packCount : packOrderSubmit.getPackCounts()) {
-            PullMaterialsPo pullMaterialsPo = new PullMaterialsPo();
-            pullMaterialsPo.setId(SnowflakeIdWorker.generateId());
-            pullMaterialsPo.setMaterialsId(packCount.getMaterialsId());
-            pullMaterialsPo.setOutOrderId(packOrderSubmit.getOrderId());
-            pullMaterialsPo.setQty(packCount.getCount());
-            baseMapper.insert(pullMaterialsPo);
-
-        }
-
-        pullPackItemService.batchAddPullPackItem(packOrderSubmit.getOrderId() , packOrderSubmit.getPackMsgs());
-
-        //更新订单状态
-        outOrderPo.setPullStatus(PullStatusType.HAS_BEEN_PACKED.getStatus());
-        outOrderService.updateById(outOrderPo);
-
-        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS , null);
-    }
-
-    private void validatePackMsg(PackOrderSubmitDto packOrderSubmit) throws Exception {
-
-        Map<String , List<PackagingMaterialsCountBo>> commodityPackMap = (Map<String , List<PackagingMaterialsCountBo>>) redisTemplate.opsForValue().get("packaging:count:" + packOrderSubmit.getOrderId());
-
-        Map<Long, PackOrderSubmitDto.PackCount> packCountMap = packOrderSubmit.getPackCounts().stream().collect(Collectors.toMap(PackOrderSubmitDto.PackCount::getMaterialsId, packCount -> packCount));
-
-        if(CollectionUtils.isEmpty(commodityPackMap)){
-            throw new AplException(PullMaterialsServiceCode.PACK_DATA_ERROR.code , PullMaterialsServiceCode.PACK_DATA_ERROR.msg);
-        }
-        List<PackagingMaterialsCountBo> packagingMaterialsCountBoList = new ArrayList<>();
-        for (Map.Entry<String, List<PackagingMaterialsCountBo>> packagingMaterialsCountEntry : commodityPackMap.entrySet()) {
-            packagingMaterialsCountBoList.addAll(packagingMaterialsCountEntry.getValue());
-        }
-
-        Map<String, List<PackagingMaterialsCountBo>> materialsMap = JoinUtil.listGrouping(packagingMaterialsCountBoList , "id");
-
-        for (Map.Entry<String, List<PackagingMaterialsCountBo>> packagingMaterialsEntry : materialsMap.entrySet()) {
-
-            Integer materialsCount = 0;
-            for (PackagingMaterialsCountBo packagingMaterialsCountBo : packagingMaterialsEntry.getValue()) {
-                materialsCount = materialsCount + packagingMaterialsCountBo.getCount();
-            }
-            PackOrderSubmitDto.PackCount packCount = packCountMap.get(Long.parseLong(packagingMaterialsEntry.getKey()));
-
-            if(!packCount.getCount().equals(materialsCount)){
-                throw new AplException(PullMaterialsServiceCode.MATERIALS_COUNT_ERROR.code , PullMaterialsServiceCode.MATERIALS_COUNT_ERROR.msg);
-            }
-
-        }
-
-    }
 
 
 }

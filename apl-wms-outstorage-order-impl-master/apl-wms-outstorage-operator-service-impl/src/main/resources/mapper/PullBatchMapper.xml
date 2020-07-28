@@ -57,30 +57,6 @@
             AND oo.order_sn IS NOT NULL
     </select>
 
-    <select id="getPullBatchMsg" resultType="com.apl.wms.outstorage.operator.pojo.vo.PackOrderItemListVo">
-        SELECT
-            distinct
-            pb.id batchId,
-            pb.pull_status,
-            pb.batch_sn batchSn
-        FROM
-            pull_allocation_item pi
-            LEFT JOIN pull_batch pb ON pi.batch_id = pb.id
-        WHERE
-            pi.out_order_id = #{orderId}
-    </select>
-
-
-    <select id="getBatchOrderListByOrderId" resultType="long">
-        SELECT
-            pi1.out_order_id orderId
-        FROM
-            pull_allocation_item pi1,
-            pull_allocation_item pi2
-        WHERE
-            pi1.out_order_id = #{orderId}
-            AND pi1.batch_id = pi2.batch_id
-    </select>
 
 
     <select id="getBatchOrderList" resultType="long">

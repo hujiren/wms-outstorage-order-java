@@ -1,18 +1,24 @@
 package com.apl.wms.outstorage.operator.controller;
 
 import com.apl.lib.utils.ResultUtil;
+import com.apl.wms.outstorage.operator.pojo.vo.OrderCommodityScanVo;
 import com.apl.wms.outstorage.operator.service.PullBatchService;
 import com.apl.wms.outstorage.operator.pojo.dto.SortOrderSubmitDto;
 import com.apl.wms.outstorage.operator.pojo.vo.PackOrderItemListVo;
 import com.apl.wms.outstorage.operator.service.PullPackItemService;
+import com.apl.wms.outstorage.operator.service.SortService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @RestController
 @RequestMapping("/order-sort")
@@ -21,25 +27,25 @@ import javax.validation.constraints.NotNull;
 public class SortController {
 
     @Autowired
-    PullBatchService pullBatchService;
+    SortService sortService;
 
-    @Autowired
-    PullPackItemService  pullPackItemService;
 
-    @PostMapping("/get-sort-msg")
-    @ApiOperation(value =  "获取分拣信息" , notes = "根据订单id 获取分拣信息，包含批次信息，订单信息，以及订单子项下单数量")
-        public ResultUtil<PackOrderItemListVo> getSortMsg(@NotNull(message = "订单id不能为空") @Min(value = 0, message = "订单id不能小于0") Long orderId) throws Exception {
+    @PostMapping("/scan-order-sn")
+    @ApiOperation(value =  "扫描订单号" , notes = "扫描订单号")
+    @ApiImplicitParam(name = "orderSn",value = "订单号",required = true  , paramType = "query")
+    public ResultUtil<OrderCommodityScanVo> scanOrderSn(@NotBlank(message = "订单号不能为空") String orderSn) throws Exception {
 
-        return pullBatchService.getSortMsg(orderId);
+        return sortService.scanOrderSn(orderSn);
     }
 
 
-    @PostMapping("/submit-sort")
-    @ApiOperation(value =  "提交分拣数据" , notes = "提交分拣数据")
-    public ResultUtil submitSortMsg(@RequestBody SortOrderSubmitDto sortOrderSubmitDto) throws Exception {
+    @PostMapping("/submit-sort-info")
+    @ApiOperation(value =  "提交分拣信息" , notes = "提交分拣信息")
+    public ResultUtil<Boolean> submitSortInfo(@RequestBody @NotEmpty(message = "订单ids不能为空")List<Long> orderIds){
 
-        return pullBatchService.submitSortMsg(sortOrderSubmitDto);
+        return sortService.submitSortInfo(orderIds);
     }
+
 
 
 }

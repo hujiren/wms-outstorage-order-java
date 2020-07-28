@@ -48,20 +48,8 @@ public interface PullBatchMapper extends BaseMapper<PullBatchPo> {
     List<PullBatchInfoVo> listOperatorBatchByStatus(@Param("operatorId") Long operatorId, @Param("status") Integer status,
                                                     @Param("keyword") String keyword, @Param("batchTime") Timestamp batchTime);
 
-    /**
-     * @Desc: 根据订单id 获取批次信息
-     * @Author: CY
-     * @Date: 2020/6/12 15:25
-     */
-    PackOrderItemListVo getPullBatchMsg(@Param("orderId") Long orderId);
 
 
-    /**
-     * @Desc:
-     * @Author: CY
-     * @Date: 2020/6/12 15:33
-     */
-    List<Long> getBatchOrderListByOrderId(@Param("orderId") Long orderId);
 
 
     /**

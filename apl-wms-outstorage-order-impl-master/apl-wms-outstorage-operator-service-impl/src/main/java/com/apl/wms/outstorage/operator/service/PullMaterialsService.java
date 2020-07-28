@@ -57,12 +57,6 @@ public interface PullMaterialsService extends IService<PullMaterialsPo> {
          * @author cy
          * @since 2020-06-13
          */
-        ResultUtil<Page<PullMaterialsListVo>>getList(PageDto pageDto, PullMaterialsKeyDto keyDto);
+        ResultUtil<Page<PullMaterialsListVo>> getList(PageDto pageDto, PullMaterialsKeyDto keyDto);
 
-        /**
-         * @Desc: 提交打包信息
-         * @Author: CY
-         * @Date: 2020/6/15 11:58
-         */
-        ResultUtil submitPackMsg(PackOrderSubmitDto packOrderSubmit) throws Exception;
 }

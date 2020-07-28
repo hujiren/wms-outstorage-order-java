@@ -88,15 +88,6 @@ public interface OutOrderService extends IService<OutOrderPo> {
 
 
         /**
-         * @Desc: 获取订单打包详细
-         * @Author: CY
-         * @Date: 2020/6/13 12:10
-         */
-        ResultUtil<OrderItemListVo> getOrderPackMsg(Long orderId) throws Exception;
-
-
-
-        /**
          * @Desc: 获取多个订单信息
          * @Author: CY
          * @Date: 2020/6/8 16:32

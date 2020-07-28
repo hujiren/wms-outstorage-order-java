@@ -24,15 +24,6 @@ import java.util.List;
 public interface PullBatchService extends IService<PullBatchPo> {
 
 
-
-        /**
-         * @Desc: 根据订单id 获取打包信息
-         * @Author: CY
-         * @Date: 2020/6/12 11:25
-         */
-        ResultUtil<PackOrderItemListVo> getSortMsg(Long orderId) throws Exception;
-
-
         /**
          * @Desc: 根据条件获取拣货列表
          * @author cy
@@ -77,10 +68,4 @@ public interface PullBatchService extends IService<PullBatchPo> {
         ResultUtil<Page<PullBatchListVo>>getList(PageDto pageDto, PullBatchKeyDto keyDto);
 
 
-        /**
-         * @Desc: 分拣数据提交
-         * @Author: CY
-         * @Date: 2020/6/12 16:12
-         */
-        ResultUtil submitSortMsg(SortOrderSubmitDto sortOrderSubmitDto) throws Exception;
 }

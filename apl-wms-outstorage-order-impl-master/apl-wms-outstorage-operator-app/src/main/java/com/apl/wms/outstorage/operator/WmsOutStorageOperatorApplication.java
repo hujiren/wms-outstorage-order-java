@@ -15,7 +15,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
                 "com.apl.wms.warehouse.lib.*",
                 "com.apl.db.datasource",
                 "com.apl.db.mybatis",
-                "com.apl.db.utils",
                 "com.apl.lib",
                 "com.apl.cache",
                 "com.apl.amqp"},
@@ -29,8 +28,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 public class WmsOutStorageOperatorApplication {
     public static void main(String[] args) {
-
-
 
         SpringApplication.run(WmsOutStorageOperatorApplication.class , args);
     }

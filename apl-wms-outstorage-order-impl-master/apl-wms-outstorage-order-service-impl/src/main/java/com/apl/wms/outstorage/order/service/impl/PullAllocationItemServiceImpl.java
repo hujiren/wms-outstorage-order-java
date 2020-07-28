@@ -376,7 +376,6 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
     @Override
     public ResultUtil<Page<OutOrderPickListVo>> stockManage(PageDto pageDto, StockManageKeyDto keyDto) throws Exception {
 
-
         OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, aplCacheUtil);
 
         Long whId = operatorCacheBo.getWhId();

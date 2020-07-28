@@ -376,39 +376,6 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, mapVo);
     }
 
-    @Override
-    public ResultUtil<OrderItemListVo> getOrderPackMsg(Long orderId) throws Exception {
-
-        OrderItemListVo orderItemListVo = baseMapper.getPackOrderMsg(orderId);
-
-        if (orderItemListVo != null) {
-            OrderCountVo order = new OrderCountVo();
-            order.setId(orderItemListVo.getId());
-            order.setOrderSn(orderItemListVo.getOrderSn());
-            //主订单对应的子订单
-            List<OutOrderCommodityItemInfoVo> commodityOrderItems = outOrderCommodityItemService.getOrderItemsByOrderId(orderId);
-
-            List<OrderCountVo.OrderItem> orderItemList = new ArrayList<>();
-
-            for (OutOrderCommodityItemInfoVo commodityOrderItem : commodityOrderItems) {
-
-                OrderCountVo.OrderItem orderItem = new OrderCountVo.OrderItem();
-                orderItem.setId(commodityOrderItem.getId());
-                orderItem.setCommodityId(commodityOrderItem.getCommodityId());
-                orderItem.setOrderQty(commodityOrderItem.getOrderQty());
-                orderItemList.add(orderItem);
-            }
-
-            fullCommodityImg(commodityOrderItems);
-            order.setOrderItems(orderItemList);
-
-            orderItemListVo.setOrderItemInfos(commodityOrderItems);
-            redisTemplate.opsForValue().set("packaging:" + orderId, order);
-        }
-
-
-        return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, orderItemListVo);
-    }
 
 
     /**

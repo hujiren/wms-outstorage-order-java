@@ -98,25 +98,6 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
     @Value("${apl.wms.pick.batchSnPrefix.PB}")
     String batchSnPrefix;
 
-    // 根据订单id 获取打包信息
-    @Override
-    public ResultUtil<PackOrderItemListVo> getSortMsg(Long orderId) throws Exception {
-
-        //获取批次信息
-        PackOrderItemListVo packOrderItemListVo = baseMapper.getPullBatchMsg(orderId);
-
-        if (packOrderItemListVo != null) {
-
-            //获取打包 订单信息
-            List<Long> orderIds = baseMapper.getBatchOrderListByOrderId(orderId);
-
-            List<OrderItemListVo> orderItems = outOrderService.getMultiOrderMsg(orderIds, OrderStatusEnum.HAS_BEEN_COMMITED.getStatus()).getData();
-
-            packOrderItemListVo.setOrderItemListVos(orderItems);
-        }
-
-        return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, packOrderItemListVo);
-    }
 
 
     /**
@@ -336,45 +317,6 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
 
 
-
-
-
-
-
-
-
-
-    @Override
-    @Transactional
-    public ResultUtil submitSortMsg(SortOrderSubmitDto sortOrderSubmitDto) throws Exception {
-
-        //前端提交的订单列表
-        List<SortOrderSubmitDto.Order> orders = sortOrderSubmitDto.getOrders();
-
-        //查找批次对应的订单列表
-        List<Long> orderIds = baseMapper.getBatchOrderList(sortOrderSubmitDto.getBatchId());
-
-        if (CollectionUtils.isEmpty(orderIds)) {
-            return ResultUtil.APPRESULT(PullBatchServiceCode.PULL_BATCH_NOT_EXIST.code, PullBatchServiceCode.PULL_BATCH_NOT_EXIST.msg, null);
-        }
-        //订单对应的订单项目 数据
-        List<OrderItemListVo> orderItems = outOrderService.getMultiOrderMsg(orderIds, OrderStatusEnum.HAS_BEEN_COMMITED.getStatus()).getData();
-
-        //提交的批次的订单数量 和保存的批次的订单数量不一致
-        if (orders.size() != orderItems.size()) {
-            throw new AplException(PullBatchServiceCode.SUBMIT_DATA_ERROR.code, PullBatchServiceCode.SUBMIT_DATA_ERROR.msg);
-        }
-
-        //校验 提交数据的合法性
-        validateSortMsg(orders, orderItems);
-        //更新订单状态
-        outOrderService.batchUpdateOrderPullStatus(orderIds, PullStatusType.HAS_BEEN_SORTED.getStatus(), null);
-
-        updatePullBatchStatus(sortOrderSubmitDto.getBatchId(), PullStatusType.HAS_BEEN_SORTED.getStatus());
-
-        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, null);
-    }
-
     /**
      * @Desc: 校验 提交数据的合法性
      * @Author: CY
@@ -412,33 +354,6 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
     }
 
 
-    /**
-     * @Desc: 更新拣货批次状态
-     * @Author: CY
-     * @Date: 2020/6/10 17:42
-     */
-    private void updatePullBatchStatus(Long batchId, Integer status) {
-
-        PullBatchPo pullBatchPo = baseMapper.selectById(batchId);
-
-        if (pullBatchPo == null) {
-            throw new AplException(PullBatchServiceCode.PULL_BATCH_NOT_EXIST.code, PullBatchServiceCode.PULL_BATCH_NOT_EXIST.msg);
-        }
-
-        pullBatchPo.setPullStatus(status);
-
-        //拣货完成，填充 完成时间
-        if (PullStatusType.HAS_BEEN_PICKED.getStatus().equals(status)) {
-            pullBatchPo.setPullFinishTime(new Timestamp(System.currentTimeMillis()));
-        }
-        //分拣完成，填充完成时间，且填充分拣员id
-        else if (PullStatusType.HAS_BEEN_SORTED.getStatus().equals(status)) {
-            pullBatchPo.setSortingFinishTime(new Timestamp(System.currentTimeMillis()));
-            pullBatchPo.setSortingOperatorId(CommonContextHolder.getSecurityUser().getMemberId());
-        }
-
-        baseMapper.updateById(pullBatchPo);
-    }
 
 
     /**
