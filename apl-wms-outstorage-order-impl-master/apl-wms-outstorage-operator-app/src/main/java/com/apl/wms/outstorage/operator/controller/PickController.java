@@ -22,6 +22,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.hibernate.validator.constraints.Range;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -104,9 +105,10 @@ public class PickController {
 
     @PostMapping(value = "/submit-pick-item")
     @ApiOperation(value =  "提交拣货数据" , notes = "提交拣货数据 ， 进行库存减扣")
-    public ResultUtil<Boolean> submitPick(@Validated @RequestBody SubmitPickItemDto pullBatchSubmit) throws Exception {
+    public ResultUtil<Boolean> submitPick(@Range(min = 0, message = "批次id不能小于0") @NotNull(message = "批次id不能为空")Long batchId,
+                                          @Validated @RequestBody List<SubmitPickItemDto> submitPickItemDtoList) throws Exception {
 
-        return pullBatchService.submitPullBatch(pullBatchSubmit);
+        return pickService.submitPick(batchId, submitPickItemDtoList);
     }
 
 

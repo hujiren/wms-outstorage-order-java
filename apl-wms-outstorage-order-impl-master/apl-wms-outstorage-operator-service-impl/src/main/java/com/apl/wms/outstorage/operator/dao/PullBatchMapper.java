@@ -1,6 +1,7 @@
 package com.apl.wms.outstorage.operator.dao;
 import com.apl.wms.outstorage.operator.pojo.bo.OrderCommodityInfoBo;
 import com.apl.wms.outstorage.operator.pojo.dto.PullBatchKeyDto;
+import com.apl.wms.outstorage.operator.pojo.po.PullBatchOrderPo;
 import com.apl.wms.outstorage.operator.pojo.po.PullBatchPo;
 import com.apl.wms.outstorage.operator.pojo.vo.PackOrderItemListVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PullBatchInfoVo;
@@ -71,28 +72,34 @@ public interface PullBatchMapper extends BaseMapper<PullBatchPo> {
     List<Long> getBatchOrderList(@Param("batchId") Long batchId);
 
 
-    /**
-     * 批量更新订单状态
-     * @param ids
-     * @param pullStatus
-     * @param minKey
-     * @param maxKey
-     * @return
-     */
-    Integer updateOrderStatus(@Param("ids") String ids, @Param("pullStatus")Integer pullStatus, @Param("minKey")Long minKey, @Param("maxKey")Long maxKey);
-
 
     /**
      * 批量插入批次订单id和批次号
-     * @param batchId
-     * @param ids
+     * @param
+     * @param
      * @return
      */
-    Integer insertBatchOrderIds(@Param("batchId") Long batchId, @Param("ids") List<Long> ids);
-
-    List<OrderCommodityInfoBo> getOrderInfoByCommodityIds(@Param("ids") List<Long> commodityIdList);
+    Integer insertBatchOrderIds(@Param("list") List<PullBatchOrderPo> list);
 
     List<Long> getOrderIdByBatchId(@Param("batchId") Long batchId);
 
     List<OutOrderPo> getOrderInfoByIds(@Param("ids") List<Long> orderIdList);
+
+    Integer updateOrderStatus(@Param("ids") String ids, @Param("pullStatus") Integer pullStatus, @Param("minKey") Long minKey, @Param("maxKey") Long maxKey);
+
+
+    /**
+     * 插入批次信息
+     * @param pullBatchPo
+     * @return
+     */
+    Integer insertPullBatch(@Param("pullBatchPo") PullBatchPo pullBatchPo);
+
+
+    /**
+     * 查询批次索引
+     * @param whId
+     * @return
+     */
+    Integer getBatchIndex(@Param("whId") Long whId);
 }

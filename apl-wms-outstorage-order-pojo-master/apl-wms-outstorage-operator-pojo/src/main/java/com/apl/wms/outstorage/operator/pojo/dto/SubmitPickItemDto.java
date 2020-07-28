@@ -3,54 +3,33 @@ package com.apl.wms.outstorage.operator.pojo.dto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.hibernate.validator.constraints.Range;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
+/**
+ * @author hjr start
+ * @date 2020/7/24 - 9:54
+ */
 @Data
-@ApiModel(value = "拣货提交实体")
+@EqualsAndHashCode(callSuper = false)
+@ApiModel(value="提交拣货信息对象", description="提交拣货信息对象")
 public class SubmitPickItemDto {
 
-    @ApiModelProperty(name = "batchId" , notes = "批次id" , required = true)
-    @NotNull(message = "批次Id不能为空")
-    private Long batchId;
+    @NotNull(message = "商品id不能为空")
+    @ApiModelProperty(name = "commodityId", value = "商品id", required = true)
+    @Range(min = 0, message = "商品Id不能小于0")
+    private Long commodityId;
 
-    private List<PullBatchCommodityDto> pullBatchCommodityDto;
+    @NotNull(message = "库位出库数量不能为空")
+    @ApiModelProperty(name = "pullQty", value = "单库位出库数量")
+    @Range(min = 0, message = "出库数量不能小于0")
+    private Integer pullQty;
 
-    @Data
-    public static class PullBatchCommodityDto {
-
-        @ApiModelProperty(name = "pullBatchStorageLocalIdsList" , notes = "库位及对应拣货数量" , required = true)
-        @NotNull(message = "库位及对应拣货数量")
-        @Min(value = 0, message = "库位对应拣货数量不能小于0")
-        private List<PullBatchStorageLocalIds> pullBatchStorageLocalIdsList;
-
-        @ApiModelProperty(name = "commodityId" , notes = "商品id" , required = true)
-        @NotNull(message = "商品id不能为空")
-        @Min(value = 0, message = "订单id不能小于0")
-        private Long commodityId;
-
-        @ApiModelProperty(name = "pullQty" , notes = "拣货数量" , required = true)
-        @NotNull(message = "拣货数量不能为空")
-        @Min(value = 0, message = "拣货数量不能小于0")
-        private Integer pullQty;
-
-    }
-
-    @Data
-    public static class PullBatchStorageLocalIds{
-
-        @ApiModelProperty(name = "storageLocalId" , notes = "库位id" , required = true)
-        @NotNull(message = "库位Id")
-        @Min(value = 0, message = "库位id")
-        private Long storageLocalId;
-
-        @ApiModelProperty(name = "storageLocalPullQty" , notes = "库位拣货数量" , required = true)
-        @NotNull(message = "库位拣货数量")
-        @Min(value = 0, message = "库位拣货数量")
-        private Integer storageLocalPullQty;
-
-    }
+    @NotNull(message = "库位id不能为空")
+    @ApiModelProperty(name = "storageLocalId", value = "库位id")
+    @Range(min = 0, message = "库位Id不能小于0")
+    private Long storageLocalId;
 
 }

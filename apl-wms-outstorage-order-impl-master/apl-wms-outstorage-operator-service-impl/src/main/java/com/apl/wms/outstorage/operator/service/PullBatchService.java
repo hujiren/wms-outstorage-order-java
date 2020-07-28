@@ -4,7 +4,6 @@ import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.utils.ResultUtil;
 import com.apl.wms.outstorage.order.pojo.vo.OrderItemListVo;
 import com.apl.wms.outstorage.operator.pojo.dto.PullBatchKeyDto;
-import com.apl.wms.outstorage.operator.pojo.dto.SubmitPickItemDto;
 import com.apl.wms.outstorage.operator.pojo.dto.SortOrderSubmitDto;
 import com.apl.wms.outstorage.operator.pojo.po.PullBatchPo;
 import com.apl.wms.outstorage.operator.pojo.vo.PackOrderItemListVo;
@@ -12,7 +11,6 @@ import com.apl.wms.outstorage.operator.pojo.vo.PullBatchListVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PullAllocationItemMsgVo;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-
 import java.util.List;
 
 /**
@@ -36,7 +34,7 @@ public interface PullBatchService extends IService<PullBatchPo> {
 
 
         /**
-         * @Desc: 根据状态获取拣货列表
+         * @Desc: 根据条件获取拣货列表
          * @author cy
          * @since 2020-06-08
          */
@@ -77,14 +75,6 @@ public interface PullBatchService extends IService<PullBatchPo> {
          * @since 2020-06-08
          */
         ResultUtil<Page<PullBatchListVo>>getList(PageDto pageDto, PullBatchKeyDto keyDto);
-
-
-        /**
-         * @Desc: 提交拣货信息
-         * @Author: CY
-         * @Date: 2020/6/10 16:42
-         */
-        ResultUtil<Boolean> submitPullBatch(SubmitPickItemDto pullBatchSubmit) throws Exception;
 
 
         /**

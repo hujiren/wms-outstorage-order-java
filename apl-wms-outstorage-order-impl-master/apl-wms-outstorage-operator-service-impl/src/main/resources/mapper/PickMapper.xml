@@ -2,7 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.apl.wms.outstorage.operator.dao.PickMapper">
 
-
     <!-- 分页查找 第2步, 根据ids查找订单列表-->
     <select id="getListByOrderSns" parameterType="java.util.List"  resultType="com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo">
         SELECT
@@ -19,8 +18,8 @@
             out_order
         where
         order_sn in (
-            <foreach collection="orderSns" open="'" separator="," close="'" item="row">
-                ${row}
+            <foreach collection="orderSns" open="" separator="," close="" item="row" index="">
+                #{row}
             </foreach>
         )
     </select>
@@ -96,7 +95,7 @@
     </select>
 
 
-
+    <!--更新订单状态为4 已分配拣货员-->
     <update id="updateOrderPickingMember">
 
         update out_order
@@ -109,5 +108,103 @@
             )
 
     </update>
+
+
+    <!--根据批次id获取批次下的订单id-->
+    <select id="getOrderIdsByBatchId" resultType="java.lang.Long">
+        select order_id from pull_batch_order where batch_id = #{batchId}
+    </select>
+
+
+    <!--批量修改订单拣货状态-->
+    <update id="updatePullStatus">
+        update out_order set pull_status = #{pullStatus} where id in ${ids}
+        <if test="maxKey > 0 and minKey > 0">
+            and id between #{minKey} and #{maxKey}
+        </if>
+    </update>
+
+
+    <!--根据批次id修改批次的状态和时间-->
+    <update id="updateBatchByBatchId">
+        update pull_batch set pull_finish_time = #{po.pullFinishTime}, pull_status = #{po.pullStatus} where id = #{po.Id}
+    </update>
+
+
+    <!--根据库位id查询表中对应的实际库存-->
+    <select id="getStorageLocalMap" resultType="java.util.Map">
+
+        select
+            id as mapKey,
+            reality_count
+        from
+            storage_local
+        where
+            id in (${ids})
+    </select>
+
+
+    <!--批量插入批次商品信息对象-->
+    <insert id="batchInsertPullBatchCommodity">
+        <foreach collection="list" index="" separator=";" item="row" close="" open="">
+            insert into pull_batch_commodity(id, batch_id, commodity_id, storage_local_id, pull_qty)
+            values (#{row.id}, #{row.batchId}, #{row.commodityId}, #{row.storageLocalId}, #{row.pullQty})
+        </foreach>
+    </insert>
+
+
+    <!--批量更新库位库存信息-->
+    <update id="batchUpdateStorageLocal">
+        <foreach collection="list" open="" close="" item="row" separator=";" index="">
+            update storage_local set reality_count = #{row.realityCount} where id = #{row.id}
+        </foreach>
+    </update>
+
+
+    <!--批量更新总库存对象-->
+    <update id="batchUpdateStocks">
+        <foreach collection="list" close="" open="" item="row" separator=";" index="">
+            update stocks set reality_count = #{row.realityCount} where commodity_id = #{row.commodityId}
+        </foreach>
+    </update>
+
+
+    <!--根据商品id批量关联查询订单号和订单Id-->
+    <select id="getOrderSnByCommodityId" resultType="com.apl.wms.outstorage.operator.pojo.bo.CorrelateCommodityBo">
+        select
+            pbc.commodity_id,
+            pbo.order_id,
+            oo.order_sn
+        from
+            pull_batch_commodity pbc
+        LEFT JOIN
+            pull_batch_order pbo on pbc.batch_id = pbo.batch_id
+        LEFT JOIN
+            out_order oo on pbo.order_id = oo.id
+        where pbc.commodity_id in
+            <foreach collection="list" index="" separator="," item="row" open="("  close=")">
+                ${row}
+            </foreach>
+    </select>
+
+
+    <!--根据订单id批量查询商品信息关联订单信息-->
+    <select id="getCommodityInfoByOrderIds"
+            resultType="com.apl.wms.outstorage.operator.pojo.bo.CorrelateCommodityOrderBo">
+        select
+            ooc.order_id,
+            ooc.commodity_id,
+            ooc.order_qty,
+            oo.order_sn
+        from
+            out_order_commodity_item
+        left JOIN
+            out_order oo on ooc.order_id = oo.id
+        where
+            ooc.order_id in
+        <foreach collection="ids" open="(" close=")" item="row" separator="," index="">
+            #{row}
+        </foreach>
+    </select>
 
 </mapper>

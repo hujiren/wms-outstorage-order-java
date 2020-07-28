@@ -2,6 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.apl.wms.outstorage.operator.dao.PullBatchMapper">
 
+
     <!-- 根据批次id查找批次信息详情 2020-06-08-->
     <select id="getById" resultType="com.apl.wms.outstorage.operator.pojo.vo.PullBatchInfoVo">
         SELECT
@@ -44,8 +45,8 @@
             pb.cr_time
         FROM
             pull_batch pb
-            LEFT JOIN pull_allocation_item pi ON pb.id = pi.batch_id
-            LEFT JOIN out_order oo ON pi.out_order_id = oo.id
+            LEFT JOIN pull_batch_order pbo on pb.id = pbo.batch_id
+            LEFT JOIN out_order oo on pbo.order_id = oo.id
             <if test="keyword != null and keyword != ''">
                 AND locate(#{keyword}, oo.order_sn)>0
             </if>
@@ -84,45 +85,28 @@
 
     <select id="getBatchOrderList" resultType="long">
         SELECT
-            distinct pi.out_order_id orderId
+            distinct order_id
         FROM
-            pull_batch pb
-            LEFT JOIN pull_allocation_item pi on pb.id = pi.batch_id
+            pull_batch_order
+
         WHERE
-            pb.id = #{batchId}
+            batch_id = #{batchId}
     </select>
 
-    <!--批量更新订单状态-->
-    <update id="updateOrderStatus">
-
-        update out_order set pull_status = #{pullStatus} where id in (${ids})
-        <if test="maxKey != null and minKey != null">
-            and id between #{minKey} and #{maxKey}
-
-        </if>
-    </update>
 
     <insert id="insertBatchOrderIds">
 
-        <foreach collection="ids" index="" close="" open="" item="row" separator=";">
-            insert into pull_batch_order (batch_id, order_id) values (#{batchId}, #{row})
+        <foreach collection="list" index="" close="" open="" item="row" separator=";">
+            insert into pull_batch_order (id, batch_id, order_id) values (#{row.id}, #{row.batchId}, #{row.orderId})
         </foreach>
 
     </insert>
 
-    <select id="getOrderInfoByCommodityIds"
-            resultType="com.apl.wms.outstorage.operator.pojo.bo.OrderCommodityInfoBo">
-
-        select
-            order_id,
-            commodity_id
-        from
-            out_order_commodity_item
-        where
-            <foreach collection="ids" open="commodity_id in (" close=")" item="row" separator="," index="">
-                #{row}
-            </foreach>
-    </select>
+    <insert id="insertPullBatch">
+        insert into pull_batch(id, batch_index, batch_sn, wh_id, pull_operator_id, pull_status, cr_time) values
+        (${pullBatchPo.id}, #{pullBatchPo.batchIndex}, #{pullBatchPo.batchSn}, #{pullBatchPo.whId}, #{pullBatchPo.pullOperatorId},
+        #{pullBatchPo.pullStatus}, #{pullBatchPo.crTime})
+    </insert>
 
     <select id="getOrderIdByBatchId" resultType="java.lang.Long">
         select order_id from pull_batch_order where batch_id = #{batchId}
@@ -133,5 +117,18 @@
         <foreach collection="ids" index="" separator="," item="row" open="(" close=")">
             #{row}
          </foreach>
+    </select>
+
+
+    <update id="updateOrderStatus">
+        update out_order set pull_status = #{pullStatus}
+        where id in (${ids})
+        <if test="maxKey > 0 and minKey > 0">
+            and id between #{minKey} and #{maxKey}
+        </if>
+    </update>
+
+    <select id="getBatchIndex" resultType="java.lang.Integer">
+        select max(batch_index) from pull_batch where wh_id = #{whId}
     </select>
 </mapper>

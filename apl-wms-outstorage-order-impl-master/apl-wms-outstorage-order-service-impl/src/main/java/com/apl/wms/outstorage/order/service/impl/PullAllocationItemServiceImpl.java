@@ -429,7 +429,6 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
         //执行跨项目跨库关联
         JoinUtil.join(outOrderInfoList, joinTabs);
 
-
         ResultUtil result = ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, page);
 
         return result;
