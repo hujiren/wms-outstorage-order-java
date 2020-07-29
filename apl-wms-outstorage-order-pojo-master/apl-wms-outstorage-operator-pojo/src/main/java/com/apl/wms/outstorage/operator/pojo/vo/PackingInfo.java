@@ -1,9 +1,10 @@
 package com.apl.wms.outstorage.operator.pojo.vo;
-import com.apl.wms.outstorage.order.pojo.vo.OutOrderCommodityItemInfoVo;
-import com.apl.wms.outstorage.order.pojo.vo.OutOrderListVo;
+import com.apl.wms.warehouse.lib.pojo.vo.PackagingMaterialsInfoVo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.util.List;
 
 /**
  * @author hjr start
@@ -14,11 +15,11 @@ import lombok.EqualsAndHashCode;
 public class PackingInfo {
 
     @ApiModelProperty("订单信息对象")
-    private OutOrderListVo outOrderListVo;
+    private OutOrderAttachInfoVo outOrderAttachInfoVo;
 
     @ApiModelProperty("商品信息对象")
-    private OutOrderCommodityItemInfoVo outOrderCommodityItemInfoVo;
+    private List<PackCommodityInfoVo> packCommodityInfoVoList;
 
     @ApiModelProperty("包装材料信息对象")
-    private PackagingMaterialsInfoVo packagingMaterialsInfoVo;
+    private List<PackagingMaterialsInfoVo> packagingMaterialsInfoVo;
 }

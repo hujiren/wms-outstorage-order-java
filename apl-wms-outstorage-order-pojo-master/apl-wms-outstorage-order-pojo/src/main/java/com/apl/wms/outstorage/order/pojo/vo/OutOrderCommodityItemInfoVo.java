@@ -21,7 +21,7 @@ public class OutOrderCommodityItemInfoVo implements Serializable {
 
 private static final long serialVersionUID=1L;
 
-    //
+
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
 

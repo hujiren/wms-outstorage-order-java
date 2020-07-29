@@ -1,8 +1,12 @@
 package com.apl.wms.outstorage.operator.service;
 
 import com.apl.lib.utils.ResultUtil;
+import com.apl.wms.outstorage.operator.pojo.dto.PullMaterialsDto;
+import com.apl.wms.outstorage.operator.pojo.dto.PullPackItemDto;
 import com.apl.wms.outstorage.operator.pojo.vo.PackingInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * @author hjr start
@@ -15,5 +19,18 @@ public interface PackService extends IService<PackingInfo> {
      * @param orderSn
      * @return
      */
-    ResultUtil<PackingInfo> getPackInfo(String orderSn);
+    ResultUtil<PackingInfo> getPackInfo(String orderSn) throws Exception;
+
+    /**
+     * 提交打包信息
+     * @return
+     */
+    ResultUtil<Boolean> submitPackInfo(List<PullMaterialsDto> pullMaterialsDtoList);
+
+    /**
+     * 提交打包尺寸
+     * @param pullPackItemList
+     * @return
+     */
+    ResultUtil<Boolean> submitPackSize(List<PullPackItemDto> pullPackItemList);
 }

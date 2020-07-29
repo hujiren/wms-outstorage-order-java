@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.apl.wms.outstorage.operator.dao.PackMapper">
+
+    <!--通过订单号查询订单物流信息详情-->
+    <select id="getOrderAttachInfoByOrderSn"
+            resultType="com.apl.wms.outstorage.operator.pojo.vo.OutOrderAttachInfoVo">
+        select
+            oo.id,
+            oo.order_sn,
+            oo.pull_status,
+            ooa.to_desc_logistics,
+            ooa.carrier_sn
+        from
+            out_order oo left join out_order_attachment ooa on oo.id = ooa.order_id
+        where
+            oo.order_sn = #{orderSn} and oo.pull_status = 7
+    </select>
+
+    <!--通过订单号查询商品信息详情-->
+    <select id="getCommodityInfoByOrderSn"
+            resultType="com.apl.wms.outstorage.operator.pojo.vo.PackCommodityInfoVo">
+        select
+            ooc.order_id,
+            ooc.commodity_id,
+            ooc.commodity_sku,
+            ooc.commodity_name,
+            ooc.order_qty
+         from
+            out_order_commodity_item ooc left join out_order oo
+         on
+            oo.id = ooc.order_id where oo.order_sn = #{orderSn}
+    </select>
+
+    <!--根据订单ids获取拣货状态-->
+    <select id="getPullStatusByIds" resultType="java.lang.Integer">
+        select pull_status from out_order where id in
+        <foreach collection="orderIds" index="" separator="," item="row" open="(" close=")">
+            #{row}
+        </foreach>
+    </select>
+
+
+    <!--批量插入订单包装材料数据-->
+    <insert id="insertPullMaterials">
+        <foreach collection="list" close="" open="" item="row" separator=";" index="">
+            insert into pull_materials(id, out_order_id, materials_id, qty) values (#{row.id}, #{row.outOrderId}, #{row.materialsId}, #{row.qty})
+        </foreach>
+    </insert>
+
+    <!--批量修改订单状态为8-->
+    <update id="updatePullStatusByIds">
+        update out_order set pull_status = 8 where id in
+        <foreach collection="orderIds" index="" separator="," item="row" open="(" close=")">
+            #{row}
+        </foreach>
+    </update>
+
+
+    <!--批量插入打包尺寸数据-->
+    <insert id="insertPullPackItem">
+        <foreach collection="list" close="" open="" item="row" separator=";" index="">
+            insert into pull_pack_item(id, out_order_id, sub_sn, gw, size_length, size_width, size_height, volume) values (#{row.id}, #{row.outOrderId}, #{row.subSn}, #{row.gw},
+            #{row.sizeLength}, #{row.sizeWidth}, #{row.sizeHeight}, #{row.volume})
+        </foreach>
+    </insert>
+</mapper>
