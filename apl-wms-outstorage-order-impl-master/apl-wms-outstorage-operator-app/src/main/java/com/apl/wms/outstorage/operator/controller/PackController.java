@@ -3,6 +3,7 @@ package com.apl.wms.outstorage.operator.controller;
 import com.apl.lib.utils.ResultUtil;
 import com.apl.wms.outstorage.operator.pojo.dto.PullMaterialsDto;
 import com.apl.wms.outstorage.operator.pojo.dto.PullPackItemDto;
+import com.apl.wms.outstorage.operator.pojo.vo.OrderRecordVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PackingInfo;
 import com.apl.wms.outstorage.operator.service.PackService;
 import io.swagger.annotations.Api;
@@ -54,5 +55,14 @@ public class PackController {
 
         return packService.submitPackSize(pullPackItemList);
     }
+
+
+    @PostMapping(value = "/get-order-record")
+    @ApiOperation(value =  "获取订单记录" , notes = "获取订单记录")
+    public ResultUtil<List<OrderRecordVo>> getOrderRecord(){
+
+        return packService.getOrderRecord();
+    }
+
 
 }

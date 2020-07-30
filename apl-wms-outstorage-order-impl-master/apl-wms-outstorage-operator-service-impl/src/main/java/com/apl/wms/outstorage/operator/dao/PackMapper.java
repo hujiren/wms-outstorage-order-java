@@ -1,6 +1,7 @@
 package com.apl.wms.outstorage.operator.dao;
 import com.apl.wms.outstorage.operator.pojo.dto.PullMaterialsDto;
 import com.apl.wms.outstorage.operator.pojo.dto.PullPackItemDto;
+import com.apl.wms.outstorage.operator.pojo.vo.OrderRecordVo;
 import com.apl.wms.outstorage.operator.pojo.vo.OutOrderAttachInfoVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PackCommodityInfoVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PackingInfo;
@@ -10,6 +11,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import java.lang.reflect.Member;
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -61,4 +64,20 @@ public interface PackMapper extends BaseMapper<PackingInfo> {
      * @return
      */
     Integer insertPullPackItem(@Param("list") List<PullPackItemDto> list);
+
+
+    /**
+     * 获取订单记录
+     * @return
+     */
+    List<OrderRecordVo> getOrderRecord(@Param("orderIds") List<Long> orderIds);
+
+
+    /**
+     * 根据拣货员和时间戳查询批次和订单
+     * @param memberId
+     * @param timestamp
+     * @return
+     */
+    List<Long> getOrderIdByTimestamp(@Param("memberId") Long memberId, @Param("timestamp") Timestamp timestamp);
 }

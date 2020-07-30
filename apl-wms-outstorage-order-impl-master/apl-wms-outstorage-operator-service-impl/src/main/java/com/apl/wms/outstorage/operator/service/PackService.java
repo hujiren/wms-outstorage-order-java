@@ -3,6 +3,7 @@ package com.apl.wms.outstorage.operator.service;
 import com.apl.lib.utils.ResultUtil;
 import com.apl.wms.outstorage.operator.pojo.dto.PullMaterialsDto;
 import com.apl.wms.outstorage.operator.pojo.dto.PullPackItemDto;
+import com.apl.wms.outstorage.operator.pojo.vo.OrderRecordVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PackingInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -33,4 +34,11 @@ public interface PackService extends IService<PackingInfo> {
      * @return
      */
     ResultUtil<Boolean> submitPackSize(List<PullPackItemDto> pullPackItemList);
+
+
+    /**
+     * 获取订单记录
+     * @return
+     */
+    ResultUtil<List<OrderRecordVo>> getOrderRecord();
 }

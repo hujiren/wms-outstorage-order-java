@@ -40,7 +40,6 @@
         </foreach>
     </select>
 
-
     <!--批量插入订单包装材料数据-->
     <insert id="insertPullMaterials">
         <foreach collection="list" close="" open="" item="row" separator=";" index="">
@@ -64,4 +63,34 @@
             #{row.sizeLength}, #{row.sizeWidth}, #{row.sizeHeight}, #{row.volume})
         </foreach>
     </insert>
+
+    <!--获取订单记录-->
+    <select id="getOrderRecord" resultType="com.apl.wms.outstorage.operator.pojo.vo.OrderRecordVo">
+       select
+            oo.order_sn,
+            ooa.carrier_sn
+        from
+            out_order oo left join out_order_attachment ooa
+        on
+            oo.id = ooa.order_id
+        where
+            oo.id in
+        <foreach collection="orderIds" open="(" close=")" item="row" separator="," index="">
+            #{row}
+        </foreach>
+    </select>
+
+    <!--根据拣货员和拣货完成时间查询订单-->
+    <select id="getOrderIdByTimestamp" resultType="java.lang.Long">
+        select
+            pbo.order_id
+        from
+            pull_batch pb left join pull_batch_order pbo
+        on
+            pb.id = pbo.batch_id
+        where
+            pb.pull_operator_id = #{memberId}
+        and
+            pb.sorting_finish_time > #{timestamp}
+    </select>
 </mapper>

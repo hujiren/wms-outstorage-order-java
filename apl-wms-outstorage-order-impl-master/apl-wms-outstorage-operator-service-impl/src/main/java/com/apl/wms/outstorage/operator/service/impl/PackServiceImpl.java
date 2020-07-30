@@ -12,13 +12,17 @@ import com.apl.lib.utils.StringUtil;
 import com.apl.wms.outstorage.operator.dao.PackMapper;
 import com.apl.wms.outstorage.operator.pojo.dto.PullMaterialsDto;
 import com.apl.wms.outstorage.operator.pojo.dto.PullPackItemDto;
+import com.apl.wms.outstorage.operator.pojo.vo.OrderRecordVo;
 import com.apl.wms.outstorage.operator.pojo.vo.OutOrderAttachInfoVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PackCommodityInfoVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PackingInfo;
 import com.apl.wms.outstorage.operator.service.PackService;
 import com.apl.wms.warehouse.lib.cache.JoinCommodity;
+import com.apl.wms.warehouse.lib.cache.OperatorCacheBo;
+import com.apl.wms.warehouse.lib.cache.WarehouseCacheBo;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.apl.wms.warehouse.lib.pojo.vo.PackagingMaterialsInfoVo;
+import com.apl.wms.warehouse.lib.utils.WmsWarehouseUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,9 +30,13 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.swing.plaf.basic.BasicSeparatorUI;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -44,7 +52,8 @@ public class PackServiceImpl extends ServiceImpl<PackMapper, PackingInfo> implem
         NO_DATA_WAS_FOUND("NO_DATA_WAS_FOUND", "没有找到对应数据!!"),
         REMOTE_PROCEDURE_CALL_FAILED("REMOTE_PROCEDURE_CALL_FAILED", "远程调用失败"),
         ORDER_ID_IS_WRONG("ORDER_ID_IS_WRONG", "传入的订单id不正确"),
-        THIS_ORDER_PULL_STATUS_IS_WRONG("THIS_ORDER_PULL_STATUS_IS_WRONG", "该订单拣货状态错误!!")
+        THIS_ORDER_PULL_STATUS_IS_WRONG("THIS_ORDER_PULL_STATUS_IS_WRONG", "该订单拣货状态错误!!"),
+        YOU_HAVE_NO_PICK_UP_ORDER_TODAY("YOU_HAVE_NO_PICK_UP_ORDER_TODAY", "您今天没有拣货订单")
         ;
 
         private String code;
@@ -232,4 +241,30 @@ public class PackServiceImpl extends ServiceImpl<PackMapper, PackingInfo> implem
         return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, true);
     }
 
+
+    @Override
+    @Transactional
+    public ResultUtil<List<OrderRecordVo>> getOrderRecord() {
+
+        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, aplCacheUtil);
+        Long memberId = operatorCacheBo.getMemberId();
+
+        //获取当前时间前一天的时间戳
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.DATE , -1);
+        Timestamp timestamp = new Timestamp(calendar.getTimeInMillis());
+
+        //先根据时间戳查批次和订单
+        List<Long> orderIds = baseMapper.getOrderIdByTimestamp(memberId, timestamp);
+
+        if(orderIds.size() == 0){
+            throw new AplException(PickServiceCode.YOU_HAVE_NO_PICK_UP_ORDER_TODAY.code,
+                    PickServiceCode.YOU_HAVE_NO_PICK_UP_ORDER_TODAY.msg, null);
+        }
+        //根据订单id查询订单号和物流单号
+        List<OrderRecordVo> orderRecordVoList = baseMapper.getOrderRecord(orderIds);
+
+        return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, orderRecordVoList);
+    }
 }
