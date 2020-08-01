@@ -16,9 +16,9 @@ import com.apl.wms.outstorage.order.lib.enumwms.OutStorageOrderStatusEnum;
 import com.apl.wms.outstorage.order.lib.enumwms.PullStatusType;
 import com.apl.wms.outstorage.order.service.*;
 import com.apl.wms.warehouse.lib.cache.*;
+import com.apl.wms.warehouse.lib.cache.bo.StoreCacheBo;
+import com.apl.wms.warehouse.lib.cache.bo.WarehouseCacheBo;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
-import com.apl.wms.warehouse.lib.pojo.bo.PlatformOutOrderStockBo;
-import com.apl.wms.warehouse.lib.pojo.vo.OrderCountVo;
 import com.apl.wms.outstorage.order.dao.OutOrderMapper;
 import com.apl.wms.outstorage.order.lib.cache.JoinStore;
 import com.apl.wms.outstorage.order.lib.pojo.bo.OutOrderMultipleBo;
@@ -833,20 +833,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         return outOrderPo.getId();
     }
 
-    /**
-     * @Desc: 调用微服务，校验库存数量
-     * @Author: CY
-     * @Date: 2020/6/8 18:19
-     */
-    private void checkStockCount(PlatformOutOrderStockBo platformOutOrderStockBo) {
-        ResultUtil<Boolean> checkResult = warehouseFeign.checkStockCount(platformOutOrderStockBo);
 
-        //服务调用失败
-        // SERVER_INVOKE_SUCCESS
-        if (!checkResult.getCode().equals(CommonStatusCode.GET_SUCCESS.getCode())) {
-            throw new AplException(checkResult.getCode(), checkResult.getMsg());
-        }
-    }
 
 
     /**

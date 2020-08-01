@@ -10,6 +10,7 @@ import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.*;
 import com.apl.wms.outstorage.operator.pojo.po.*;
+import com.apl.wms.outstorage.operator.service.PickService;
 import com.apl.wms.outstorage.order.service.OutOrderCommodityItemService;
 import com.apl.wms.outstorage.order.service.OutOrderService;
 import com.apl.wms.outstorage.order.pojo.vo.OrderItemListVo;
@@ -23,6 +24,10 @@ import com.apl.wms.outstorage.operator.service.PullItemService;
 import com.apl.wms.outstorage.order.lib.enumwms.OrderStatusEnum;
 import com.apl.wms.outstorage.order.lib.enumwms.PullStatusType;
 import com.apl.wms.warehouse.lib.cache.*;
+import com.apl.wms.warehouse.lib.cache.bo.CommodityCacheBo;
+import com.apl.wms.warehouse.lib.cache.bo.OperatorCacheBo;
+import com.apl.wms.warehouse.lib.cache.bo.StorageLocalCacheBo;
+import com.apl.wms.warehouse.lib.cache.bo.WarehouseCacheBo;
 import com.apl.wms.warehouse.lib.feign.StocksHistoryFeign;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.apl.wms.warehouse.lib.utils.WmsWarehouseUtils;
@@ -35,8 +40,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import java.sql.Timestamp;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,9 +59,9 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
     //状态code枚举
     enum PullBatchServiceCode {
-        SUBMIT_DATA_ERROR("SUBMIT_DATA_ERROR", "提交数据有误"),
-        PULL_BATCH_NOT_EXIST("PULL_BATCH_NOT_EXIST", "拣货批次不存在"),
-        SORT_COUNT_ERROR("SORT_COUNT_ERROR", "分拣数量错误")
+        WH_ID_IS_NULL("WH_ID_IS_NULL", "仓库id是空"),
+        SORT_COUNT_ERROR("SORT_COUNT_ERROR", "分拣数量错误"),
+        THIS_ORDER_PULL_STATUS_IS_WRONG("THIS_ORDER_PULL_STATUS_IS_WORNG", "该订单的拣货状态不是<已分配拣货员>")
         ;
 
         private String code;
@@ -94,6 +97,9 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
     @Autowired
     StocksHistoryFeign stocksHistoryFeign;
+
+    @Autowired
+    PickService pickService;
 
     @Value("${apl.wms.pick.batchSnPrefix.PB}")
     String batchSnPrefix;
@@ -178,17 +184,27 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
         Long whId = operatorCacheBo.getWhId();
 
-
+        //查询批次索引的最大值
         Integer batchIndex = baseMapper.getBatchIndex(whId);
 
         if(whId == null){
-            return ResultUtil.APPRESULT(CommonStatusCode.SYSTEM_FAIL, null);
+            return ResultUtil.APPRESULT(PullBatchServiceCode.WH_ID_IS_NULL.code,PullBatchServiceCode.WH_ID_IS_NULL.msg, null);
         }
 
         JoinKeyValues longKeys = JoinUtil.getLongKeys(ids);
 
+        List<Integer> pullStatuses = baseMapper.getPullStatusByOrderIds(ids);
+
+        for (Integer pullStatus : pullStatuses) {
+            if(pullStatus != 4){
+                return ResultUtil.APPRESULT(PullBatchServiceCode.THIS_ORDER_PULL_STATUS_IS_WRONG.code,
+                        PullBatchServiceCode.THIS_ORDER_PULL_STATUS_IS_WRONG.msg, null);
+            }
+        }
+
         Integer pullStatus = 5;
 
+        //创建批次号
         SnBo snBo = createPullBatchSn(operatorCacheBo.getWhId());
 
         //批量更改订单状态
@@ -242,20 +258,22 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
         String cacheKey = "apl-wms:pick-batch-sn-index";
         RedisLock.lock(aplCacheUtil, cacheKey, 10);
-        Integer batchIndex = 0;
+        int batchIndex = 0;
 
         if(!aplCacheUtil.hasKey(cacheKey)){
             Integer index = baseMapper.getBatchIndex(whId);
             batchIndex = index;
         }
         else{
-            batchIndex = (Integer)aplCacheUtil.opsForValue().get(cacheKey);
+            Object o = aplCacheUtil.opsForValue().get(cacheKey);
+            String str = String.valueOf(o);
+            batchIndex = Integer.valueOf(str);
         }
 
         batchIndex++;
         aplCacheUtil.opsForValue().set(cacheKey, batchIndex);
 
-        String sn = this.batchSnPrefix+"-"+warehouseCacheBo.getWhCode().toUpperCase()+"-"+String.format("%3d", batchIndex);
+        String sn = this.batchSnPrefix+"-"+warehouseCacheBo.getWhCode().toUpperCase()+"-"+String.format("%03d", batchIndex);
         snBo.setSn(sn);
         snBo.setIndex(batchIndex);
 
@@ -347,12 +365,9 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
             }
 
-
         }
 
-
     }
-
 
 
 
@@ -400,6 +415,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
         return storageLocalMsgList;
     }
+
 
 
 

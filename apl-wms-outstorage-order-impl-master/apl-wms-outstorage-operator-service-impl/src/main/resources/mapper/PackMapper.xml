@@ -74,6 +74,8 @@
         on
             oo.id = ooa.order_id
         where
+            oo.pull_status = 8
+        and
             oo.id in
         <foreach collection="orderIds" open="(" close=")" item="row" separator="," index="">
             #{row}
@@ -89,7 +91,7 @@
         on
             pb.id = pbo.batch_id
         where
-            pb.pull_operator_id = #{memberId}
+            pb.sorting_operator_id = #{memberId}
         and
             pb.sorting_finish_time > #{timestamp}
     </select>

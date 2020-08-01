@@ -6,6 +6,7 @@ import com.apl.wms.outstorage.operator.pojo.dto.PullPackItemDto;
 import com.apl.wms.outstorage.operator.pojo.vo.OrderRecordVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PackingInfo;
 import com.apl.wms.outstorage.operator.service.PackService;
+import com.apl.wms.warehouse.lib.pojo.vo.PackagingMaterialsInfoVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -64,5 +65,13 @@ public class PackController {
         return packService.getOrderRecord();
     }
 
+
+    @PostMapping(value = "/get-pack-materials")
+    @ApiOperation(value =  "扫描包装材料" , notes = "扫描包装材料")
+    @ApiImplicitParam(name = "sku",value = "包装材料SKU",required = true  , paramType = "query")
+    public ResultUtil<PackagingMaterialsInfoVo> getPackMaterials(@NotNull(message = "包装材料SKU不能为空") String sku) throws Exception {
+
+        return packService.getPackMaterials(sku);
+    }
 
 }

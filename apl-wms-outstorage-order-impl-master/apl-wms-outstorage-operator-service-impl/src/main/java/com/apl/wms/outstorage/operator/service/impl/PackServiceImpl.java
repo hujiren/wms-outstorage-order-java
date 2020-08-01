@@ -1,6 +1,7 @@
 package com.apl.wms.outstorage.operator.service.impl;
 
 import com.apl.cache.AplCacheUtil;
+import com.apl.db.adb.AdbContext;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinBase;
@@ -18,21 +19,18 @@ import com.apl.wms.outstorage.operator.pojo.vo.PackCommodityInfoVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PackingInfo;
 import com.apl.wms.outstorage.operator.service.PackService;
 import com.apl.wms.warehouse.lib.cache.JoinCommodity;
-import com.apl.wms.warehouse.lib.cache.OperatorCacheBo;
-import com.apl.wms.warehouse.lib.cache.WarehouseCacheBo;
+import com.apl.wms.warehouse.lib.cache.bo.OperatorCacheBo;
+import com.apl.wms.warehouse.lib.feign.PackMaterialsFeign;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.apl.wms.warehouse.lib.pojo.vo.PackagingMaterialsInfoVo;
 import com.apl.wms.warehouse.lib.utils.WmsWarehouseUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.swing.plaf.basic.BasicSeparatorUI;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -46,6 +44,7 @@ import java.util.List;
 @Service
 @Slf4j
 public class PackServiceImpl extends ServiceImpl<PackMapper, PackingInfo> implements PackService {
+
 
     //状态code枚举
     enum PickServiceCode {
@@ -70,6 +69,9 @@ public class PackServiceImpl extends ServiceImpl<PackMapper, PackingInfo> implem
 
     @Autowired
     AplCacheUtil aplCacheUtil;
+
+    @Autowired
+    PackMaterialsFeign packMaterialsFeign;
 
     static JoinFieldInfo joinCommodityFieldInfo = null;
 
@@ -146,8 +148,12 @@ public class PackServiceImpl extends ServiceImpl<PackMapper, PackingInfo> implem
         //set所需包装材料数量
         for (PackagingMaterialsInfoVo packagingMaterialsInfoVo : packagingMaterialsInfoList) {
             for (PackCommodityInfoVo packCommodityInfoVo : commodityInfoList) {
-                if(packCommodityInfoVo.getCommodityId() == packCommodityInfoVo.getCommodityId()){
-                    packagingMaterialsInfoVo.setCount(packCommodityInfoVo.getOrderQty() / packagingMaterialsInfoVo.getCapacity());
+                if(packagingMaterialsInfoVo.getCommodityId()!= null && packCommodityInfoVo.getCommodityId() != null
+                        && (packagingMaterialsInfoVo.getCommodityId() == packCommodityInfoVo.getCommodityId())){
+                    if(packCommodityInfoVo.getOrderQty() != null && packagingMaterialsInfoVo.getCapacity() != null) {
+                        packagingMaterialsInfoVo.setCount(packCommodityInfoVo.getOrderQty() / packagingMaterialsInfoVo.getCapacity());
+                    }
+
                 }
             }
         }
@@ -266,5 +272,21 @@ public class PackServiceImpl extends ServiceImpl<PackMapper, PackingInfo> implem
         List<OrderRecordVo> orderRecordVoList = baseMapper.getOrderRecord(orderIds);
 
         return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, orderRecordVoList);
+    }
+
+    /**
+     * 扫描包装材料SKU获取包装材料信息
+     * @param sku
+     * @return
+     */
+    @Override
+    public ResultUtil<PackagingMaterialsInfoVo> getPackMaterials(String sku) throws Exception {
+        AdbContext adbContext = packMaterialsFeign.connectDb();
+        ResultUtil<PackagingMaterialsInfoVo> packMaterials = packMaterialsFeign.getPackMaterials(adbContext, sku);
+        PackagingMaterialsInfoVo packagingMaterialsInfoVo = packMaterials.getData();
+        if(packagingMaterialsInfoVo == null){
+            return ResultUtil.APPRESULT(CommonStatusCode.GET_FAIL, null);
+        }
+        return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, packagingMaterialsInfoVo);
     }
 }

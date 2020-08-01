@@ -118,7 +118,7 @@
 
     <!--批量修改订单拣货状态-->
     <update id="updatePullStatus">
-        update out_order set pull_status = #{pullStatus} where id in ${ids}
+        update out_order set pull_status = #{pullStatus} where id in (${ids})
         <if test="maxKey > 0 and minKey > 0">
             and id between #{minKey} and #{maxKey}
         </if>
@@ -127,21 +127,8 @@
 
     <!--根据批次id修改批次的状态和时间-->
     <update id="updateBatchByBatchId">
-        update pull_batch set pull_finish_time = #{po.pullFinishTime}, pull_status = #{po.pullStatus} where id = #{po.Id}
+        update pull_batch set pull_finish_time = #{po.pullFinishTime}, pull_status = #{po.pullStatus} where id = #{po.id}
     </update>
-
-
-    <!--根据库位id查询表中对应的实际库存-->
-    <select id="getStorageLocalMap" resultType="java.util.Map">
-
-        select
-            id as mapKey,
-            reality_count
-        from
-            storage_local
-        where
-            id in (${ids})
-    </select>
 
 
     <!--批量插入批次商品信息对象-->
@@ -151,22 +138,6 @@
             values (#{row.id}, #{row.batchId}, #{row.commodityId}, #{row.storageLocalId}, #{row.pullQty})
         </foreach>
     </insert>
-
-
-    <!--批量更新库位库存信息-->
-    <update id="batchUpdateStorageLocal">
-        <foreach collection="list" open="" close="" item="row" separator=";" index="">
-            update storage_local set reality_count = #{row.realityCount} where id = #{row.id}
-        </foreach>
-    </update>
-
-
-    <!--批量更新总库存对象-->
-    <update id="batchUpdateStocks">
-        <foreach collection="list" close="" open="" item="row" separator=";" index="">
-            update stocks set reality_count = #{row.realityCount} where commodity_id = #{row.commodityId}
-        </foreach>
-    </update>
 
 
     <!--根据商品id批量关联查询订单号和订单Id-->
@@ -197,12 +168,20 @@
             ooc.order_qty,
             oo.order_sn
         from
-            out_order_commodity_item
+            out_order_commodity_item ooc
         left JOIN
             out_order oo on ooc.order_id = oo.id
         where
             ooc.order_id in
         <foreach collection="ids" open="(" close=")" item="row" separator="," index="">
+            #{row}
+        </foreach>
+    </select>
+
+    <!--根据订单ids查询订单拣货状态-->
+    <select id="getPullStatusByOrderIds" resultType="java.lang.Integer">
+        select pull_status from out_order where id in
+        <foreach collection="orderIds" index="" separator="," item="row" open="(" close=")">
             #{row}
         </foreach>
     </select>

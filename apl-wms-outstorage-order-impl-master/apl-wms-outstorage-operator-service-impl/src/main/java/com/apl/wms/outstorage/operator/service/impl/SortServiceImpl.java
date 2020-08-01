@@ -11,11 +11,10 @@ import com.apl.wms.outstorage.operator.pojo.vo.OrderCommodityScanVo;
 import com.apl.wms.outstorage.operator.service.SortService;
 import com.apl.wms.outstorage.order.pojo.vo.OutOrderCommodityItemInfoVo;
 import com.apl.wms.outstorage.order.pojo.vo.OutOrderListVo;
-import com.apl.wms.warehouse.lib.cache.OperatorCacheBo;
+import com.apl.wms.warehouse.lib.cache.bo.OperatorCacheBo;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.apl.wms.warehouse.lib.utils.WmsWarehouseUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,6 +58,7 @@ public class SortServiceImpl extends ServiceImpl<SortMapper, OrderCommodityScanV
      * 扫描订单号
      * @param orderSn
      * @return
+     * warning 订单拣货状态必须为6, 且订单要有对应的批次
      */
     @Override
     @Transactional

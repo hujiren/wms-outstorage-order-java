@@ -31,8 +31,9 @@ import lombok.EqualsAndHashCode;
 public class PullBatchPo extends Model<PullBatchPo> {
 
 
-    @TableId(value = "id", type = IdType.INPUT)
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @ApiModelProperty(name = "batchSn" , value = "批次号" , required = true)
+    @NotNull(message = "id不能为空")
+    @Min(value = 0, message = "id不能小于0")
     private Long id;
 
     @ApiModelProperty(name = "batchSn" , value = "批次号" , required = true)

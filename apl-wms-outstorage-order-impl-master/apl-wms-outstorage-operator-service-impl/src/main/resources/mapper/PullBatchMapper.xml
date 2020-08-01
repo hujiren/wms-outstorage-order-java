@@ -80,8 +80,8 @@
 
     <insert id="insertPullBatch">
         insert into pull_batch(id, batch_index, batch_sn, wh_id, pull_operator_id, pull_status, cr_time) values
-        (${pullBatchPo.id}, #{pullBatchPo.batchIndex}, #{pullBatchPo.batchSn}, #{pullBatchPo.whId}, #{pullBatchPo.pullOperatorId},
-        #{pullBatchPo.pullStatus}, #{pullBatchPo.crTime})
+        (${pullBatchPo.id}, ${pullBatchPo.batchIndex}, #{pullBatchPo.batchSn}, ${pullBatchPo.whId}, ${pullBatchPo.pullOperatorId},
+        ${pullBatchPo.pullStatus}, #{pullBatchPo.crTime})
     </insert>
 
     <select id="getOrderIdByBatchId" resultType="java.lang.Long">
@@ -104,7 +104,16 @@
         </if>
     </update>
 
+    <!--拼接批次号, 获取批次索引最大值-->
     <select id="getBatchIndex" resultType="java.lang.Integer">
         select max(batch_index) from pull_batch where wh_id = #{whId}
+    </select>
+
+    <!--根据订单ids批量获取订单拣货状态-->
+    <select id="getPullStatusByOrderIds" resultType="java.lang.Integer">
+        select pull_status from out_order where id in
+        <foreach collection="ids" close=")" open="(" item="row" separator="," index="">
+            #{row}
+        </foreach>
     </select>
 </mapper>

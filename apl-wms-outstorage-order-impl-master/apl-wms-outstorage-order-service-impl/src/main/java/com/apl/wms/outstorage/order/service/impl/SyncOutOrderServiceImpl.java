@@ -28,7 +28,7 @@ import com.apl.wms.outstorage.order.pojo.po.SyncOutOrderPo;
 import com.apl.wms.outstorage.order.pojo.vo.SyncOutOrderInfoVo;
 import com.apl.wms.outstorage.order.pojo.vo.SyncOutOrderListVo;
 import com.apl.wms.outstorage.order.service.SyncOutOrderService;
-import com.apl.wms.warehouse.lib.cache.StoreCacheBo;
+import com.apl.wms.warehouse.lib.cache.bo.StoreCacheBo;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

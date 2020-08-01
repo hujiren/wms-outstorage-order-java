@@ -90,4 +90,12 @@ public interface PullBatchMapper extends BaseMapper<PullBatchPo> {
      * @return
      */
     Integer getBatchIndex(@Param("whId") Long whId);
+
+
+    /**
+     * 根据订单Id批量获取订单拣货状态
+     * @param ids
+     * @return
+     */
+    List<Integer> getPullStatusByOrderIds(@Param("ids") List<Long> ids);
 }

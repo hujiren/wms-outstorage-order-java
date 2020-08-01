@@ -13,11 +13,10 @@ import com.apl.wms.outstorage.order.pojo.vo.OrderItemListVo;
 import com.apl.wms.outstorage.operator.pojo.dto.SubmitPickItemDto;
 import com.apl.wms.outstorage.operator.pojo.dto.PullOrderKeyDto;
 import com.apl.wms.outstorage.operator.pojo.vo.PullAllocationItemMsgVo;
-import com.apl.wms.warehouse.lib.cache.OperatorCacheBo;
+import com.apl.wms.warehouse.lib.cache.bo.OperatorCacheBo;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.apl.wms.warehouse.lib.utils.WmsWarehouseUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -105,6 +104,7 @@ public class PickController {
 
     @PostMapping(value = "/submit-pick-item")
     @ApiOperation(value =  "提交拣货数据" , notes = "提交拣货数据 ， 进行库存减扣")
+    @ApiImplicitParam(name = "batchId",value = "批次id",required = true  , paramType = "query")
     public ResultUtil<Boolean> submitPick(@Range(min = 0, message = "批次id不能小于0") @NotNull(message = "批次id不能为空")Long batchId,
                                           @Validated @RequestBody List<SubmitPickItemDto> submitPickItemDtoList) throws Exception {
 

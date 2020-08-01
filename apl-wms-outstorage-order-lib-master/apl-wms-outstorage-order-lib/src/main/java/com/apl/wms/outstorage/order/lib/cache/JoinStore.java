@@ -4,7 +4,7 @@ import com.apl.lib.cachebase.BaseCacheUtil;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.join.JoinBase;
 import com.apl.lib.utils.ResultUtil;
-import com.apl.wms.warehouse.lib.cache.StoreCacheBo;
+import com.apl.wms.warehouse.lib.cache.bo.StoreCacheBo;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 
 public class JoinStore extends JoinBase<StoreCacheBo> {
