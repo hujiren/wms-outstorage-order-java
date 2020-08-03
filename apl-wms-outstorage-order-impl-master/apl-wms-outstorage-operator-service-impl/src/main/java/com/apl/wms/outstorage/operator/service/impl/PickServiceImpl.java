@@ -61,7 +61,11 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
         ORDER_INFO_IS_NULL_BY_QUERY("ORDER_INFO_IS_NULL_BY_QUERY", "查询出来的订单信息为空"),
         PULL_STATUS_IS_WRONG("PULL_STATUS_IS_WRONG", "拣货状态错误"),
         THE_ORDER_HAS_BEEN_ALLOCATION_PICKING_MEMBER("THE_ORDER_HAS_BEEN_ALLOCATION_PICKING_MEMBER", "该订单已经分配拣货员"),
-        THE_ORDER_DOES_NOT_ALLOCATION_STOCK("THE_ORDER_DOES_NOT_ALLOCATION_STOCK", "该订单尚未分配库存");
+        THE_ORDER_DOES_NOT_ALLOCATION_STOCK("THE_ORDER_DOES_NOT_ALLOCATION_STOCK", "该订单尚未分配库存"),
+        THE_QUANTITY_OF_COMMODITY_OUT_OF_STOCK_DOES_NOT_CORRESPOND_WITH_THE_ACTUAL_QUANTITY(
+                "THE_QUANTITY_OF_COMMODITY_OUT_OF_STOCK_DOES_NOT_CORRESPOND_WITH_THE_ACTUAL_QUANTITY",
+                "商品出库数量与实际出库数量不符, 请检查是否有遗漏信息")
+        ;
 
         private String code;
         private String msg;
@@ -248,6 +252,7 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
 
         //根据批次id,获取批次下多个订单id
         List<Long> orderIds = baseMapper.getOrderIdsByBatchId(batchId);
+
         JoinKeyValues longKeys = JoinUtil.getLongKeys(orderIds);
 
         //根据订单ids批量查询订单拣货状态
@@ -258,7 +263,6 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
                 return ResultUtil.APPRESULT(PickServiceCode.PULL_STATUS_IS_WRONG.code, PickServiceCode.PULL_STATUS_IS_WRONG.msg, false);
             }
         }
-
 
         //构建批次对象
         PullBatchPo pullBatchPo = new PullBatchPo();
@@ -290,8 +294,14 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
         //构建库位库存历史记录对象列表
         List<StorageLocalStocksHistoryPo> newStorageLocalStocksHistoryPoList = new ArrayList<>();
 
+        //校验商品是否有漏填
+        Integer pullQtySum = 0;
+        Integer orderQtySum = baseMapper.getOrderQtySumByOrderIds(orderIds);
+
         //批量构建拣货信息到批次商品表 pull_batch_commodity
         for (SubmitPickItemDto submitPickItemDto : submitPickItemDtoList) {
+
+            pullQtySum += submitPickItemDto.getPullQty();
 
             //构建批次商品表更新对象
             PullBatchCommodityPo newPullBatchCommodityPo = new PullBatchCommodityPo();
@@ -315,6 +325,12 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
                 stocksCountMap.put(key, submitPickItemDto.getPullQty());
                 commodityIdList.add(key);
             }
+        }
+
+        //判断所有订单出库数量和传过来的所有商品出库数量累加是否相等
+        if(pullQtySum != orderQtySum){
+            return ResultUtil.APPRESULT(PickServiceCode.THE_QUANTITY_OF_COMMODITY_OUT_OF_STOCK_DOES_NOT_CORRESPOND_WITH_THE_ACTUAL_QUANTITY.code,
+                    PickServiceCode.THE_QUANTITY_OF_COMMODITY_OUT_OF_STOCK_DOES_NOT_CORRESPOND_WITH_THE_ACTUAL_QUANTITY.msg, false);
         }
 
         SecurityUser securityUser = CommonContextHolder.getSecurityUser();
@@ -389,16 +405,15 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
                                           List<Long> orderIds,
                                           List<StorageLocalInfoVo> oldStorageLocalList,
                                           Long innerOrgId) throws Exception {
-
+        //根据批次中的所有订单id查询对应的商品Id, 出库数量, 订单号
         List<CorrelateCommodityOrderBo> orderCommodityItemList = baseMapper.getCommodityInfoByOrderIds(orderIds);
 
         Long orderId;
         Long commodityId;
-        Integer orderQty;
+        Integer orderQty;//单个商品对应的总出库数量, 所有库位
         Integer residueQty;
 
         LinkedHashMap<String, List<SubmitPickItemDto>> pickItemMaps = JoinUtil.listGrouping(submitPickItemDtoList, "commodityId");
-
 
 
         for (CorrelateCommodityOrderBo outOrderCommodityItemPo : orderCommodityItemList) {
@@ -407,14 +422,15 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
             orderQty = outOrderCommodityItemPo.getOrderQty();
 
             List<SubmitPickItemDto> oneCommodityStorageLocalList = pickItemMaps.get(commodityId.toString());
+            if(oneCommodityStorageLocalList == null)
+                continue;
             for (SubmitPickItemDto submitPickItemDto : oneCommodityStorageLocalList) {
-
+                    //residueQty:单商品单库位出库数量
                     residueQty = submitPickItemDto.getPullQty();
                     if (residueQty <= 0)
                         continue;
 
                     StorageLocalStocksHistoryPo storageLocalStocksHistoryPo = new StorageLocalStocksHistoryPo();
-//                    storageLocalStocksHistoryPo.setId(SnowflakeIdWorker.generateId());
                     storageLocalStocksHistoryPo.setOrderId(orderId);
                     storageLocalStocksHistoryPo.setOrderType(2);
                     storageLocalStocksHistoryPo.setStocksType(2);
@@ -427,25 +443,24 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
                     storageLocalStocksHistoryPo.setInnerOrgId(innerOrgId);
                     newStorageLocalStocksHistoryPoList.add(storageLocalStocksHistoryPo);
 
+                    //根据库位Ids查询到的对应实际库存和库位Ids
                 for (StorageLocalInfoVo list : oldStorageLocalList) {
 
                     if(list.getId() == submitPickItemDto.getStorageLocalId()){
-
-                        if (residueQty >= orderQty) {
+                        //单商品单库位出库数量 >= 单个商品对应的总出库数量, 所有库位
+                        if (residueQty >= orderQty) {//表示单个库位即可满足该商品的出库数量
                             storageLocalStocksHistoryPo.setOutQty(orderQty);
                             residueQty -= orderQty;
                             submitPickItemDto.setPullQty(residueQty);
                             storageLocalStocksHistoryPo.setStocksQty(list.getRealityCount() - orderQty);
                         } else {
+                            //小于则说明是从多个库位上拿的
                             storageLocalStocksHistoryPo.setOutQty(residueQty);
                             residueQty = 0;
                             submitPickItemDto.setPullQty(residueQty);
                             storageLocalStocksHistoryPo.setStocksQty(0);
                         }
-
                     }
-
-
                 }
             }
         }
@@ -514,7 +529,6 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
                     stocksPo1.setRealityCount(stocksVo.getRealityCount() - entry.getValue());
                     stocksPo1.setId(stocksVo.getId());
                     newStocksPoList.add(stocksPo1);
-//                    stocksHistoryPo.setId(SnowflakeIdWorker.generateId());
                     stocksHistoryPo.setOrderType(2);
                     stocksHistoryPo.setStocksType(2);
                     stocksHistoryPo.setWhId(whId);

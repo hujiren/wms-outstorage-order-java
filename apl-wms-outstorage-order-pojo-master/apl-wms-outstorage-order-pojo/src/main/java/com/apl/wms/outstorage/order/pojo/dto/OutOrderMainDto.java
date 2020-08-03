@@ -9,13 +9,13 @@ import javax.validation.constraints.NotNull;
 @Data
 public class OutOrderMainDto {
 
-    @ApiModelProperty(name = "orderId" , value = "订单id")
+    @ApiModelProperty(name = "orderId" , value = "订单id", required = true)
     private Long orderId;
 
-    @ApiModelProperty(name = "storeId" , value = "店铺id")
+    @ApiModelProperty(name = "storeId" , value = "店铺id", required = true)
     private Long storeId;
 
-    @ApiModelProperty(name = "customerId" , value = "客户id")
+    @ApiModelProperty(name = "customerId" , value = "客户id", required = true)
     @NotNull(message = "订单不能为空")
     @Min(value = 1, message = "客户id值不合法")
     private Long customerId;

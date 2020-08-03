@@ -1,5 +1,6 @@
 package com.apl.wms.outstorage.operator.pojo.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -19,11 +20,13 @@ public class PullPackItemDto {
     @NotNull(message = "包装尺寸id")
     @ApiModelProperty(name = "id", value = "包装尺寸id", hidden = true)
     @Range(min = 0, message = "包装尺寸id不能小于0")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
 
     @NotNull(message = "出库订单id不能为空")
     @ApiModelProperty(name = "outOrderId", value = "出库订单id", required = true)
     @Range(min = 0, message = "出库订单id不能小于0")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long outOrderId;
 
     @NotBlank(message = "物流子单号不能为空")

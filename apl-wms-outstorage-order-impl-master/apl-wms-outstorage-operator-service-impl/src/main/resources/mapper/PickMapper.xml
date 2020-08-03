@@ -189,4 +189,12 @@
         </foreach>
     </select>
 
+    <!--根据订单ids查询商品出库数量总和-->
+    <select id="getOrderQtySumByOrderIds" resultType="java.lang.Integer">
+        select sum(order_qty) from out_order_commodity_item where order_id in
+        <foreach collection="ids" index="" separator="," item="row" open="(" close=")">
+            #{row}
+        </foreach>
+    </select>
+
 </mapper>
