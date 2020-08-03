@@ -71,7 +71,7 @@ public interface PickMapper extends BaseMapper<OutOrderListVo> {
      * @param list
      * @return
      */
-    List<CorrelateCommodityBo> getOrderSnByCommodityId(@Param("list") List<Long> list);
+    List<CorrelateCommodityBo> getOrderSnByCommodityId(@Param("list") List<Long> list, @Param("batchId") Long batchId);
 
 
     /**

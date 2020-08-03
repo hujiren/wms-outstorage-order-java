@@ -10,6 +10,8 @@ import com.apl.lib.join.JoinFieldInfo;
 import com.apl.lib.join.JoinKeyValues;
 import com.apl.lib.join.JoinUtil;
 import com.apl.lib.pojo.dto.PageDto;
+import com.apl.lib.security.SecurityUser;
+import com.apl.lib.utils.CommonContextHolder;
 import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
 import com.apl.sys.lib.cache.JoinCustomer;
@@ -257,8 +259,6 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
             }
         }
 
-        //批量修改订单拣货状态 为6已拣货状态 out_order
-        Integer integer = baseMapper.updatePullStatus(longKeys.getSbKeys().toString(), longKeys.getMinKey(), longKeys.getMaxKey(), 6);
 
         //构建批次对象
         PullBatchPo pullBatchPo = new PullBatchPo();
@@ -317,11 +317,8 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
             }
         }
 
-        //通过切换数据源保存库存记录
-        AdbContext adbContextStocksHistory = stocksHistoryDataSourceServiceImpl.connectDb();
-
-        //通过切换数据源批量更新总库存实际库存和库位实际库存
-        AdbContext adbContextWareHouse = stocksDatasourceServiceImpl.connectDb();
+        SecurityUser securityUser = CommonContextHolder.getSecurityUser();
+        Long innerOrgId = securityUser.getInnerOrgId();
 
         JoinKeyValues longKeys1 = JoinUtil.getLongKeys(storageLocalIdList);
 
@@ -334,17 +331,26 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
         createStorageLocalInfo(oldStorageLocalList, newPullBatchCommodityPoList, newStorageLocalList);
 
         //构建库位库存历史记录
-        createStorageLocalHistory(submitPickItemDtoList, newStorageLocalStocksHistoryPoList, whId, orderIds, oldStorageLocalList);
+        createStorageLocalHistory(submitPickItemDtoList, newStorageLocalStocksHistoryPoList, whId, orderIds, oldStorageLocalList, innerOrgId);
 
-        //根据商品id查询总库存信息
+        //根据商品id查询总库存信息 commodityId应该为累加后去重的实际商品Id
         ResultUtil<List<StocksVo>> result = warehouseFeign.getStocksByCommodityId(commodityIdList);
         List<StocksVo> stocksPoList = result.getData();
 
         //构建总库存和总库存历史记录
-        createStocksInfo(storageLocalIdList, stocksCountMap, newStocksPoList, newStocksHistoryPoList, whId, stocksPoList);
+        createStocksInfo(commodityIdList, stocksCountMap, newStocksPoList, newStocksHistoryPoList, whId, stocksPoList, batchId, innerOrgId);
 
         //批量插入批次商品表更新对象 Table_Name:pull_batch_commodity
         Integer batchInsertInteger = baseMapper.batchInsertPullBatchCommodity(newPullBatchCommodityPoList);
+
+        //批量修改订单拣货状态 为6已拣货状态 out_order
+        Integer integer = baseMapper.updatePullStatus(longKeys.getSbKeys().toString(), longKeys.getMinKey(), longKeys.getMaxKey(), 6);
+
+        //通过切换数据源保存库存记录
+        AdbContext adbContextStocksHistory = stocksHistoryDataSourceServiceImpl.connectDb();
+
+        //通过切换数据源批量更新总库存实际库存和库位实际库存
+        AdbContext adbContextWareHouse = stocksDatasourceServiceImpl.connectDb();
 
         try {
 
@@ -381,7 +387,8 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
                                           List<StorageLocalStocksHistoryPo> newStorageLocalStocksHistoryPoList,
                                           Long whId,
                                           List<Long> orderIds,
-                                          List<StorageLocalInfoVo> oldStorageLocalList) throws Exception {
+                                          List<StorageLocalInfoVo> oldStorageLocalList,
+                                          Long innerOrgId) throws Exception {
 
         List<CorrelateCommodityOrderBo> orderCommodityItemList = baseMapper.getCommodityInfoByOrderIds(orderIds);
 
@@ -417,6 +424,7 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
                     storageLocalStocksHistoryPo.setCommodityId(commodityId);
                     storageLocalStocksHistoryPo.setInQty(0);
                     storageLocalStocksHistoryPo.setOperatorTime(new Timestamp(System.currentTimeMillis()));
+                    storageLocalStocksHistoryPo.setInnerOrgId(innerOrgId);
                     newStorageLocalStocksHistoryPoList.add(storageLocalStocksHistoryPo);
 
                 for (StorageLocalInfoVo list : oldStorageLocalList) {
@@ -481,12 +489,15 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
     public void createStocksInfo(List<Long> commodityIdList,
                                  Map<Long, Integer> stocksCountMap,
                                  List<StocksPo> newStocksPoList,
-                                 List<StocksHistoryPo> newStocksHistoryPoList, Long whId,
-                                 List<StocksVo> stocksPoList) {
+                                 List<StocksHistoryPo> newStocksHistoryPoList,
+                                 Long whId,
+                                 List<StocksVo> stocksPoList,
+                                 Long batchId,
+                                 Long innerOrgId) {
 
 
         //根据商品id关联查询
-        List<CorrelateCommodityBo> correlateCommodityBoList = baseMapper.getOrderSnByCommodityId(commodityIdList);
+        List<CorrelateCommodityBo> correlateCommodityBoList = baseMapper.getOrderSnByCommodityId(commodityIdList, batchId);
 
 
         for (StocksVo stocksVo : stocksPoList) {
@@ -512,6 +523,7 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
                     stocksHistoryPo.setOutQty(entry.getValue());
                     stocksHistoryPo.setStocksQty(stocksPo1.getRealityCount());
                     stocksHistoryPo.setOperatorTime(new Timestamp(System.currentTimeMillis()));
+                    stocksHistoryPo.setInnerOrgId(innerOrgId);
                     for (CorrelateCommodityBo correlateCommodityBo : correlateCommodityBoList) {
                         if (correlateCommodityBo.getCommodityId() == entry.getKey()) {
                             stocksHistoryPo.setOrderSn(correlateCommodityBo.getOrderSn());
