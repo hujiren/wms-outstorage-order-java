@@ -10,9 +10,9 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @SpringBootApplication(
-        scanBasePackages = {"com.apl.wms.outstorage.operator.*" ,
-                "com.apl.wms.outstorage.order.*" ,
-                "com.apl.wms.warehouse.lib.*",
+        scanBasePackages = {"com.apl.wms.outstorage.operator" ,
+                "com.apl.wms.outstorage.order" ,
+                "com.apl.wms.warehouse.lib",
                 "com.apl.db.datasource",
                 "com.apl.db.mybatis",
                 "com.apl.lib",

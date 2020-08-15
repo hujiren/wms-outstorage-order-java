@@ -60,7 +60,6 @@ public class PullAllocationItemPo extends Model<PullAllocationItemPo> {
 
     private static final long serialVersionUID=1L;
 
-
     @Override
     protected Serializable pkVal() {
         return this.id;
