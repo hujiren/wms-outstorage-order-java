@@ -1,7 +1,7 @@
 package com.apl.wms.outstorage.operator.service.impl;
 
+import com.apl.abatis.AbatisExecutor;
 import com.apl.cache.AplCacheUtil;
-import com.apl.db.abatis.AbatisExecutor;
 import com.apl.db.adb.AdbContext;
 import com.apl.db.adb.AdbPersistent;
 import com.apl.lib.constants.CommonStatusCode;

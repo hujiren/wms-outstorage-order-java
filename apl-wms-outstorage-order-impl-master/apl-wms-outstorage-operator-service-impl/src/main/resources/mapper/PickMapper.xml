@@ -142,7 +142,7 @@
 
     <!--根据商品id批量关联查询订单号和订单Id-->
     <select id="getOrderSnByCommodityId" resultType="com.apl.wms.outstorage.operator.pojo.bo.CorrelateCommodityBo">
-        select
+        select DISTINCT
             pbc.commodity_id,
             pbo.order_id,
             oo.order_sn
@@ -152,7 +152,10 @@
             pull_batch_order pbo on pbc.batch_id = pbo.batch_id
         LEFT JOIN
             out_order oo on pbo.order_id = oo.id
-        where pbc.commodity_id in
+        where
+            pbc.batch_id = #{batchId}
+        and
+            pbc.commodity_id in
             <foreach collection="list" index="" separator="," item="row" open="("  close=")">
                 ${row}
             </foreach>
@@ -182,6 +185,14 @@
     <select id="getPullStatusByOrderIds" resultType="java.lang.Integer">
         select pull_status from out_order where id in
         <foreach collection="orderIds" index="" separator="," item="row" open="(" close=")">
+            #{row}
+        </foreach>
+    </select>
+
+    <!--根据订单ids查询商品出库数量总和-->
+    <select id="getOrderQtySumByOrderIds" resultType="java.lang.Integer">
+        select sum(order_qty) from out_order_commodity_item where order_id in
+        <foreach collection="ids" index="" separator="," item="row" open="(" close=")">
             #{row}
         </foreach>
     </select>

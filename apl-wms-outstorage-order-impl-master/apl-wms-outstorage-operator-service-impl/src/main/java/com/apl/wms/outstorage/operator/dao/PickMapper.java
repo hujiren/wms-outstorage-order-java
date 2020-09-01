@@ -71,7 +71,7 @@ public interface PickMapper extends BaseMapper<OutOrderListVo> {
      * @param list
      * @return
      */
-    List<CorrelateCommodityBo> getOrderSnByCommodityId(@Param("list") List<Long> list);
+    List<CorrelateCommodityBo> getOrderSnByCommodityId(@Param("list") List<Long> list, @Param("batchId") Long batchId);
 
 
     /**
@@ -87,4 +87,11 @@ public interface PickMapper extends BaseMapper<OutOrderListVo> {
      * @return
      */
     List<Integer> getPullStatusByOrderIds(@Param("orderIds") List<Long> orderIds);
+
+    /**
+     * 根据订单ids查询商品出库数量总和
+     * @param orderIds
+     * @return
+     */
+    Integer getOrderQtySumByOrderIds(@Param("ids") List<Long> orderIds);
 }

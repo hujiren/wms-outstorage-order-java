@@ -1,5 +1,6 @@
 package com.apl.wms.outstorage.operator.pojo.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,8 +14,10 @@ import lombok.EqualsAndHashCode;
 public class PackCommodityInfoVo {
 
     @ApiModelProperty("订单id")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long orderId;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     @ApiModelProperty("商品id")
     private Long commodityId;
 

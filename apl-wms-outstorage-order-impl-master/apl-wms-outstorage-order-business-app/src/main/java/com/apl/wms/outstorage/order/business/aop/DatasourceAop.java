@@ -1,11 +1,10 @@
 package com.apl.wms.outstorage.order.business.aop;
 
 import com.apl.cache.AplCacheUtil;
-import com.apl.db.abatis.MyBatisPlusConfig;
-import com.apl.db.datasource.DataSourceContextHolder;
 import com.apl.lib.constants.CommonAplConstants;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.CommonContextHolder;
+import com.apl.tenant.AplTenantConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -40,11 +39,9 @@ public class DatasourceAop {
             SecurityUser securityUser = CommonContextHolder.getSecurityUser(aplCacheUtil, token);
             CommonContextHolder.securityUserContextHolder.set(securityUser);
 
-            // 多数据源切换信息
-            DataSourceContextHolder.set(securityUser.getTenantGroup(), securityUser.getInnerOrgCode(), securityUser.getInnerOrgId());
 
             // 多租户ID值
-            MyBatisPlusConfig.tenantIdContextHolder.set(securityUser.getInnerOrgId());
+            AplTenantConfig.tenantIdContextHolder.set(securityUser.getInnerOrgId());
 
             Object[] args = pjp.getArgs();
             proceed = pjp.proceed(args);
@@ -54,7 +51,6 @@ public class DatasourceAop {
         } finally {
             CommonContextHolder.securityUserContextHolder.remove();
             CommonContextHolder.tokenContextHolder.remove();
-            DataSourceContextHolder.clear();
         }
 
         return proceed;

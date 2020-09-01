@@ -108,7 +108,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
     static JoinFieldInfo joinWarehouseInfo = null; //跨项目跨库关联 仓库表 反射字段缓存
     static JoinFieldInfo joinStoreInfo = null; //跨项目跨库关联 店铺表 反射字段缓存
 
-    //保存出库订单商品
+    //保存商品
     @Override
     @Transactional
     public ResultUtil<String> saveCommodity(OutOrderMainDto outOrderMainDto, List<OutOrderCommodityItemUpdDto> outOrderCommodityItemUpdDtos) throws Exception {
