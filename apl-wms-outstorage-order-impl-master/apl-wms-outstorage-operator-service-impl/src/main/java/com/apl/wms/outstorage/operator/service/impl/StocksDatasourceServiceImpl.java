@@ -1,7 +1,7 @@
 package com.apl.wms.outstorage.operator.service.impl;
 
+import com.apl.abatis.AbatisExecutor;
 import com.apl.cache.AplCacheUtil;
-import com.apl.db.abatis.AbatisExecutor;
 import com.apl.db.adb.AdbContext;
 import com.apl.db.adb.AdbPersistent;
 import com.apl.db.adb.AdbQuery;
@@ -12,7 +12,6 @@ import com.apl.wms.warehouse.po.StocksPo;
 import com.apl.wms.warehouse.po.StorageLocalPo;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;

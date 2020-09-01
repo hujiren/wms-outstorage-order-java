@@ -10,7 +10,7 @@
 
         <dependency>
             <groupId>com.apl</groupId>
-            <artifactId>apl-db</artifactId>
+            <artifactId>apl-adb</artifactId>
             <version>1.0.0</version>
         </dependency>
 

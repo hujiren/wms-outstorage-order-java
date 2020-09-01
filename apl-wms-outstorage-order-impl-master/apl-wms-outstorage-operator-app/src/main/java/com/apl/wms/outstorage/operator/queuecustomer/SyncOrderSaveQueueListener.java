@@ -1,11 +1,10 @@
 package com.apl.wms.outstorage.operator.queuecustomer;
 
 import com.apl.cache.AplCacheUtil;
-import com.apl.db.abatis.MyBatisPlusConfig;
-import com.apl.db.datasource.DataSourceContextHolder;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.CommonContextHolder;
 import com.apl.lib.utils.StringUtil;
+import com.apl.tenant.AplTenantConfig;
 import com.apl.wms.outstorage.order.lib.pojo.bo.OutOrderMultipleBo;
 import com.apl.wms.outstorage.order.service.OutOrderService;
 import com.rabbitmq.client.Channel;
@@ -42,11 +41,8 @@ public class SyncOrderSaveQueueListener {
             //把临时token放入线程安全变量中, feign会用到
             CommonContextHolder.tokenContextHolder.set(token);
 
-            //多数据源切换
-            DataSourceContextHolder.set(securityUser.getTenantGroup(), securityUser.getInnerOrgCode(), securityUser.getInnerOrgId());
-
             // 多租户ID值
-            MyBatisPlusConfig.tenantIdContextHolder.set(securityUser.getInnerOrgId());
+            AplTenantConfig.tenantIdContextHolder.set(securityUser.getInnerOrgId());
 
             //订单来源  1自动同步平台订单
             outOrderMultipleBo.setOrderFrom(1);

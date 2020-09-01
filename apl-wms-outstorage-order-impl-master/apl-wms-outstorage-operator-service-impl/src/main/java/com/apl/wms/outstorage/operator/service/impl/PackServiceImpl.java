@@ -281,8 +281,7 @@ public class PackServiceImpl extends ServiceImpl<PackMapper, PackingInfo> implem
      */
     @Override
     public ResultUtil<PackagingMaterialsInfoVo> getPackMaterials(String sku) throws Exception {
-        AdbContext adbContext = packMaterialsFeign.connectDb();
-        ResultUtil<PackagingMaterialsInfoVo> packMaterials = packMaterialsFeign.getPackMaterials(adbContext, sku);
+        ResultUtil<PackagingMaterialsInfoVo> packMaterials = packMaterialsFeign.getPackMaterials(sku);
         PackagingMaterialsInfoVo packagingMaterialsInfoVo = packMaterials.getData();
         if(packagingMaterialsInfoVo == null){
             return ResultUtil.APPRESULT(CommonStatusCode.GET_FAIL, null);
