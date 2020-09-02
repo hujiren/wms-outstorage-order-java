@@ -1,7 +1,5 @@
-package com.apl.wms.outstorage.order.dao;
+package com.apl.wms.outstorage.order.mapper;
 
-import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOrderCommodityBo;
-import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;
 import com.apl.wms.outstorage.order.pojo.po.OutOrderCommodityItemPo;
 import com.apl.wms.outstorage.order.pojo.vo.OutOrderCommodityItemInfoVo;
 import com.apl.wms.warehouse.lib.pojo.bo.PullBatchOrderItemBo;

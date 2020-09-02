@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.apl.wms.outstorage.operator.dao.PickMapper">
+<mapper namespace="com.apl.wms.outstorage.operator.mapper.PickMapper">
 
     <!-- 分页查找 第2步, 根据ids查找订单列表-->
     <select id="getListByOrderSns" parameterType="java.util.List"  resultType="com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo">

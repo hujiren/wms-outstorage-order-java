@@ -1,17 +1,15 @@
-package com.apl.wms.outstorage.operator.dao;
+package com.apl.wms.outstorage.operator.mapper;
+
 import com.apl.wms.outstorage.operator.pojo.dto.PullMaterialsDto;
 import com.apl.wms.outstorage.operator.pojo.dto.PullPackItemDto;
 import com.apl.wms.outstorage.operator.pojo.vo.OrderRecordVo;
 import com.apl.wms.outstorage.operator.pojo.vo.OutOrderAttachInfoVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PackCommodityInfoVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PackingInfo;
-import com.apl.wms.outstorage.order.pojo.vo.OutOrderCommodityItemInfoVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
-
-import java.lang.reflect.Member;
 import java.sql.Timestamp;
 import java.util.List;
 

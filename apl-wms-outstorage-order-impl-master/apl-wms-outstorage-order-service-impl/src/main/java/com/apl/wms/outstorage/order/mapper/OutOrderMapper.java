@@ -1,7 +1,6 @@
-package com.apl.wms.outstorage.order.dao;
+package com.apl.wms.outstorage.order.mapper;
 
 
-import com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo;
 import com.apl.wms.outstorage.order.pojo.po.OutOrderPo;
 import com.apl.wms.outstorage.order.pojo.dto.OutOrderKeyDto;
 import com.apl.wms.outstorage.order.pojo.vo.OrderItemListVo;

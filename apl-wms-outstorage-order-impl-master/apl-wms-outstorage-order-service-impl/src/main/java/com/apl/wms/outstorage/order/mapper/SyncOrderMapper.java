@@ -1,4 +1,4 @@
-package com.apl.wms.outstorage.order.dao;
+package com.apl.wms.outstorage.order.mapper;
 
 import com.apl.wms.outstorage.order.lib.pojo.bo.SyncOutOrderTaskBo;
 import com.apl.wms.outstorage.order.pojo.dto.SyncOutOrderKeyDto;

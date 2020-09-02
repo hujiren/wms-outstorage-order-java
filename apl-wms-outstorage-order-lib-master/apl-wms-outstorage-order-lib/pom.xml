@@ -23,7 +23,6 @@
             <groupId>com.apl</groupId>
             <artifactId>apl-wms-warehouse-lib</artifactId>
             <version>1.0.0</version>
-            <scope>compile</scope>
         </dependency>
 
 

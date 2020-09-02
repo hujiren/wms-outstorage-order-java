@@ -1,8 +1,6 @@
 package com.apl.wms.outstorage.operator.service.impl;
 
 import com.apl.cache.AplCacheUtil;
-import com.apl.db.adb.AdbContext;
-import com.apl.db.adb.AdbTransactional;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinBase;
@@ -16,7 +14,7 @@ import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
 import com.apl.sys.lib.cache.JoinCustomer;
 import com.apl.sys.lib.feign.InnerFeign;
-import com.apl.wms.outstorage.operator.dao.PickMapper;
+import com.apl.wms.outstorage.operator.mapper.PickMapper;
 import com.apl.wms.outstorage.operator.pojo.bo.CorrelateCommodityBo;
 import com.apl.wms.outstorage.operator.pojo.bo.CorrelateCommodityOrderBo;
 import com.apl.wms.outstorage.operator.pojo.dto.PullOrderKeyDto;
@@ -363,34 +361,34 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
         Integer integer = baseMapper.updatePullStatus(longKeys.getSbKeys().toString(), longKeys.getMinKey(), longKeys.getMaxKey(), 6);
 
         //通过切换数据源保存库存记录
-        AdbContext adbContextStocksHistory = stocksHistoryDataSourceServiceImpl.connectDb();
+        //AdbContext adbContextStocksHistory = stocksHistoryDataSourceServiceImpl.connectDb();
 
         //通过切换数据源批量更新总库存实际库存和库位实际库存
-        AdbContext adbContextWareHouse = stocksDatasourceServiceImpl.connectDb();
+        //AdbContext adbContextWareHouse = stocksDatasourceServiceImpl.connectDb();
 
         try {
 
             //切换数据源,开启事务
-            AdbTransactional.beginTrans(adbContextStocksHistory);
-            AdbTransactional.beginTrans(adbContextWareHouse);
+            //AdbTransactional.beginTrans(adbContextStocksHistory);
+            //AdbTransactional.beginTrans(adbContextWareHouse);
 
             //根据批次id修改批次表中的拣货状态为6 , 拣货完成时间 pull_batch
             Integer batchInteger = baseMapper.updateBatchByBatchId(pullBatchPo);
 
             //批量更新库位库存信息和总库存信息 Table_Name:stocks  storage_local
-            stocksDatasourceServiceImpl.batchUpdateStorageLocal(adbContextWareHouse, newStorageLocalList, newStocksPoList);
+            stocksDatasourceServiceImpl.batchUpdateStorageLocal(newStorageLocalList, newStocksPoList);
 
             //保存总库存历史记录列表和库位库存历史记录列表
-            stocksHistoryDataSourceServiceImpl.saveStocksHistoryPos(adbContextStocksHistory, newStocksHistoryPoList, newStorageLocalStocksHistoryPoList);
+            stocksHistoryDataSourceServiceImpl.saveStocksHistoryPos(newStocksHistoryPoList, newStorageLocalStocksHistoryPoList);
 
             // 库存历史记录事务提交
-            AdbTransactional.commit(adbContextStocksHistory);
-            AdbTransactional.commit(adbContextWareHouse);
+            //AdbTransactional.commit(adbContextStocksHistory);
+            //AdbTransactional.commit(adbContextWareHouse);
 
         } catch (Exception e) {
 
-            AdbTransactional.rollback(adbContextStocksHistory);
-            AdbTransactional.rollback(adbContextWareHouse);
+            //AdbTransactional.rollback(adbContextStocksHistory);
+            //AdbTransactional.rollback(adbContextWareHouse);
             throw new AplException(CommonStatusCode.SAVE_FAIL.code, CommonStatusCode.SAVE_FAIL.msg);
 
         }

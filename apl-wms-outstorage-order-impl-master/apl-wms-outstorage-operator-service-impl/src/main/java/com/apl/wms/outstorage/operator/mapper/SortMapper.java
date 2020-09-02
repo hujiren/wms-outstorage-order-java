@@ -1,11 +1,10 @@
-package com.apl.wms.outstorage.operator.dao;
+package com.apl.wms.outstorage.operator.mapper;
 
 import com.apl.wms.outstorage.operator.pojo.po.PullBatchPo;
 import com.apl.wms.outstorage.operator.pojo.vo.OrderCommodityScanVo;
 import com.apl.wms.outstorage.order.pojo.vo.OutOrderCommodityItemInfoVo;
 import com.apl.wms.outstorage.order.pojo.vo.OutOrderListVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.sun.tracing.dtrace.ProviderAttributes;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;

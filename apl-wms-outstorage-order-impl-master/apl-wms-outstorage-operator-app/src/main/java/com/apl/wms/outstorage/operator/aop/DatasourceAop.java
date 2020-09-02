@@ -1,7 +1,6 @@
 package com.apl.wms.outstorage.operator.aop;
 
 import com.apl.cache.AplCacheUtil;
-import com.apl.db.datasource.DataSourceContextHolder;
 import com.apl.lib.constants.CommonAplConstants;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.CommonContextHolder;
@@ -40,8 +39,7 @@ public class DatasourceAop {
             CommonContextHolder.securityUserContextHolder.set(securityUser);
 
             // 多数据源切换信息
-            DataSourceContextHolder.set(securityUser.getTenantGroup(), securityUser.getInnerOrgCode(), securityUser.getInnerOrgId());
-
+            //DataSourceContextHolder.set(securityUser.getTenantGroup(), securityUser.getInnerOrgCode(), securityUser.getInnerOrgId());
 
             // 多租户ID值
             AplTenantConfig.tenantIdContextHolder.set(securityUser.getInnerOrgId());
@@ -54,7 +52,6 @@ public class DatasourceAop {
         } finally {
             CommonContextHolder.securityUserContextHolder.remove();
             CommonContextHolder.tokenContextHolder.remove();
-            DataSourceContextHolder.clear();
         }
 
         return proceed;

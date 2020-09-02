@@ -21,7 +21,7 @@ import com.apl.sys.lib.cache.JoinCustomer;
 import com.apl.sys.lib.feign.InnerFeign;
 import com.apl.wms.outstorage.order.lib.cache.JoinStore;
 import com.apl.wms.outstorage.order.lib.pojo.bo.SyncOutOrderTaskBo;
-import com.apl.wms.outstorage.order.dao.SyncOrderMapper;
+import com.apl.wms.outstorage.order.mapper.SyncOrderMapper;
 import com.apl.wms.outstorage.order.pojo.dto.SyncOutOrderKeyDto;
 import com.apl.wms.outstorage.order.pojo.dto.SyncOutOrderSaveDto;
 import com.apl.wms.outstorage.order.pojo.po.SyncOutOrderPo;

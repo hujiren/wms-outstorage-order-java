@@ -7,7 +7,7 @@ import com.apl.lib.exception.AplException;
 import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
 import com.apl.wms.outstorage.order.lib.pojo.dto.OutOrderCommodityItemUpdDto;
-import com.apl.wms.outstorage.order.dao.OutOrderCommodityItemMapper;
+import com.apl.wms.outstorage.order.mapper.OutOrderCommodityItemMapper;
 import com.apl.wms.outstorage.order.pojo.po.OutOrderCommodityItemPo;
 import com.apl.wms.outstorage.order.pojo.vo.OutOrderCommodityItemInfoVo;
 import com.apl.wms.outstorage.order.service.OutOrderCommodityItemService;

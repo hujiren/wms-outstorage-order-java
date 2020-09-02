@@ -11,14 +11,19 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 
 @SpringBootApplication(
-        scanBasePackages = {"com.apl.wms.outstorage.order.*",
-                "com.apl.wms.warehouse.lib.*",
-                "com.apl.lib",
-                "com.apl.cache",
-                "com.apl.db",
-                "com.apl.amqp"},
-        exclude = {DataSourceAutoConfiguration.class, DruidDataSourceAutoConfigure.class})
-@MapperScan(basePackages = {"com.apl.wms.outstorage.order.dao"})
+        scanBasePackages = {
+                "com.apl.lib", //APL基本工具类
+                "com.apl.tenant", //多租户
+                //"com.apl.abatis", // sqlSession封装
+                "com.apl.db.adb", // adb数据库操作助手
+                //"com.apl.db.dynamicdb", //动态数据源
+                "com.apl.cache", // redis代理
+                "com.apl.amqp", //消息队列代理
+
+                "com.apl.wms.outstorage.order",
+                "com.apl.wms.warehouse.lib"},
+        exclude = {DataSourceAutoConfiguration.class})
+@MapperScan(basePackages = {"com.apl.wms.outstorage.order.mapper"})
 @EnableFeignClients(basePackages = {"com.apl.sys.lib.feign", "com.apl.wms.warehouse.lib.feign"})
 @EnableDiscoveryClient
 @EnableSwagger2

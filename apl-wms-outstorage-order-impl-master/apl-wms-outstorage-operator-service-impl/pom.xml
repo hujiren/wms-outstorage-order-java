@@ -13,13 +13,7 @@
             <artifactId>apl-service-dependency-parent</artifactId>
             <version>1.0.0</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.apl</groupId>
-            <artifactId>apl-cache</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-
+        
         <dependency>
             <groupId>com.apl</groupId>
             <artifactId>apl-amqp</artifactId>
@@ -48,15 +42,26 @@
             <groupId>com.apl</groupId>
             <artifactId>apl-wms-outstorage-operator-pojo</artifactId>
             <version>1.0.0</version>
-            <scope>compile</scope>
         </dependency>
 
         <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>RELEASE</version>
-            <scope>compile</scope>
+            <groupId>org.apache.shardingsphere</groupId>
+            <artifactId>sharding-jdbc-spring-boot-starter</artifactId>
+            <version>4.0.0-RC1</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.shardingsphere</groupId>
+            <artifactId>sharding-transaction-spring</artifactId>
+            <version>3.1.0.M1</version>
+        </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>org.jetbrains</groupId>-->
+<!--            <artifactId>annotations</artifactId>-->
+<!--            <version>RELEASE</version>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
 
     </dependencies>
 

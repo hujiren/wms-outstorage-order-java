@@ -6,6 +6,5 @@ spring:
     include:
       common, apl-wms-outstorage-operator-app
 
-feign:
-  httpclient:
-    enabled: true
+  main:
+    allow-bean-definition-overriding: true

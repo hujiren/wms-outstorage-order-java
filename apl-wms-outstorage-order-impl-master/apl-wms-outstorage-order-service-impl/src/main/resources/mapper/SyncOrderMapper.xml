@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.apl.wms.outstorage.order.dao.SyncOrderMapper">
+<mapper namespace="com.apl.wms.outstorage.order.mapper.SyncOrderMapper">
 
     <!-- 查找详情 2019-12-25-->
     <select id="getById" resultType="com.apl.wms.outstorage.order.pojo.vo.SyncOutOrderInfoVo">

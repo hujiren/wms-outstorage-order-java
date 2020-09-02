@@ -1,9 +1,8 @@
-package com.apl.wms.outstorage.operator.dao;
-import com.apl.wms.outstorage.operator.pojo.bo.OrderCommodityInfoBo;
+package com.apl.wms.outstorage.operator.mapper;
+
 import com.apl.wms.outstorage.operator.pojo.dto.PullBatchKeyDto;
 import com.apl.wms.outstorage.operator.pojo.po.PullBatchOrderPo;
 import com.apl.wms.outstorage.operator.pojo.po.PullBatchPo;
-import com.apl.wms.outstorage.operator.pojo.vo.PackOrderItemListVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PullBatchInfoVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PullBatchListVo;
 import com.apl.wms.outstorage.order.pojo.po.OutOrderPo;

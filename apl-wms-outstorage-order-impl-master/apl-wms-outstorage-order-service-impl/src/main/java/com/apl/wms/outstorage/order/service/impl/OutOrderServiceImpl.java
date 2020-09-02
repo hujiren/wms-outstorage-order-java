@@ -19,7 +19,7 @@ import com.apl.wms.warehouse.lib.cache.*;
 import com.apl.wms.warehouse.lib.cache.bo.StoreCacheBo;
 import com.apl.wms.warehouse.lib.cache.bo.WarehouseCacheBo;
 import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
-import com.apl.wms.outstorage.order.dao.OutOrderMapper;
+import com.apl.wms.outstorage.order.mapper.OutOrderMapper;
 import com.apl.wms.outstorage.order.lib.cache.JoinStore;
 import com.apl.wms.outstorage.order.lib.pojo.bo.OutOrderMultipleBo;
 import com.apl.wms.outstorage.order.lib.pojo.bo.SyncOutOrderBo;

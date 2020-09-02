@@ -5,3 +5,6 @@ spring:
   profiles:
     include:
       common, apl-wms-outstorage-order-buyer-app
+
+  main:
+    allow-bean-definition-overriding: true

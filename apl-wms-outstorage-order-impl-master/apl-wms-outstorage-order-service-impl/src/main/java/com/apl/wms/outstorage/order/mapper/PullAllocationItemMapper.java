@@ -1,4 +1,4 @@
-package com.apl.wms.outstorage.order.dao;
+package com.apl.wms.outstorage.order.mapper;
 import com.apl.wms.outstorage.operator.pojo.dto.PullAllocationItemKeyDto;
 import com.apl.wms.outstorage.operator.pojo.dto.StockManageKeyDto;
 import com.apl.wms.outstorage.operator.pojo.po.PullAllocationItemPo;

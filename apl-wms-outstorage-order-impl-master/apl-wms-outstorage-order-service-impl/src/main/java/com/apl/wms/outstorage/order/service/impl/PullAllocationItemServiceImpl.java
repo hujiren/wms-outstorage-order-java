@@ -20,7 +20,7 @@ import com.apl.sys.lib.feign.InnerFeign;
 import com.apl.wms.outstorage.operator.pojo.dto.StockManageKeyDto;
 import com.apl.wms.outstorage.operator.pojo.po.PullAllocationItemPo;
 import com.apl.wms.outstorage.operator.pojo.vo.OutOrderPickListVo;
-import com.apl.wms.outstorage.order.dao.PullAllocationItemMapper;
+import com.apl.wms.outstorage.order.mapper.PullAllocationItemMapper;
 import com.apl.wms.outstorage.order.service.PullAllocationItemService;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOrderCommodityBo;
 import com.apl.wms.outstorage.order.lib.pojo.bo.AllocationWarehouseOutOrderBo;

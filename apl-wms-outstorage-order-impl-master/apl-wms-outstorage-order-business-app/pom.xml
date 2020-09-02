@@ -23,12 +23,6 @@
 
         <dependency>
             <groupId>com.apl</groupId>
-            <artifactId>apl-abatis</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.apl</groupId>
             <artifactId>apl-wms-outstorage-order-service-impl</artifactId>
             <version>1.0.0</version>
         </dependency>
