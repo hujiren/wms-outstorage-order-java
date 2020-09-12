@@ -1,14 +1,11 @@
 package com.apl.wms.outstorage.operator.pojo.dto;
 
-import com.apl.lib.pojo.dto.TspDto;
 import com.apl.lib.validate.TypeValidator;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.sql.Timestamp;
 
 @Data
 @ApiModel(value = "分拣信息分页查询对象" , description = "分拣信息分页查询对象")

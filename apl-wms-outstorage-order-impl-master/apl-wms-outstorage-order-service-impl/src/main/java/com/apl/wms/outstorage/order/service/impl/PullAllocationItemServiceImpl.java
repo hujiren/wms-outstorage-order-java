@@ -58,7 +58,8 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
         YOUR_ORDER_HAS_BEEN_ALLOCATED_PICKING_MEMBER("YOUR_ORDER_HAS_BEEN_ALLOCATED_PICKING_MEMBER", "您的订单已经分配拣货员, 无法取消分配"),
         MESSAGE_QUEUE_SEND_SUCCESS("MESSAGE_QUEUE_SEND_SUCCESS", "消息发送成功"),
         ALLOCATION_ORDER_SUCCESS("ALLOCATION_ORDER_SUCCESS", "订单分配成功"),
-        CANCEL_ALLOCATION_ORDER_SUCCESS("CANCEL_ALLOCATION_ORDER_SUCCESS", "取消订单分配成功")
+        CANCEL_ALLOCATION_ORDER_SUCCESS("CANCEL_ALLOCATION_ORDER_SUCCESS", "取消订单分配成功"),
+        ID_IS_NOT_EXITS("ID_IS_NOT_EXITS","订单id不存在")
         ;
 
         public String code;
@@ -98,6 +99,12 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
         //根据分配仓库传来的单个订单id获取 订单id, 仓库id  database: out_order  result: orderId, whId
         AllocationWarehouseOutOrderBo orderBo = baseMapper.getOutOrderInfoById(outOrderId);
+
+        if(null == orderBo){
+            return ResultUtil.APPRESULT(PullAllocationItemServiceCode.ID_IS_NOT_EXITS.code,
+                    PullAllocationItemServiceCode.ID_IS_NOT_EXITS.msg, null);
+        }
+
 
         if (orderBo.getPullStatus() != 1) {
 
