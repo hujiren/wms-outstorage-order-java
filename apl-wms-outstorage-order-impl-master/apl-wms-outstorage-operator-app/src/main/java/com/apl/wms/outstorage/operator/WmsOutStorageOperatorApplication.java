@@ -29,7 +29,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
                 "com.apl.wms.outstorage.order.lib.feign",
                 "com.apl.wms.warehouse.lib.feign",
                 "com.apl.sys.lib.feign"})
-@MapperScan({"com.apl.wms.outstorage.operator.mapper" , "com.apl.wms.outstorage.order.mapper"})
+@MapperScan(basePackages ={"com.apl.wms.outstorage.operator.mapper" , "com.apl.wms.outstorage.order.mapper"}, sqlSessionFactoryRef = "sqlSessionFactoryForShardingjdbc")
 @EnableDiscoveryClient
 @EnableSwagger2
 public class WmsOutStorageOperatorApplication {

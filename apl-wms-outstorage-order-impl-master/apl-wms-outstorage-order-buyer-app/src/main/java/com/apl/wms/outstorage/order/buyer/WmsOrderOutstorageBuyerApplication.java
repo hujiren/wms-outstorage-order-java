@@ -24,7 +24,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
                 "com.apl.wms.outstorage.order",
                 "com.apl.wms.warehouse.lib"
         }, exclude = {DruidDataSourceAutoConfigure.class})
-@MapperScan(basePackages = {"com.apl.wms.outstorage.order.mapper"})
+@MapperScan(basePackages = {"com.apl.wms.outstorage.order.mapper"}, sqlSessionFactoryRef = "sqlSessionFactoryForShardingjdbc")
 @EnableFeignClients(basePackages = {"com.apl.sys.lib.feign", "com.apl.wms.warehouse.lib.feign"})
 @EnableDiscoveryClient
 @EnableSwagger2
