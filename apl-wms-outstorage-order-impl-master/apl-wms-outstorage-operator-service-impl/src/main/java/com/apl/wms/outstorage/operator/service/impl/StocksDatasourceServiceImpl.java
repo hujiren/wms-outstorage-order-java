@@ -33,11 +33,11 @@ public class StocksDatasourceServiceImpl {
                                                     List<StocksPo> newStocksPoList) throws Exception {
 
         //批量更新库位和总库存
-        Integer integer = adbHelper.updateBatch(newStorageLocalList, "storage_local", "id");
+        adbHelper.updateBatch(newStorageLocalList, "storage_local", "id");
 
-        Integer integer1 = adbHelper.updateBatch(newStocksPoList, "stocks", "id");
+        adbHelper.updateBatch(newStocksPoList, "stocks", "id");
 
-        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS.getCode() , CommonStatusCode.SAVE_SUCCESS.getMsg() , integer + integer1);
+        return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS.getCode() , CommonStatusCode.SAVE_SUCCESS.getMsg() , newStorageLocalList.size());
 
     }
 
