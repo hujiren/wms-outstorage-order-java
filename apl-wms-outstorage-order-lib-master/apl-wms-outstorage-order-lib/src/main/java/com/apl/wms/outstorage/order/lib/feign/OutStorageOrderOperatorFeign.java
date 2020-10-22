@@ -16,7 +16,7 @@ import java.util.List;
  * @date 2020/7/6 - 14:45
  */
 @Component
-@FeignClient(name = "apl-wms-outstorage-operator-app", fallback = OutStorageOrderOperatorFeignImpl.class)
+@FeignClient(name = "apl-wms-outstorage-operator-app", path = "wms-outstorage-operator",fallback = OutStorageOrderOperatorFeignImpl.class)
 public interface OutStorageOrderOperatorFeign {
 
 

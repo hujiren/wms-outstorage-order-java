@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "apl-wms-outstorage-order-business-app" , fallback = OutstorageOrderBusinessFeignImpl.class)
+@FeignClient(name = "apl-wms-outstorage-order-business-app", path = "wms-outstorage-order-business",fallback = OutstorageOrderBusinessFeignImpl.class)
 @Component
 public interface OutstorageOrderBusinessFeign {
 

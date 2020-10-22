@@ -19,7 +19,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
                 "com.apl.db.adb", // adb数据库操作助手
                 "com.apl.shardingjdbc", // 分库
                 "com.apl.amqp", //消息队列代理
-                "com.apl.wms.outstorage.operator" ,
+                "com.apl.wms.outstorage.operator",
                 "com.apl.wms.outstorage.order",
                 "com.apl.wms.warehouse.lib"
         },
