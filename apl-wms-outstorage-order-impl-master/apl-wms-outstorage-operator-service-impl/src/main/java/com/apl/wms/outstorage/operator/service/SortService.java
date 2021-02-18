@@ -5,6 +5,7 @@ import com.apl.wms.outstorage.operator.pojo.vo.OrderCommodityScanVo;
 import com.apl.wms.outstorage.order.pojo.vo.OutOrderListVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -26,5 +27,5 @@ public interface SortService extends IService<OrderCommodityScanVo> {
      * @param orderIds
      * @return
      */
-    ResultUtil<Boolean> submitSortInfo(List<Long> orderIds);
+    ResultUtil<Boolean> submitSortInfo(List<Long> orderIds) throws IOException;
 }

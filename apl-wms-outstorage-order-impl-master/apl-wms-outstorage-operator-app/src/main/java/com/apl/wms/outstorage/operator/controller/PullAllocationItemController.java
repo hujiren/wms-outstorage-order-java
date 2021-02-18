@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -76,7 +77,7 @@ public class PullAllocationItemController {
     public ResultUtil<Integer> AllocOutOrderStockCallBack(@NotNull(message = "tranId不能为空") String tranId,
                                                           @NotNull(message = "outOrderId不能为空") Long outOrderId,
                                                           @NotNull(message = "pullStatus不能为空") Integer pullStatus,
-                                                          @NotNull(message = "compareStorageLocalStocksBos不能为空")  @RequestBody List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos){
+                                                          @NotNull(message = "compareStorageLocalStocksBos不能为空")  @RequestBody List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos) throws IOException {
 
         return pullAllocationItemService.AllocOutOrderStockCallBack(tranId, outOrderId, pullStatus, compareStorageLocalStocksBos);
     }
@@ -87,7 +88,7 @@ public class PullAllocationItemController {
     @ApiImplicitParam(name = "outOrderId",value = "订单id",required = true  , paramType = "query")
     public ResultUtil<Integer> deleteOrderAllocationItem(
             @NotNull(message = "订单id不能为空") @Min(value = 0, message = "订单id不能小于0") Long outOrderId,
-                                                         @NotEmpty(message = "tranId不能为空") String tranId){
+                                                         @NotEmpty(message = "tranId不能为空") String tranId) throws IOException {
         return pullAllocationItemService.deleteOrderAllocationItem(outOrderId, tranId);
     }
 

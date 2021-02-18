@@ -10,6 +10,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -33,7 +34,7 @@ public class SortController {
 
     @PostMapping("/submit-sort-info")
     @ApiOperation(value =  "提交分拣信息" , notes = "提交分拣信息")
-    public ResultUtil<Boolean> submitSortInfo(@RequestBody @NotEmpty(message = "订单ids不能为空")List<Long> orderIds){
+    public ResultUtil<Boolean> submitSortInfo(@RequestBody @NotEmpty(message = "订单ids不能为空")List<Long> orderIds) throws IOException {
 
         return sortService.submitSortInfo(orderIds);
     }

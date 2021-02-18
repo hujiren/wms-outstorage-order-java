@@ -1,6 +1,6 @@
 package com.apl.wms.outstorage.operator.service.impl;
 
-import com.apl.cache.AplCacheUtil;
+import com.apl.cache.AplCacheHelper;
 import com.apl.db.adb.AdbHelper;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.utils.ResultUtil;
@@ -22,7 +22,7 @@ import java.util.Map;
 public class StocksDatasourceServiceImpl {
 
     @Autowired
-    AplCacheUtil aplCacheUtil;
+    AplCacheHelper AplCacheHelper;
 
     @Autowired
     AdbHelper adbHelper;

@@ -1,7 +1,7 @@
 package com.apl.wms.outstorage.order.service.impl;
 
 
-import com.apl.cache.AplCacheUtil;
+import com.apl.cache.AplCacheHelper;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.utils.ResultUtil;
@@ -20,6 +20,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 import java.util.List;
 
 
@@ -54,7 +56,7 @@ public class OutOrderCommodityItemServiceImpl extends ServiceImpl<OutOrderCommod
 
 
     @Autowired
-    AplCacheUtil redisTemplate;
+    AplCacheHelper aplCacheHelper;
 
     @Autowired
     WarehouseFeign warehouseFeign;
@@ -83,9 +85,9 @@ public class OutOrderCommodityItemServiceImpl extends ServiceImpl<OutOrderCommod
      * @return
      */
     @Override
-    public PlatformOutOrderStockBo saveItems(Long orderId , Long whId , List<OutOrderCommodityItemUpdDto> commodityItemsDto) {
+    public PlatformOutOrderStockBo saveItems(Long orderId , Long whId , List<OutOrderCommodityItemUpdDto> commodityItemsDto) throws IOException {
 
-        JoinCommodity joinCommodity = new JoinCommodity(1, warehouseFeign, redisTemplate);
+        JoinCommodity joinCommodity = new JoinCommodity(1, warehouseFeign, aplCacheHelper);
 
         PlatformOutOrderStockBo platformOutOrderStockBo = new PlatformOutOrderStockBo();
         platformOutOrderStockBo.setWhId(whId);

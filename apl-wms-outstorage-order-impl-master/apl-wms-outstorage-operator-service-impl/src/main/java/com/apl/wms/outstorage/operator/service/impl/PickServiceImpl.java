@@ -1,6 +1,6 @@
 package com.apl.wms.outstorage.operator.service.impl;
 
-import com.apl.cache.AplCacheUtil;
+import com.apl.cache.AplCacheHelper;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinBase;
@@ -79,7 +79,7 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
     static JoinFieldInfo joinOperatorFieldInfo = null;//跨项目关联  拣货员表 反射字段缓存
 
     @Autowired
-    AplCacheUtil aplCacheUtil;
+    AplCacheHelper AplCacheHelper;
 
     @Autowired
     WarehouseFeign warehouseFeign;
@@ -141,7 +141,7 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
             orderIds.add(vo.getOrderId());
         }
 
-        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, aplCacheUtil);
+        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, AplCacheHelper);
 
         //批量更新订单拣货员信息和订单状态
         Integer integer = baseMapper.updateOrderPickingMember(operatorCacheBo.getMemberId(), orderIds);
@@ -155,7 +155,7 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
         List<JoinBase> joinTabs = new ArrayList<>();
 
         //关联客户表字段信息
-        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, aplCacheUtil);
+        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, AplCacheHelper);
         if (null != joinCustomerFieldInfo) {
             joinCustomer.setJoinFieldInfo(joinCustomerFieldInfo);
         } else {
@@ -190,7 +190,7 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
 
         }
 
-        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, aplCacheUtil);
+        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, AplCacheHelper);
         Long whId = operatorCacheBo.getWhId();
 
         keyDto.setWhId(whId);
@@ -208,7 +208,7 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
         //跨项目跨库关联表数组
         List<JoinBase> joinTabs = new ArrayList<>();
 
-        JoinOperator joinOperator = new JoinOperator(1, warehouseFeign, aplCacheUtil);
+        JoinOperator joinOperator = new JoinOperator(1, warehouseFeign, AplCacheHelper);
         if (null != joinOperatorFieldInfo) {
             joinOperator.setJoinFieldInfo(joinOperatorFieldInfo);
 
@@ -220,7 +220,7 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
         joinTabs.add(joinOperator);
 
         //关联客户表字段信息
-        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, aplCacheUtil);
+        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, AplCacheHelper);
         if (null != joinCustomerFieldInfo) {
             joinCustomer.setJoinFieldInfo(joinCustomerFieldInfo);
         } else {
@@ -244,7 +244,7 @@ public class PickServiceImpl extends ServiceImpl<PickMapper, OutOrderListVo> imp
     @Transactional
     public ResultUtil<Boolean> submitPick(Long batchId, List<SubmitPickItemDto> submitPickItemDtoList) throws Exception {
 
-        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, aplCacheUtil);
+        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, AplCacheHelper);
 
         Long whId = operatorCacheBo.getWhId();
 

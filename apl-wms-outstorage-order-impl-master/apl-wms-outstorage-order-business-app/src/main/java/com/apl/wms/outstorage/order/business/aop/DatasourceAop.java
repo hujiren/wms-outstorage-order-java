@@ -1,6 +1,6 @@
 package com.apl.wms.outstorage.order.business.aop;
 
-import com.apl.cache.AplCacheUtil;
+import com.apl.cache.AplCacheHelper;
 import com.apl.lib.constants.CommonAplConstants;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.CommonContextHolder;
@@ -21,7 +21,7 @@ public class DatasourceAop {
 
 
     @Autowired
-    AplCacheUtil aplCacheUtil;
+    AplCacheHelper AplCacheHelper;
 
     @Pointcut("execution(public * com.apl.wms.outstorage.order.business.controller.*.* (..))")
     public void datasourceAop() {
@@ -36,7 +36,7 @@ public class DatasourceAop {
             String token = CommonContextHolder.getHeader(CommonAplConstants.TOKEN_FLAG);
 
             // 安全用户上下文
-            SecurityUser securityUser = CommonContextHolder.getSecurityUser(aplCacheUtil, token);
+            SecurityUser securityUser = CommonContextHolder.getSecurityUser(AplCacheHelper, token);
             CommonContextHolder.securityUserContextHolder.set(securityUser);
 
 

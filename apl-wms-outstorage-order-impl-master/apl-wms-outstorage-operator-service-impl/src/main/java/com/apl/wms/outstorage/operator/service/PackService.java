@@ -8,6 +8,7 @@ import com.apl.wms.outstorage.operator.pojo.vo.PackingInfo;
 import com.apl.wms.warehouse.lib.pojo.vo.PackagingMaterialsInfoVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -41,7 +42,7 @@ public interface PackService extends IService<PackingInfo> {
      * 获取订单记录
      * @return
      */
-    ResultUtil<List<OrderRecordVo>> getOrderRecord();
+    ResultUtil<List<OrderRecordVo>> getOrderRecord() throws IOException;
 
     /**
      * 扫描包装材料SKU获取包装材料信息

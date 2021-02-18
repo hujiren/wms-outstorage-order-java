@@ -1,7 +1,7 @@
 package com.apl.wms.outstorage.operator.service.impl;
 import com.apl.amqp.MqConnection;
 import com.apl.amqp.RabbitSender;
-import com.apl.cache.AplCacheUtil;
+import com.apl.cache.AplCacheHelper;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinKeyValues;
@@ -39,6 +39,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -75,7 +77,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
 
 
     @Autowired
-    AplCacheUtil aplCacheUtil;
+    AplCacheHelper AplCacheHelper;
 
     @Autowired
     OutOrderCommodityItemService outOrderCommodityItemService;
@@ -114,10 +116,10 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
      * @return
      */
     @Override
-    public ResultUtil<List<PullBatchInfoVo>> listPullBatch(Integer pullStatus , String keyword , Long batchTime) {
+    public ResultUtil<List<PullBatchInfoVo>> listPullBatch(Integer pullStatus , String keyword , Long batchTime) throws IOException {
 
         //缓存中操作对象
-        OperatorCacheBo operator = WmsWarehouseUtils.checkOperator(warehouseFeign, aplCacheUtil);
+        OperatorCacheBo operator = WmsWarehouseUtils.checkOperator(warehouseFeign, AplCacheHelper);
 
         List<PullBatchInfoVo> pullBatchInfoVos = baseMapper.listOperatorBatchByStatus(operator.getMemberId(), pullStatus, keyword, new Timestamp(batchTime));
 
@@ -150,8 +152,8 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         }
 
         //缓存对象
-        JoinCommodity joinCommodity = new JoinCommodity(1, warehouseFeign, aplCacheUtil);
-        JoinStorageLocal joinStorageLocal = new JoinStorageLocal(1, warehouseFeign, aplCacheUtil);
+        JoinCommodity joinCommodity = new JoinCommodity(1, warehouseFeign, AplCacheHelper);
+        JoinStorageLocal joinStorageLocal = new JoinStorageLocal(1, warehouseFeign, AplCacheHelper);
 
         for (Map.Entry<String, List<PullAllocationItemInfoVo>> pullItemInfoEntry : pullItemInfoVos.entrySet()) {
 
@@ -180,7 +182,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
     @Transactional
     public ResultUtil<String> createPullBatch(List<Long> ids) throws Exception {
 
-        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, aplCacheUtil);
+        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, AplCacheHelper);
 
         Long whId = operatorCacheBo.getWhId();
 
@@ -210,7 +212,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
         //批量更改订单状态
         Integer integer = baseMapper.updateOrderStatus(longKeys.getSbKeys().toString(), pullStatus, longKeys.getMinKey(), longKeys.getMaxKey());
 
-        SecurityUser securityUser = CommonContextHolder.getSecurityUser(aplCacheUtil);
+        SecurityUser securityUser = CommonContextHolder.getSecurityUser(AplCacheHelper);
 
         //创建批次信息
         PullBatchPo pullBatchPo = new PullBatchPo();
@@ -253,31 +255,31 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
     SnBo createPullBatchSn(Long whId) throws Exception {
 
         SnBo snBo = new SnBo();
-        JoinWarehouse joinWarehouse = new JoinWarehouse(1, warehouseFeign, aplCacheUtil);
+        JoinWarehouse joinWarehouse = new JoinWarehouse(1, warehouseFeign, AplCacheHelper);
         WarehouseCacheBo warehouseCacheBo = joinWarehouse.getEntity(whId);
 
         String cacheKey = "apl-wms:pick-batch-sn-index";
-        RedisLock.lock(aplCacheUtil, cacheKey, 10);
+        RedisLock.lock(AplCacheHelper, cacheKey, 10);
         int batchIndex = 0;
 
-        if(!aplCacheUtil.hasKey(cacheKey)){
+        if(!AplCacheHelper.opsForKey("outstorage").hasKey(cacheKey)){
             Integer index = baseMapper.getBatchIndex(whId);
             batchIndex = index;
         }
         else{
-            Object o = aplCacheUtil.opsForValue().get(cacheKey);
+            Object o = AplCacheHelper.opsForValue("outstorage").get(cacheKey);
             String str = String.valueOf(o);
             batchIndex = Integer.valueOf(str);
         }
 
         batchIndex++;
-        aplCacheUtil.opsForValue().set(cacheKey, batchIndex);
+        AplCacheHelper.opsForValue("outstorage").set(cacheKey, batchIndex);
 
         String sn = this.batchSnPrefix+"-"+warehouseCacheBo.getWhCode().toUpperCase()+"-"+String.format("%03d", batchIndex);
         snBo.setSn(sn);
         snBo.setIndex(batchIndex);
 
-        RedisLock.unlock(aplCacheUtil, cacheKey);
+        RedisLock.unlock(AplCacheHelper, cacheKey);
 
         return snBo;
     }
@@ -376,7 +378,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
      * @Author: CY
      * @Date: 2020/6/10 14:54
      */
-    private PullAllocationItemMsgVo buildPullItemMsg(JoinCommodity joinCommodity, String pullItemId) {
+    private PullAllocationItemMsgVo buildPullItemMsg(JoinCommodity joinCommodity, String pullItemId) throws IOException {
 
         PullAllocationItemMsgVo pullAllocationItemMsgVo = new PullAllocationItemMsgVo();
 
@@ -394,7 +396,7 @@ public class PullBatchServiceImpl extends ServiceImpl<PullBatchMapper, PullBatch
      * @Author: CY
      * @Date: 2020/6/10 14:55
      */
-    private List<PullAllocationItemMsgVo.StorageLocalMsg> buildStorageLocalMsg(JoinStorageLocal joinStorageLocal, Map.Entry<String, List<PullAllocationItemInfoVo>> pullItemInfoEntry) {
+    private List<PullAllocationItemMsgVo.StorageLocalMsg> buildStorageLocalMsg(JoinStorageLocal joinStorageLocal, Map.Entry<String, List<PullAllocationItemInfoVo>> pullItemInfoEntry) throws IOException {
 
         List<PullAllocationItemInfoVo> pullAllocationItemInfoVoList = pullItemInfoEntry.getValue();
 

@@ -10,6 +10,7 @@ import com.apl.wms.warehouse.lib.pojo.bo.CompareStorageLocalStocksBo;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -25,7 +26,7 @@ public interface PullAllocationItemService extends IService<PullAllocationItemPo
      * @param compareStorageLocalStocksBos
      * @return
      */
-    ResultUtil<Integer> AllocOutOrderStockCallBack(String tranId, Long outOrderId, Integer pullStatus, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos);
+    ResultUtil<Integer> AllocOutOrderStockCallBack(String tranId, Long outOrderId, Integer pullStatus, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos) throws IOException;
 
 
     /**
@@ -33,7 +34,7 @@ public interface PullAllocationItemService extends IService<PullAllocationItemPo
      * @param outOrderId
      * @return
      */
-    ResultUtil<Integer> deleteOrderAllocationItem(Long outOrderId, String tranId);
+    ResultUtil<Integer> deleteOrderAllocationItem(Long outOrderId, String tranId) throws IOException;
 
 
     /**

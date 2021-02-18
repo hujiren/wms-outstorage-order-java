@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 
 /**
  *
@@ -90,7 +91,7 @@ public class SyncOutOrderController {
     @PostMapping(value = "/get")
     @ApiOperation(value =  "获取详细" , notes = "")
     @ApiImplicitParam(name = "id",value = "id",required = true  , paramType = "query")
-    public ResultUtil<SyncOutOrderInfoVo> selectById(@NotNull(message = "id不能为空") @Min(value = 1 , message = "id不能小于1") Long id) {
+    public ResultUtil<SyncOutOrderInfoVo> selectById(@NotNull(message = "id不能为空") @Min(value = 1 , message = "id不能小于1") Long id) throws IOException {
 
         SecurityUser securityUser = CommonContextHolder.getSecurityUser();
 
@@ -122,7 +123,7 @@ public class SyncOutOrderController {
 
     @PostMapping(value = "/get-status")
     @ApiOperation(value =  "获取任务状态",  notes ="状态  1等待同步  2正在同步  3已完成同步   4同步异常   5暂停同步   6作废")
-    public ResultUtil<Integer> getStatus(Long id) {
+    public ResultUtil<Integer> getStatus(Long id) throws IOException {
         ApiParamValidate.notEmpty("id", id);
 
         return syncOutOrderService.getStatus(id);

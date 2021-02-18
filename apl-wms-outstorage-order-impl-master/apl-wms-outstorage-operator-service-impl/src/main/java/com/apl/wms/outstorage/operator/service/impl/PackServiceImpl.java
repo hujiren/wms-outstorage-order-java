@@ -1,6 +1,7 @@
 package com.apl.wms.outstorage.operator.service.impl;
 
-import com.apl.cache.AplCacheUtil;
+import com.apl.cache.AplCacheHelper;
+import com.apl.cache.AplCacheHelper;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinBase;
@@ -30,6 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -67,7 +70,7 @@ public class PackServiceImpl extends ServiceImpl<PackMapper, PackingInfo> implem
     WarehouseFeign warehouseFeign;
 
     @Autowired
-    AplCacheUtil aplCacheUtil;
+    AplCacheHelper aplCacheHelper;
 
     @Autowired
     PackMaterialsFeign packMaterialsFeign;
@@ -100,7 +103,7 @@ public class PackServiceImpl extends ServiceImpl<PackMapper, PackingInfo> implem
             }
 
             //关联商品图片
-            JoinCommodity joinCommodity = new JoinCommodity(1, warehouseFeign, aplCacheUtil);
+            JoinCommodity joinCommodity = new JoinCommodity(1, warehouseFeign, aplCacheHelper);
 
             //跨项目跨库关联表数组
             List<JoinBase> joinTabs = new ArrayList<>();
@@ -123,12 +126,12 @@ public class PackServiceImpl extends ServiceImpl<PackMapper, PackingInfo> implem
             //生成一个唯一的事务id , 用来校验远程调用是否成功
             String tranId ="tranId:"+ StringUtil.generateUuid();
             packagingMaterialsResult = warehouseFeign.getPackingMaterialsByCommodityIds(tranId, commodityIds);
-            if(!aplCacheUtil.hasKey(tranId)){
+            if(!aplCacheHelper.opsForKey("outstorage").hasKey(tranId)){
                 //如果远程调用失败, redis中key(事务id)将为空
                 throw new AplException(PickServiceCode.REMOTE_PROCEDURE_CALL_FAILED.code, PickServiceCode.REMOTE_PROCEDURE_CALL_FAILED.msg);
             }
 
-            aplCacheUtil.delete(tranId);
+            aplCacheHelper.opsForKey("outstorage").del(tranId);
 
 
         } catch (Exception e) {
@@ -249,9 +252,9 @@ public class PackServiceImpl extends ServiceImpl<PackMapper, PackingInfo> implem
 
     @Override
     @Transactional
-    public ResultUtil<List<OrderRecordVo>> getOrderRecord() {
+    public ResultUtil<List<OrderRecordVo>> getOrderRecord() throws IOException {
 
-        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, aplCacheUtil);
+        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, aplCacheHelper);
         Long memberId = operatorCacheBo.getMemberId();
 
 

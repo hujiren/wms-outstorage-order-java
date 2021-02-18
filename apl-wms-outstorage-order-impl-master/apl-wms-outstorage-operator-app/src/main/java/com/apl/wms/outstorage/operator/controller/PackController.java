@@ -6,6 +6,7 @@ import com.apl.wms.outstorage.operator.pojo.dto.PullPackItemDto;
 import com.apl.wms.outstorage.operator.pojo.vo.OrderRecordVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PackingInfo;
 import com.apl.wms.outstorage.operator.service.PackService;
+import com.apl.wms.warehouse.lib.feign.WarehouseFeign;
 import com.apl.wms.warehouse.lib.pojo.vo.PackagingMaterialsInfoVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -22,6 +23,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -32,6 +34,8 @@ public class PackController {
 
     @Autowired
     PackService packService;
+    @Autowired
+    WarehouseFeign warehouseFeign;
 
     @PostMapping(value = "/get-pack-info")
     @ApiOperation(value =  "获取订单打包详细" , notes = "获取订单打包详细")
@@ -60,8 +64,7 @@ public class PackController {
 
     @PostMapping(value = "/get-order-record")
     @ApiOperation(value =  "获取订单记录" , notes = "获取订单记录")
-    public ResultUtil<List<OrderRecordVo>> getOrderRecord(){
-
+    public ResultUtil<List<OrderRecordVo>> getOrderRecord() throws IOException {
         return packService.getOrderRecord();
     }
 

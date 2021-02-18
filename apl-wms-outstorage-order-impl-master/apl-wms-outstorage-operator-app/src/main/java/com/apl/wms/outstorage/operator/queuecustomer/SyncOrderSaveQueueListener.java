@@ -1,6 +1,6 @@
 package com.apl.wms.outstorage.operator.queuecustomer;
 
-import com.apl.cache.AplCacheUtil;
+import com.apl.cache.AplCacheHelper;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.CommonContextHolder;
 import com.apl.lib.utils.StringUtil;
@@ -23,7 +23,7 @@ public class SyncOrderSaveQueueListener {
     OutOrderService outOrderService;
 
     @Autowired
-    AplCacheUtil redisTemplate;
+    AplCacheHelper aplCacheHelper;
 
     @RabbitHandler
     @RabbitListener(queues = "syncOrderSaveQueue")
@@ -36,7 +36,7 @@ public class SyncOrderSaveQueueListener {
             SecurityUser securityUser  = outOrderMultipleBo.getSecurityUser();
 
             //创建临时token，并把securityUser放入redis中，供微服务调用
-            String token = CommonContextHolder.setSecurityUser(redisTemplate, securityUser);
+            String token = CommonContextHolder.setSecurityUser(aplCacheHelper, securityUser);
 
             //把临时token放入线程安全变量中, feign会用到
             CommonContextHolder.tokenContextHolder.set(token);
@@ -52,7 +52,7 @@ public class SyncOrderSaveQueueListener {
             outOrderService.saveOrders(outOrderMultipleBo);
 
             //删除临时token
-            redisTemplate.delete(token);
+            aplCacheHelper.opsForKey("outstorage").del(token);
             CommonContextHolder.tokenContextHolder.remove();
             CommonContextHolder.securityUserContextHolder.remove();
 

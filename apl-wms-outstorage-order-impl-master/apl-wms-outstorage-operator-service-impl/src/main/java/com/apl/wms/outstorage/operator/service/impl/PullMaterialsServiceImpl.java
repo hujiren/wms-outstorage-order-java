@@ -1,6 +1,6 @@
 package com.apl.wms.outstorage.operator.service.impl;
 
-import com.apl.cache.AplCacheUtil;
+import com.apl.cache.AplCacheHelper;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.utils.ResultUtil;
@@ -52,7 +52,7 @@ public class PullMaterialsServiceImpl extends ServiceImpl<PullMaterialsMapper, P
     }
 
     @Autowired
-    AplCacheUtil redisTemplate;
+    AplCacheHelper aplCacheHelper;
 
 
     @Autowired

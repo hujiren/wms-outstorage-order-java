@@ -1,15 +1,15 @@
 package com.apl.wms.outstorage.order.service.impl;
 
 import com.apl.amqp.RabbitSender;
-import com.apl.cache.AplCacheUtil;
+import com.apl.cache.AplCacheHelper;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.*;
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.security.SecurityUser;
 import com.apl.lib.utils.*;
-import com.apl.sys.lib.cache.CustomerCacheBo;
 import com.apl.sys.lib.cache.JoinCustomer;
+import com.apl.sys.lib.cache.bo.CustomerCacheBo;
 import com.apl.sys.lib.feign.InnerFeign;
 import com.apl.sys.lib.utils.CheckCacheUtils;
 import com.apl.wms.outstorage.order.lib.enumwms.OutStorageOrderStatusEnum;
@@ -40,6 +40,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -100,7 +102,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
     InnerFeign innerFeign;
 
     @Autowired
-    AplCacheUtil redisTemplate;
+    AplCacheHelper aplCacheHelper;
 
 
     static JoinFieldInfo joinCommodityFieldInfo = null; //跨项目跨库关联 商品表 反射字段缓存
@@ -115,10 +117,10 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
 
         //校验客户是否存在
-        CheckCacheUtils.checkCustomer(innerFeign, redisTemplate, outOrderMainDto.getCustomerId());
+        CheckCacheUtils.checkCustomer(innerFeign, aplCacheHelper, outOrderMainDto.getCustomerId());
 
         String lockKey = "lock-stocks-" + outOrderMainDto.getCustomerId();
-        RedisLock.lock(redisTemplate, lockKey, 2);
+        RedisLock.lock(aplCacheHelper, lockKey, 2);
 
         //更新主订单并写入到DB, 如果没有则新建并插入数据到DB
         Long orderId = updateMainOrder(outOrderMainDto, outOrderMainDto.getOrderId());
@@ -187,7 +189,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
     @Transactional
     public Integer saveOrders(OutOrderMultipleBo outOrderMultipleBo) throws Exception {
 
-        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, redisTemplate);
+        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, aplCacheHelper);
         CustomerCacheBo customerCacheBo = joinCustomer.getEntity(outOrderMultipleBo.getCustomerId());
         if (customerCacheBo == null) {
             //客户不存在
@@ -214,7 +216,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         saveOrders2(outOrderMultipleBo, customerCacheBo.getCustomerNo().toUpperCase(), securityUser.getInnerOrgId());
 
         String key = "TASK_STATUS:" + securityUser.getInnerOrgId().toString() + "_" + outOrderMultipleBo.getTrskId().toString();
-        redisTemplate.opsForValue().set(key, 3);
+        aplCacheHelper.opsForValue("outstorage").set(key, 3);
 
         return outOrderMultipleBo.getOrders().size();
     }
@@ -314,7 +316,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
     public ResultUtil<Map> selectById(Long orderId, Long customerId) throws Exception {
 
         if (customerId == null) {
-            customerId = CommonContextHolder.getSecurityUser(redisTemplate).getOuterOrgId();
+            customerId = CommonContextHolder.getSecurityUser(aplCacheHelper).getOuterOrgId();
         }
 
         //主订单信息
@@ -324,7 +326,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         }
 
         //关联 获取店铺名称
-        JoinStore joinStore = new JoinStore(1, warehouseFeign, redisTemplate);
+        JoinStore joinStore = new JoinStore(1, warehouseFeign, aplCacheHelper);
         StoreCacheBo entity = joinStore.getEntity(orderVo.getStoreId());
         //创建订单 没有保存店铺，直接返回查询订单，此字段为空
         if (entity != null) {
@@ -332,13 +334,13 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         }
 
         //关联客户名称
-        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, redisTemplate);
+        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, aplCacheHelper);
         CustomerCacheBo customerCacheBo = joinCustomer.getEntity(orderVo.getCustomerId());
         orderVo.setCustomerName(customerCacheBo.getCustomerName());
 
         //关联仓库名称
         if (orderVo.getWhId() != null && orderVo.getWhId() > 0) {
-            JoinWarehouse joinWarehouse = new JoinWarehouse(1, warehouseFeign, redisTemplate);
+            JoinWarehouse joinWarehouse = new JoinWarehouse(1, warehouseFeign, aplCacheHelper);
             WarehouseCacheBo warehouseCacheBo = joinWarehouse.getEntity(orderVo.getWhId());
             if (null != warehouseCacheBo)
                 orderVo.setWhName(warehouseCacheBo.getWhName());
@@ -349,7 +351,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
 
         //关联商品图片
-        JoinCommodity joinCommodity = new JoinCommodity(1, warehouseFeign, redisTemplate);
+        JoinCommodity joinCommodity = new JoinCommodity(1, warehouseFeign, aplCacheHelper);
 
         //跨项目跨库关联表数组
         List<JoinBase> joinTabs = new ArrayList<>();
@@ -474,7 +476,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         List<JoinBase> joinTabs = new ArrayList<>();
 
         //关联商品图片
-        JoinCommodity joinCommodity = new JoinCommodity(1, warehouseFeign, redisTemplate);
+        JoinCommodity joinCommodity = new JoinCommodity(1, warehouseFeign, aplCacheHelper);
         if (null != joinCommodityFieldInfo) {
             joinCommodity.setJoinFieldInfo(joinCommodityFieldInfo);
         } else {
@@ -488,7 +490,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
         joinTabs = new ArrayList<>();
         //关联客户表字段信息
-        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, redisTemplate);
+        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, aplCacheHelper);
         if (null != joinCustomerFieldInfo) {
             joinCustomer.setJoinFieldInfo(joinCustomerFieldInfo);
         } else {
@@ -499,7 +501,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         joinTabs.add(joinCustomer);
 
         //关联仓库表字段信息
-        JoinWarehouse joinWarehouse = new JoinWarehouse(1, warehouseFeign, redisTemplate);
+        JoinWarehouse joinWarehouse = new JoinWarehouse(1, warehouseFeign, aplCacheHelper);
         if (null != joinWarehouseInfo) {
             joinWarehouse.setJoinFieldInfo(joinWarehouseInfo);
         } else {
@@ -510,7 +512,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
 
         //关联店铺表字段信息
-        JoinStore joinStore = new JoinStore(1, warehouseFeign, redisTemplate);
+        JoinStore joinStore = new JoinStore(1, warehouseFeign, aplCacheHelper);
         if (null != joinStoreInfo) {
             joinStore.setJoinFieldInfo(joinStoreInfo);
         } else {
@@ -576,7 +578,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         List<JoinBase> joinTabs = new ArrayList<>();
 
         //关联商品图片
-        JoinCommodity joinCommodity = new JoinCommodity(1, warehouseFeign, redisTemplate);
+        JoinCommodity joinCommodity = new JoinCommodity(1, warehouseFeign, aplCacheHelper);
         if (null != joinCommodityFieldInfo) {
             joinCommodity.setJoinFieldInfo(joinCommodityFieldInfo);
         } else {
@@ -590,7 +592,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
         joinTabs = new ArrayList<>();
         //关联客户表字段信息
-        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, redisTemplate);
+        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, aplCacheHelper);
         if (null != joinCustomerFieldInfo) {
             joinCustomer.setJoinFieldInfo(joinCustomerFieldInfo);
         } else {
@@ -601,7 +603,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
         joinTabs.add(joinCustomer);
 
         //关联仓库表字段信息
-        JoinWarehouse joinWarehouse = new JoinWarehouse(1, warehouseFeign, redisTemplate);
+        JoinWarehouse joinWarehouse = new JoinWarehouse(1, warehouseFeign, aplCacheHelper);
         if (null != joinWarehouseInfo) {
             joinWarehouse.setJoinFieldInfo(joinWarehouseInfo);
         } else {
@@ -612,7 +614,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
 
 
         //关联店铺表字段信息
-        JoinStore joinStore = new JoinStore(1, warehouseFeign, redisTemplate);
+        JoinStore joinStore = new JoinStore(1, warehouseFeign, aplCacheHelper);
         if (null != joinStoreInfo) {
             joinStore.setJoinFieldInfo(joinStoreInfo);
         } else {
@@ -784,7 +786,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
      * @Author: CY
      * @Date: 2020/6/8 18:20
      */ //有可能是在现有的订单上增加保存商品, 有可能是新建的订单, 有创建订单操作和更新订单操作
-    private Long updateMainOrder(OutOrderMainDto outOrderMainDto, Long orderId) {
+    private Long updateMainOrder(OutOrderMainDto outOrderMainDto, Long orderId) throws IOException {
         //新建主订单  默认值0
         if (orderId == 0) {
             orderId = createMainOrder(outOrderMainDto);
@@ -808,7 +810,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
      * @Author: CY
      * @Date: 2020/6/8 18:20
      */
-    Long createMainOrder(OutOrderMainDto outOrderMainDto) {
+    Long createMainOrder(OutOrderMainDto outOrderMainDto) throws IOException {
 
         OutOrderPo outOrderPo = new OutOrderPo();
 
@@ -844,7 +846,7 @@ public class OutOrderServiceImpl extends ServiceImpl<OutOrderMapper, OutOrderPo>
     private void fullCommodityImg(List<OutOrderCommodityItemInfoVo> commodityItems) throws Exception {
 
         List<JoinBase> joinTabs = new ArrayList<>();
-        JoinCommodity joinCommodity = new JoinCommodity(1, warehouseFeign, redisTemplate);
+        JoinCommodity joinCommodity = new JoinCommodity(1, warehouseFeign, aplCacheHelper);
 
         joinCommodity.addField("commodityId", Long.class, "imgUrl", String.class);
         joinTabs.add(joinCommodity);

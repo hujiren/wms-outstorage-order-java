@@ -4,7 +4,7 @@ package com.apl.wms.outstorage.order.service.impl;
 import com.apl.amqp.MqChannel;
 import com.apl.amqp.MqConnection;
 import com.apl.amqp.RabbitSender;
-import com.apl.cache.AplCacheUtil;
+import com.apl.cache.AplCacheHelper;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinBase;
@@ -16,8 +16,8 @@ import com.apl.lib.utils.CommonContextHolder;
 import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.utils.SnowflakeIdWorker;
 import com.apl.lib.utils.StringUtil;
-import com.apl.sys.lib.cache.CustomerCacheBo;
 import com.apl.sys.lib.cache.JoinCustomer;
+import com.apl.sys.lib.cache.bo.CustomerCacheBo;
 import com.apl.sys.lib.feign.InnerFeign;
 import com.apl.wms.outstorage.order.lib.cache.JoinStore;
 import com.apl.wms.outstorage.order.lib.pojo.bo.SyncOutOrderTaskBo;
@@ -39,6 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -83,7 +84,7 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
     WarehouseFeign warehouseFeign;
 
     @Autowired
-    AplCacheUtil redisTemplate;
+    AplCacheHelper aplCacheHelper;
 
     @Autowired
     RabbitSender rabbitSender;
@@ -172,7 +173,7 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
 
 
     @Override
-    public ResultUtil<SyncOutOrderInfoVo> selectById(Long id, Long customerId, Integer isShowCustomer) {
+    public ResultUtil<SyncOutOrderInfoVo> selectById(Long id, Long customerId, Integer isShowCustomer) throws IOException {
 
         SyncOutOrderInfoVo syncOrderInfoVo = baseMapper.getById(id);
         if(syncOrderInfoVo==null){
@@ -180,12 +181,12 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
         }
 
         //关联客户名称
-        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, redisTemplate);
+        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, aplCacheHelper);
         CustomerCacheBo customerCacheBo = joinCustomer.getEntity(syncOrderInfoVo.getCustomerId());
         syncOrderInfoVo.setCustomerName(customerCacheBo.getCustomerName());
 
         //关联店铺名称
-        JoinStore joinStore = new JoinStore(1, warehouseFeign, redisTemplate);
+        JoinStore joinStore = new JoinStore(1, warehouseFeign, aplCacheHelper);
         StoreCacheBo storeCacheBo = joinStore.getEntity(syncOrderInfoVo.getStoreId());
         syncOrderInfoVo.setStoreName(storeCacheBo.getStoreName());
         syncOrderInfoVo.setStoreNameEn(storeCacheBo.getStoreNameEn());
@@ -213,7 +214,7 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
 
         //关联客户名称
         if(isShowCustomer.equals(1)){
-            JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, redisTemplate);
+            JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, aplCacheHelper);
             if(null!=joinCustomerFieldInfo) {
                 //已经缓存客户反射字段
                 joinCustomer.setJoinFieldInfo(joinCustomerFieldInfo);
@@ -227,7 +228,7 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
         }
 
         //关联店铺名称
-        JoinStore joinStore = new JoinStore(1, warehouseFeign, redisTemplate);
+        JoinStore joinStore = new JoinStore(1, warehouseFeign, aplCacheHelper);
         if (null != joinStoreInfo) {
             joinStore.setJoinFieldInfo(joinStoreInfo);
         } else {
@@ -249,7 +250,7 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
                 maps.put(key, 2);
             }
         }
-        redisTemplate.opsForValue().multiSet(maps);
+        aplCacheHelper.opsForValue("outstorage").set(maps);
 
         return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, page);
     }
@@ -294,7 +295,7 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
             channel.send( "syncOrderShopifyQueue", byncOutOrderTaskBo);
 
             String key = "TASK_STATUS:" + securityUser.getInnerOrgId().toString() + "_" + id.toString();
-            redisTemplate.opsForValue().set(key, 2);
+            aplCacheHelper.opsForValue("outstorage").set(key, 2);
 
             channel.close();
         }
@@ -303,14 +304,14 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
     }
 
 
-    public ResultUtil<Integer> getStatus(Long id){
+    public ResultUtil<Integer> getStatus(Long id) throws IOException {
 
         SecurityUser securityUser = CommonContextHolder.getSecurityUser();
         String key = "TASK_STATUS:" + securityUser.getInnerOrgId().toString() + "_" + id.toString();
-        Integer status = (Integer) redisTemplate.opsForValue().get(key);
+        Integer status = (Integer) aplCacheHelper.opsForValue("outstorage").get(key);
         if(status!=null &&  status.equals(3)){
             //同步完成, 清空缓存
-            redisTemplate.delete(key);
+            aplCacheHelper.opsForKey("outstorage").del(key);
             return ResultUtil.APPRESULT(CommonStatusCode.GET_SUCCESS, status);
         }
 
@@ -318,7 +319,7 @@ public class SyncOutOrderServiceImpl extends ServiceImpl<SyncOrderMapper, SyncOu
             status = baseMapper.getStatus(id);
             if(status!=null &&  status.equals(2)){
                 //2 正在同步
-                redisTemplate.opsForValue().set(key, status);
+                aplCacheHelper.opsForValue("outstorage").set(key, status);
             }
         }
 

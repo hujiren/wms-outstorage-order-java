@@ -3,7 +3,7 @@ package com.apl.wms.outstorage.order.service.impl;
 
 import com.apl.amqp.MqChannel;
 import com.apl.amqp.MqConnection;
-import com.apl.cache.AplCacheUtil;
+import com.apl.cache.AplCacheHelper;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinBase;
@@ -35,6 +35,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -76,7 +78,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
     MqConnection mqConnection;
 
     @Autowired
-    AplCacheUtil aplCacheUtil;
+    AplCacheHelper AplCacheHelper;
 
     static JoinFieldInfo joinCustomerFieldInfo = null; //跨项目跨库关联 客户表 反射字段缓存
     static JoinFieldInfo joinWareHouseFieldInfo = null;
@@ -254,7 +256,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
         SecurityUser securityUser = CommonContextHolder.getSecurityUser();
 
         MqChannel channel = mqConnection.createChannel("first", true);
-
+        
         try {
             //遍历订单信息对象, 并将每个商品信息对象组合到订单信息对象中
             for (AllocationWarehouseOutOrderBo outOrderBo : orderList) {
@@ -317,12 +319,12 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
      */
     @Override
     @Transactional
-    public ResultUtil<Integer> AllocOutOrderStockCallBack(String tranId, Long outOrderId, Integer pullStatus, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos) {
+    public ResultUtil<Integer> AllocOutOrderStockCallBack(String tranId, Long outOrderId, Integer pullStatus, List<CompareStorageLocalStocksBo> compareStorageLocalStocksBos) throws IOException {
 
         if (null == compareStorageLocalStocksBos || compareStorageLocalStocksBos.size() == 0) {
             //分配的库位为空, 代表库存不足, 恢复订单拣货状态为1(未分配库存)
             baseMapper.updateOrderStatus(outOrderId, 1);
-            aplCacheUtil.opsForValue().set(tranId, 1);
+            AplCacheHelper.opsForValue("outstorage").set(tranId, 1);
             return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, 0);
         }
 
@@ -353,7 +355,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
             throw new AplException(CommonStatusCode.SAVE_FAIL);
         }
 
-        aplCacheUtil.opsForValue().set(tranId, 1);
+        AplCacheHelper.opsForValue("outstorage").set(tranId, 1);
 
         return ResultUtil.APPRESULT(CommonStatusCode.SAVE_SUCCESS, 1);
     }
@@ -366,14 +368,14 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
      * @return
      */
     @Override
-    public ResultUtil<Integer> deleteOrderAllocationItem(Long outOrderId, String tranId) {
+    public ResultUtil<Integer> deleteOrderAllocationItem(Long outOrderId, String tranId) throws IOException {
 
         Integer integer = baseMapper.deleteByOrderId(outOrderId);
 
         if (integer == 0) {
             return ResultUtil.APPRESULT(CommonStatusCode.DEL_FAIL, CommonStatusCode.DEL_FAIL);
         }
-        aplCacheUtil.opsForValue().set(tranId, 1);
+        AplCacheHelper.opsForValue("outstorage").set(tranId, 1);
         return ResultUtil.APPRESULT(CommonStatusCode.DEL_SUCCESS,  1);
     }
 
@@ -383,7 +385,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
     @Override
     public ResultUtil<Page<OutOrderPickListVo>> stockManage(PageDto pageDto, StockManageKeyDto keyDto) throws Exception {
 
-        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, aplCacheUtil);
+        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, AplCacheHelper);
 
         Long whId = operatorCacheBo.getWhId();
 
@@ -405,7 +407,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
         List<JoinBase> joinTabs = new ArrayList<>();
 
         //关联客户表字段信息
-        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, aplCacheUtil);
+        JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, AplCacheHelper);
 
         if (null != joinCustomerFieldInfo) {
 
@@ -423,7 +425,7 @@ public class PullAllocationItemServiceImpl extends ServiceImpl<PullAllocationIte
 
 
         //关联仓库表字段信息
-        JoinWarehouse joinWarehouse = new JoinWarehouse(1, warehouseFeign, aplCacheUtil);
+        JoinWarehouse joinWarehouse = new JoinWarehouse(1, warehouseFeign, AplCacheHelper);
         if (null != joinWareHouseFieldInfo) {
             joinWarehouse.setJoinFieldInfo(joinWareHouseFieldInfo);
         } else {

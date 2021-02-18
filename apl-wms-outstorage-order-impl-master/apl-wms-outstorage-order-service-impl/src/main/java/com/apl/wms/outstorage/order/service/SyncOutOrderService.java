@@ -10,6 +10,8 @@ import com.apl.wms.outstorage.order.pojo.po.SyncOutOrderPo;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.io.IOException;
+
 /**
  * <p>
  * 同步平台订单 service接口
@@ -58,7 +60,7 @@ public interface SyncOutOrderService extends IService<SyncOutOrderPo> {
          * @author arran
          * @since 2019-12-25
          */
-        ResultUtil<SyncOutOrderInfoVo> selectById(Long id, Long customerId, Integer isShowCustomer);
+        ResultUtil<SyncOutOrderInfoVo> selectById(Long id, Long customerId, Integer isShowCustomer) throws IOException;
 
 
         /**
@@ -82,6 +84,6 @@ public interface SyncOutOrderService extends IService<SyncOutOrderPo> {
          * @author arran
          * @since 2020-01-15
          */
-        ResultUtil<Integer> getStatus(Long id);
+        ResultUtil<Integer> getStatus(Long id) throws IOException;
 
 }

@@ -1,5 +1,5 @@
 package com.apl.wms.outstorage.operator.service.impl;
-import com.apl.cache.AplCacheUtil;
+import com.apl.cache.AplCacheHelper;
 import com.apl.lib.constants.CommonStatusCode;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.join.JoinKeyValues;
@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,7 +53,7 @@ public class SortServiceImpl extends ServiceImpl<SortMapper, OrderCommodityScanV
     WarehouseFeign warehouseFeign;
 
     @Autowired
-    AplCacheUtil aplCacheUtil;
+    AplCacheHelper AplCacheHelper;
 
     /**
      * 扫描订单号
@@ -101,9 +102,9 @@ public class SortServiceImpl extends ServiceImpl<SortMapper, OrderCommodityScanV
      */
     @Override
     @Transactional
-    public ResultUtil<Boolean> submitSortInfo(List<Long> orderIds) {
+    public ResultUtil<Boolean> submitSortInfo(List<Long> orderIds) throws IOException {
 
-        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, aplCacheUtil);
+        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, AplCacheHelper);
         Long memberId = operatorCacheBo.getMemberId();
         Long whId = operatorCacheBo.getWhId();
 

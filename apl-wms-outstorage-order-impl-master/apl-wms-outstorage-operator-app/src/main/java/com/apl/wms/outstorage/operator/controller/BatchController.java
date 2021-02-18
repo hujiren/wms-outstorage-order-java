@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -40,7 +41,7 @@ public class BatchController {
     public ResultUtil<List<PullBatchInfoVo>> listPullBatch(@TypeValidator(value = {"5" , "6" , "7" , "8"} , message = "拣货状态错误")
                                                                 @NotNull(message = "pullStatus 不能为空")Integer pullStatus,
                                                             String keyword,
-                                                            @NotNull(message = "pullStatus 不能为空") Long batchTime){
+                                                            @NotNull(message = "pullStatus 不能为空") Long batchTime) throws IOException {
 
         ResultUtil ResultUtil = pullBatchService.listPullBatch(pullStatus, keyword, batchTime);
 

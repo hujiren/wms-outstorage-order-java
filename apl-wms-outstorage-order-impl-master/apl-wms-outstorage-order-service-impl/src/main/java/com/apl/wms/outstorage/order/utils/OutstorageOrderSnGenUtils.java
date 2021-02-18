@@ -1,15 +1,17 @@
 package com.apl.wms.outstorage.order.utils;
-import com.apl.cache.AplCacheUtil;
+import com.apl.cache.AplCacheHelper;
 import com.apl.lib.exception.AplException;
 import com.apl.lib.utils.RedisLock;
 import com.apl.lib.utils.StringUtil;
-import com.apl.sys.lib.cache.CustomerCacheBo;
 import com.apl.sys.lib.cache.JoinCustomer;
+import com.apl.sys.lib.cache.bo.CustomerCacheBo;
 import com.apl.sys.lib.feign.InnerFeign;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +43,7 @@ public class OutstorageOrderSnGenUtils {
     }
 
     @Autowired
-    AplCacheUtil redisTemplate;
+    AplCacheHelper aplCacheHelper;
 
     @Autowired
     NamedParameterJdbcTemplate jdbc;
@@ -66,15 +68,15 @@ public class OutstorageOrderSnGenUtils {
      * @Author: CY
      * @Date: 2020/4/15 16:02
      */
-    public String createOutOrderSn(Long customerId, String customerNo, Long innerOrgId, Integer len) {
+    public String createOutOrderSn(Long customerId, String customerNo, Long innerOrgId, Integer len) throws IOException {
         Long snNum = 0L;
         String cacheKey = "SN:OUT-ORDER-" + innerOrgId.toString() + "-" + customerId.toString();
-        if (redisTemplate.hasKey(cacheKey))
-            snNum = redisTemplate.opsForValue().increment(cacheKey, 1);
+        if (aplCacheHelper.opsForKey("outstorage").hasKey(cacheKey))
+            snNum = aplCacheHelper.opsForValue("outstorage").incr(cacheKey, 1);
         if (null == snNum || snNum <= 1L) {
             //加锁
             try {
-                if (RedisLock.lock(redisTemplate, "SN-OUT", 8l)) {
+                if (RedisLock.lock(aplCacheHelper, "SN-OUT", 8l)) {
 
                     //从订单记录上找到这个客户的最大订单号，放到redis中  IN-PGS-AIR-0002
                     String sql = "SELECT order_sn FROM out_order WHERE id=(SELECT max(id) FROM out_order WHERE customer_id=" + customerId.toString() + " AND inner_org_id=" + innerOrgId.toString() + ")";
@@ -88,19 +90,19 @@ public class OutstorageOrderSnGenUtils {
                     }
                     if (null == snNum || snNum < 1L)
                         snNum = 1L;
-                    redisTemplate.opsForValue().set(cacheKey, snNum);
+                    aplCacheHelper.opsForValue("outstorage").set(cacheKey, snNum);
                 }
             } catch (Exception exception) {
                 throw new AplException("LOCK_ERROR", "加锁失败");
             } finally {
-                RedisLock.unlock(redisTemplate, "SN-OUT");
+                RedisLock.unlock(aplCacheHelper, "SN-OUT");
             }
         }
 
-        redisTemplate.expire(cacheKey, orderSnCacheTime, TimeUnit.MINUTES); //登陆用户展期
+        aplCacheHelper.opsForKey("outstorage").expire(cacheKey, orderSnCacheTime, TimeUnit.MINUTES); //登陆用户展期
 
         if (StringUtil.isEmpty(customerNo)) {
-            JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, redisTemplate);
+            JoinCustomer joinCustomer = new JoinCustomer(1, innerFeign, aplCacheHelper);
             CustomerCacheBo customerCacheBo = joinCustomer.getEntity(customerId);
             customerNo = customerCacheBo.getCustomerNo();
         }

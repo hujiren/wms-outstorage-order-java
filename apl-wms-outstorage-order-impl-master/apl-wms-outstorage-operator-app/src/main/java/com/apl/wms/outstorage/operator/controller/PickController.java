@@ -1,7 +1,7 @@
 package com.apl.wms.outstorage.operator.controller;
 
 
-import com.apl.cache.AplCacheUtil;
+import com.apl.cache.AplCacheHelper;
 import com.apl.lib.pojo.dto.PageDto;
 import com.apl.lib.utils.ResultUtil;
 import com.apl.lib.validate.TypeValidator;
@@ -51,7 +51,7 @@ public class PickController {
     OutOrderCommodityItemService outOrderCommodityItemService;
 
     @Autowired
-    AplCacheUtil redisTemplate;
+    AplCacheHelper aplCacheHelper;
 
     @Autowired
     WarehouseFeign warehouseFeign;
@@ -77,7 +77,7 @@ public class PickController {
           @NotNull(message = "状态不能为空") @TypeValidator(value = {"4", "6"}, message = "拣货状态错误") Integer pullStatus) throws Exception{
 
         PullOrderKeyDto keyDto = new PullOrderKeyDto();
-        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, redisTemplate);
+        OperatorCacheBo operatorCacheBo = WmsWarehouseUtils.checkOperator(warehouseFeign, aplCacheHelper);
         keyDto.setPullOperatorId(operatorCacheBo.getMemberId());
         keyDto.setTerminal(2);
         keyDto.setPullStatus(pullStatus);

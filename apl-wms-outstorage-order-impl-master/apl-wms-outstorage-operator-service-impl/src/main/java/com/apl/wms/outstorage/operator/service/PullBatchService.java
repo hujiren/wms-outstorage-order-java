@@ -8,6 +8,8 @@ import com.apl.wms.outstorage.operator.pojo.vo.PullBatchListVo;
 import com.apl.wms.outstorage.operator.pojo.vo.PullAllocationItemMsgVo;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -26,7 +28,7 @@ public interface PullBatchService extends IService<PullBatchPo> {
          * @author cy
          * @since 2020-06-08
          */
-        ResultUtil listPullBatch(Integer pullStatus, String keyword, Long batchTime);
+        ResultUtil listPullBatch(Integer pullStatus, String keyword, Long batchTime) throws IOException;
 
         /**
          * @Desc: 根据批次id 获取拣货信息
